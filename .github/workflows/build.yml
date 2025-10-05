@@ -66,15 +66,23 @@ jobs:
                   rm release/package.json
                   rm release/*.map
 
+            - name: Resolve release tag
+              id: rel
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  TAG=$(gh release view --latest --json tagName --jq .tagName 2>/dev/null || true)
+                  if [ -z "$TAG" ]; then
+                    TAG=$(date +"%Y%m%d-%H%M%S")
+                    gh release create "$TAG" --latest --title "Privcord $TAG" --notes "Automated release"
+                  fi
+                  echo "tag=$TAG" >> $GITHUB_OUTPUT
+
             - name: Upload Equicord Stable
               env:
                   GH_TOKEN: ${{ github.token }}
               run: |
-                  if ! gh release view latest >/dev/null 2>&1; then
-                    ts=$(date +"%Y%m%d-%H%M%S")
-                    gh release create "$ts" --latest --title "Privcord $ts" --notes "Automated release"
-                  fi
-                  gh release upload latest --clobber dist/release/*
+                  gh release upload "${{ steps.rel.outputs.tag }}" --clobber dist/release/*
 
             - name: Upload Plugin JSONs to Equibored repo
               run: |
