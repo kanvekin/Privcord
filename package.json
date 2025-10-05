@@ -27,6 +27,7 @@
         "generatePluginJson": "tsx scripts/generatePluginList.ts",
         "build:remote-priv": "node scripts/remote/buildRemotePrivcordPlugins.mjs",
         "generateEquicordPluginJson": "tsx scripts/generateEquicordPluginList.ts",
+        "generatePrivcordPluginJson": "tsx scripts/generatePrivcordPluginList.ts",
         "generateVencordPluginJson": "tsx scripts/generateVencordPluginList.ts",
         "generateTypes": "tspc --emitDeclarationOnly --declaration --outDir packages/vencord-types --allowJs false",
         "inject": "node scripts/runInstaller.mjs -- --install",
