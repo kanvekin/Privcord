@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { User } from "discord-types/general";
+type User = any;
 import type { ComponentType } from "react";
 
 export interface UserSummaryItemProps {

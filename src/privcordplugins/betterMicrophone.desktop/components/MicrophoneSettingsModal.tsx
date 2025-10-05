@@ -20,7 +20,7 @@ import { Flex } from "@components/Flex";
 import { Switch } from "@components/Switch";
 import { ModalSize } from "@utils/modal";
 import { Card, Forms, Select, Slider, TextInput, useEffect, useState } from "@webpack/common";
-import { SelectOption } from "@webpack/types";
+type SelectOption = { label: string; value: number | string };
 
 import {
     ProfilableStore,

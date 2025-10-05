@@ -21,7 +21,7 @@ import React from "react";
 
 import { IconTooltipButton } from ".";
 
-export const CopyButton = (props: typeof Button["defaultProps"]) => {
+export const CopyButton = (props: any) => {
     return (
         <IconTooltipButton
             color={Button.Colors.PRIMARY}

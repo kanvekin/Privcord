@@ -22,6 +22,8 @@ import { User } from "discord-types/general";
 import React from "react";
 
 import { createDummyUser, types, UserSummaryItem } from "../../philsPluginLibrary";
+// Shim problematic types
+declare namespace types { export type GeneralUser = any; }
 
 export interface AuthorUserSummaryItemProps extends Partial<React.ComponentProps<types.UserSummaryItem>> {
     authors: PluginAuthor[];
