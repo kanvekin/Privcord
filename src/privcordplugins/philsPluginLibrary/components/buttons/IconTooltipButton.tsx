@@ -23,10 +23,10 @@ import React from "react";
 
 export interface IconTooltipButtonProps {
     tooltipText?: string;
-    icon?: JSX.Element;
+    icon?: React.ReactNode;
 }
 
-export const IconTooltipButton = (props: typeof Button["defaultProps"] & IconTooltipButtonProps) => {
+export const IconTooltipButton = (props: any & IconTooltipButtonProps) => {
     return (
         <Tooltip text={props.tooltipText}>
             {tooltipProps => <Button
