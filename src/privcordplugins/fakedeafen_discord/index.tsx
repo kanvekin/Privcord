@@ -1,4 +1,5 @@
 import definePlugin from "@utils/types";               // Função para registrar o plugin no Vencord
+import { Devs } from "@utils/constants";
 import { findByProps, findComponentByCodeLazy } from "@webpack"; // Helpers para buscar módulos internos
 import { React } from "@webpack/common";               // React usado para criar componentes
 
