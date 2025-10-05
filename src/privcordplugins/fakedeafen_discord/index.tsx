@@ -78,7 +78,7 @@ function FakeDeafenButton() {
 export default definePlugin({
     name: "FakeDeafen",
     description: "Sahte sağırmı çok açıklamaya gerek yok aç ve dene.",
-    authors: [{ name: "feelslove", id: 249620332925812736n }],
+    authors: [Devs.examplegit],
     patches: [
         {
             // Injeta o botão na UI de “falando enquanto está mudo”

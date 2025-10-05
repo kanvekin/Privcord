@@ -9,7 +9,7 @@
  * - Patches may not apply if their target code already initialized; prefer non-patch plugins.
  */
 
-import { Settings as SettingsApi } from "@api/Settings";
+import { definePluginSettings, Settings as SettingsApi } from "@api/Settings";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, Plugin } from "@utils/types";
 import gitRemote from "~git-remote";
@@ -80,20 +80,18 @@ export default definePlugin({
     hidden: true,
     required: true,
     enabledByDefault: true,
-    settings: {
-        def: {
-            manifestUrl: {
-                type: OptionType.STRING,
-                description: "Manifest URL (JSON)",
-                default: getDefaultManifestUrl()
-            },
-            autoStart: {
-                type: OptionType.BOOLEAN,
-                description: "Auto-start loaded remote plugins",
-                default: true
-            }
+    settings: definePluginSettings({
+        manifestUrl: {
+            type: OptionType.STRING,
+            description: "Manifest URL (JSON)",
+            default: getDefaultManifestUrl()
+        },
+        autoStart: {
+            type: OptionType.BOOLEAN,
+            description: "Auto-start loaded remote plugins",
+            default: true
         }
-    },
+    }),
 
     async start() {
         const { startPlugin, startDependenciesRecursive } = PluginsModule();
