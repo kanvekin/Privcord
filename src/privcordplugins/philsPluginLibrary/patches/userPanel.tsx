@@ -61,10 +61,10 @@ export const ButtonsSettingsPanel = () => {
             const splicedButtons =
                 settingsPanelButtonsClone
                     .splice(0, 3)
-                    .map(({ icon, tooltipText, onClick }) =>
+                    .map(({ name, icon, tooltipText, onClick }) =>
                         tooltipText
-                            ? <SettingsPanelTooltipButton tooltipProps={{ text: tooltipText }} icon={icon} onClick={onClick} />
-                            : <SettingsPanelButton icon={icon} onClick={onClick} />
+                            ? <SettingsPanelTooltipButton key={`btn-${name}`} tooltipProps={{ text: tooltipText }} icon={icon} onClick={onClick} />
+                            : <SettingsPanelButton key={`btn-${name}`} icon={icon} onClick={onClick} />
                     );
 
             groupedButtons.push(splicedButtons);
@@ -75,7 +75,9 @@ export const ButtonsSettingsPanel = () => {
 
     return rawPanelButtons.length > 0
         ? <SettingsPanel>
-            {...convertRawPanelButtons(rawPanelButtons).map(value => <SettingsPanelRow children={value} />)}
+            {convertRawPanelButtons(rawPanelButtons).map((value, idx) => <SettingsPanelRow key={`row-${idx}`}>
+                {value}
+            </SettingsPanelRow>)}
         </SettingsPanel>
         : <>
         </>;
