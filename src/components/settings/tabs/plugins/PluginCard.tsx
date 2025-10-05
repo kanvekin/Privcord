@@ -110,7 +110,7 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
         />
     ) : isPrivcordPlugin ? (
         <img
-            src="https://equicord.org/assets/icons/private.png"
+            src="https://cdn.discordapp.com/attachments/1335896306962534441/1424276865878593598/private-icon-symbol-design-illustration-vector.png?ex=68e35cb2&is=68e20b32&hm=2a54cfae837be036285a18a9532ac71d1e6668efbf8a8b14381ea9b84039f8df&"
             alt="Privcord"
             title="Privcord Plugin"
             style={{
