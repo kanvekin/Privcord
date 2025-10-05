@@ -1,4 +1,25 @@
-import { Channel, MessageJSON, UserJSON } from "discord-types/general";
+// Minimal local re-declarations to remove external type dependency
+export interface UserJSON {
+    id: string;
+    username: string;
+    avatar: string | null;
+    discriminator: string;
+}
+
+export interface MessageJSON {
+    id: string;
+    channel_id: string;
+    guild_id?: string;
+    content: string;
+    author: UserJSON;
+}
+
+export interface Channel {
+    id: string;
+    guild_id?: string;
+    name?: string;
+    type?: number;
+}
 
 export interface MessageUpdatePayload {
     type: string;

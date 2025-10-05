@@ -55,7 +55,7 @@ export const ButtonsSettingsPanel = () => {
 
     const convertRawPanelButtons = (buttons: PanelButton[]) => {
         const settingsPanelButtonsClone = [...buttons].sort();
-        const groupedButtons: JSX.Element[][] = [];
+        const groupedButtons: React.ReactElement[][] = [];
 
         while (settingsPanelButtonsClone.length) {
             const splicedButtons =
@@ -82,7 +82,7 @@ export const ButtonsSettingsPanel = () => {
 };
 
 export function replacedUserPanelComponent(oldComponent: (...args: any[]) => any, thisContext: any, functionArguments: any) {
-    const componentResult: JSX.Element = Reflect.apply(oldComponent, thisContext, functionArguments);
+    const componentResult: React.ReactElement | any = Reflect.apply(oldComponent, thisContext, functionArguments);
     if (!componentResult?.props) return componentResult;
 
     const { children } = componentResult.props;
