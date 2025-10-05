@@ -45,9 +45,24 @@ function getFilename() {
     }
 }
 
+// Display name for user-facing logs without changing the actual artifact names
+function getDisplayName() {
+    switch (process.platform) {
+        case "win32":
+            return "PrivcordCli.exe";
+        case "darwin":
+            return "Privcord.MacOS.zip";
+        case "linux":
+            return "PrivcordCli-linux";
+        default:
+            return "Privcord Installer";
+    }
+}
+
 async function ensureBinary() {
     const filename = getFilename();
-    console.log("Downloading " + filename);
+    const displayName = getDisplayName();
+    console.log("Downloading " + displayName);
 
     mkdirSync(FILE_DIR, { recursive: true });
 
@@ -96,7 +111,7 @@ async function ensureBinary() {
                 execSync(cmd);
             } catch { }
         };
-        logAndRun(`sudo spctl --add '${outputFile}' --label "Equilotl"`);
+        logAndRun(`sudo spctl --add '${outputFile}' --label "Privcord"`);
         logAndRun(`sudo xattr -d com.apple.quarantine '${outputFile}'`);
     } else {
         // WHY DOES NODE FETCH RETURN A WEB STREAM OH MY GOD
@@ -107,7 +122,7 @@ async function ensureBinary() {
         })));
     }
 
-    console.log("Finished downloading!");
+    console.log("Finished downloading Privcord Installer!");
 
     return outputFile;
 }
@@ -116,7 +131,7 @@ async function ensureBinary() {
 
 const installerBin = await ensureBinary();
 
-console.log("Now running Installer...");
+console.log("Now running Privcord Installer...");
 
 const argStart = process.argv.indexOf("--");
 const args = argStart === -1 ? [] : process.argv.slice(argStart + 1);
