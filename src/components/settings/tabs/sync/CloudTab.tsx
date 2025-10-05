@@ -130,7 +130,7 @@ function CloudTab() {
     }
 
     return (
-        <SettingsTab title="Equicord Cloud">
+        <SettingsTab title="Privcord Cloud">
             <Forms.FormSection title="Cloud Settings" className={Margins.top16}>
                 <Forms.FormText variant="text-md/normal" className={Margins.bottom20}>
                     Equicord comes with a cloud integration allowing settings to be synced across apps and devices.
