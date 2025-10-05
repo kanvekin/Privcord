@@ -71,7 +71,8 @@ jobs:
               env:
                   GH_TOKEN: ${{ github.token }}
               run: |
-                  TAG=$(gh release view --latest --json tagName --jq .tagName 2>/dev/null || true)
+                  set -e
+                  TAG=$(gh release view --json tagName --jq .tagName 2>/dev/null || true)
                   if [ -z "$TAG" ]; then
                     TAG=$(date +"%Y%m%d-%H%M%S")
                     gh release create "$TAG" --latest --title "Privcord $TAG" --notes "Automated release"
