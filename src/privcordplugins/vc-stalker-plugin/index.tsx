@@ -61,7 +61,7 @@ const settings = definePluginSettings({
 });
 
 
-const switchToMsg = (gid: string, cid?: string, mid?: string) => {
+const switchToMsg = (gid?: string, cid?: string, mid?: string) => {
     if (gid) findByProps("transitionToGuildSync").transitionToGuildSync(gid);
     if (cid) findByProps("selectChannel").selectChannel({
         guildId: gid ?? "@me",

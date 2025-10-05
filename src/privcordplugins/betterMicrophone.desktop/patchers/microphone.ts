@@ -55,11 +55,11 @@ export class MicrophonePatcher extends Patcher {
             };
 
         // Relax typed emitter to avoid TS 'never' on event name
-        Emitter.addListener(
+        (Emitter as any).addListener(
             this.mediaEngine.emitter as any,
             "on",
-            "connection" as any,
-            connectionEventFunction as any,
+            "connection",
+            connectionEventFunction,
             PluginInfo.PLUGIN_NAME
         );
 

@@ -12,6 +12,8 @@ export interface MessageJSON {
     guild_id?: string;
     content: string;
     author: UserJSON;
+    attachments?: { id: string; filename: string }[];
+    type?: number;
 }
 
 export interface Channel {
@@ -19,6 +21,8 @@ export interface Channel {
     guild_id?: string;
     name?: string;
     type?: number;
+    ownerId?: string;
+    parent_id?: string;
 }
 
 export interface MessageUpdatePayload {
