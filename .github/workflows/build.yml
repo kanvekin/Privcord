@@ -57,32 +57,18 @@ jobs:
 
                   # legacy un-asared files
                   cp desktop/* release
-                  for file in privcord/*; do
+                  for file in equibop/*; do
                     filename=$(basename "$file")
-                    cp "$file" "release/privcord${filename^}"
+                    cp "$file" "release/equibop${filename^}"
                   done
 
                   find release -size 0 -delete
                   rm release/package.json
                   rm release/*.map
 
-            - name: Resolve release tag
-              id: rel
-              env:
-                  GH_TOKEN: ${{ github.token }}
-              run: |
-                  TAG=$(gh release view --latest --json tagName --jq .tagName 2>/dev/null || true)
-                  if [ -z "$TAG" ]; then
-                    TAG=$(date +"%Y%m%d-%H%M%S")
-                    gh release create "$TAG" --latest --title "Privcord $TAG" --notes "Automated release"
-                  fi
-                  echo "tag=$TAG" >> $GITHUB_OUTPUT
-
             - name: Upload Equicord Stable
-              env:
-                  GH_TOKEN: ${{ github.token }}
               run: |
-                  gh release upload "${{ steps.rel.outputs.tag }}" --clobber dist/release/*
+                  gh release upload latest --clobber dist/release/*
 
             - name: Upload Plugin JSONs to Equibored repo
               run: |

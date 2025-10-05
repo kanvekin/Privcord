@@ -54,9 +54,9 @@ jobs:
 
                   # legacy un-asared files
                   cp desktop/* release
-                  for file in privcord/*; do
+                  for file in equibop/*; do
                     filename=$(basename "$file")
-                    cp "$file" "release/privcord${filename^}"
+                    cp "$file" "release/equibop${filename^}"
                   done
 
                   find release -size 0 -delete
@@ -68,8 +68,6 @@ jobs:
               run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
 
             - name: Upload Equicord Stable
-              env:
-                  GH_TOKEN: ${{ github.token }}
               run: |
                   gh release create ${{ steps.date.outputs.date }} --latest=false
                   gh release upload ${{ steps.date.outputs.date }} --clobber dist/release/*
