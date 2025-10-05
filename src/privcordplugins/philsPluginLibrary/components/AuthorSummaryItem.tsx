@@ -21,9 +21,7 @@ import { useEffect, UserUtils, useState } from "@webpack/common";
 type User = any;
 import React from "react";
 
-import { createDummyUser, types as libtypes, UserSummaryItem } from "../../philsPluginLibrary";
-// Shim problematic types
-declare namespace types { export type GeneralUser = any; }
+import { createDummyUser, UserSummaryItem } from "../../philsPluginLibrary";
 
 export interface AuthorUserSummaryItemProps extends Partial<React.ComponentProps<typeof UserSummaryItem>> {
     authors: PluginAuthor[];
