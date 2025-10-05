@@ -137,6 +137,10 @@ export const Devs = /* #__PURE__*/ Object.freeze({
         name: "feelslove",
         id: 249620332925812736n
     },
+    D3SOX: {
+        name: "D3SOX",
+        id: 201052085641281538n
+    },
     Nickyux: {
         name: "Nickyux",
         id: 427146305651998721n
@@ -856,6 +860,10 @@ export const EquicordDevs = Object.freeze({
     nin0dev: {
         name: "nin0dev",
         id: 886685857560539176n
+    },
+    feelslove: {
+        name: "feelslove",
+        id: 249620332925812736n
     },
     D3SOX: {
         name: "D3SOX",
