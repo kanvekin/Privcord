@@ -4,7 +4,7 @@
 [![Tests](https://github.com/Equicord/Equicord/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Equicord/Equicord/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/discord/1173279886065029291.svg?color=768AD4&label=Discord&logo=discord&logoColor=white)](https://equicord.org/discord)
 
-Equicord is a fork of [Vencord](https://github.com/Vendicated/Vencord), with over 300+ plugins.
+Privcord is a fork of [Vencord](https://github.com/Vendicated/Vencord), with over 300+ plugins.
 
 You can join our [Discord server](https://equicord.org/discord) for commits, changes, chatting, or even support.
 
