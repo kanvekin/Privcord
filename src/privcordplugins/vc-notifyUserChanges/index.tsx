@@ -284,7 +284,7 @@ const lastStatuses = new Map<string, string>();
 export default definePlugin({
     name: "NotifyUserChanges",
     description: "Adds a notify option in the user context menu to get notified when a user changes voice channels or online status",
-    authors: [Devs.D3SOX],
+    authors: [Devs.feelslove],
 
     settings,
 

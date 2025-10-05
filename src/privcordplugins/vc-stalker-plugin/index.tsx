@@ -91,7 +91,7 @@ let loggedMessages: Record<string, Message> = {};
 export default definePlugin({
     name: "Stalker",
     description: "This plugin allows you to stalk users, made for delusional people like myself.",
-    authors: [Devs.D3SOX],
+    authors: [Devs.feelslove],
     dependencies: ["MessageLoggerEnhanced"],
     settings,
     flux: {
