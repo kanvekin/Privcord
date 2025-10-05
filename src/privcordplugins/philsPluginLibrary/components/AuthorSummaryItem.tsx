@@ -18,14 +18,14 @@
 
 import { PluginAuthor } from "@utils/types";
 import { useEffect, UserUtils, useState } from "@webpack/common";
-import { User } from "discord-types/general";
+type User = any;
 import React from "react";
 
-import { createDummyUser, types, UserSummaryItem } from "../../philsPluginLibrary";
+import { createDummyUser, types as libtypes, UserSummaryItem } from "../../philsPluginLibrary";
 // Shim problematic types
 declare namespace types { export type GeneralUser = any; }
 
-export interface AuthorUserSummaryItemProps extends Partial<React.ComponentProps<types.UserSummaryItem>> {
+export interface AuthorUserSummaryItemProps extends Partial<React.ComponentProps<typeof UserSummaryItem>> {
     authors: PluginAuthor[];
 }
 
