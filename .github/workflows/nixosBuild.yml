@@ -44,24 +44,27 @@ jobs:
             - name: Collect files to be released
               run: |
                   cd dist
-                  mkdir release
+                  mkdir -p release
 
-                  cp browser/browser.* release
-                  cp Vencord.user.{js,js.LEGAL.txt} release
+                  # Copy browser artifacts if present
+                  { [ -d browser ] && compgen -G "browser/browser.*" > /dev/null && cp browser/browser.* release; } || true
+                  # Copy userscript and its legal notice if present
+                  [ -f Vencord.user.js ] && cp Vencord.user.js release || true
+                  [ -f Vencord.user.js.LEGAL.txt ] && cp Vencord.user.js.LEGAL.txt release || true
 
-                  # copy the plugin data jsons, the extension zips and the desktop/vesktop asars
-                  cp *.{json,zip,asar} release
+                  # Copy plugin data JSONs, extension zips and desktop/vesktop ASARs if present
+                  compgen -G "*.{json,zip,asar}" > /dev/null && cp *.{json,zip,asar} release || true
 
-                  # legacy un-asared files
-                  cp desktop/* release
-                  for file in equibop/*; do
+                  # Legacy un-asared files
+                  { [ -d desktop ] && compgen -G "desktop/*" > /dev/null && cp desktop/* release; } || true
+                  { [ -d equibop ] && compgen -G "equibop/*" > /dev/null && for file in equibop/*; do
                     filename=$(basename "$file")
                     cp "$file" "release/equibop${filename^}"
-                  done
+                  done; } || true
 
                   find release -size 0 -delete
-                  rm release/package.json
-                  rm release/*.map
+                  rm -f release/package.json
+                  rm -f release/*.map
 
             - name: Get current date
               id: date
