@@ -95,7 +95,7 @@ Mentioning it does not imply any affiliation with or endorsement by Discord Inc.
 Vencord is not connected to Equicord and as such, all donation links go to Vendicated's donation link.
 
 <details>
-<summary>Using Equicord violates Discord's terms of service</summary>
+<summary>Using Privcord violates Discord's terms of service</summary>
 
 Client modifications are against Discord’s Terms of Service.
 
