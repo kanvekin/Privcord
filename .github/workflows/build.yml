@@ -7,14 +7,14 @@ on:
 env:
     FORCE_COLOR: true
     GITHUB_TOKEN: ${{ secrets.ETOKEN }}
-    REPO: Equicord/Equibored
+    REPO: kanvekin/Privbored
     USERNAME: GitHub-Actions
 
 permissions: write-all
 
 jobs:
     Build:
-        name: Build Equicord
+        name: Build Privcord
         runs-on: ubuntu-latest
 
         steps:
@@ -41,6 +41,7 @@ jobs:
               run: |
                 pnpm generatePluginJson dist/plugins.json
                 pnpm generateEquicordPluginJson dist/equicordplugins.json
+                pnpm generatePrivcordPluginJson dist/privcordplugins.json
                 pnpm generateVencordPluginJson dist/vencordplugins.json
                 pnpm generateDevsList dist/devs.json
 
@@ -66,11 +67,11 @@ jobs:
                   rm release/package.json
                   rm release/*.map
 
-            - name: Upload Equicord Stable
+            - name: Upload Privcord Stable
               run: |
                   gh release upload latest --clobber dist/release/*
 
-            - name: Upload Plugin JSONs to Equibored repo
+            - name: Upload Plugin JSONs to Privbored repo
               run: |
                   git config --global user.name "GitHub-Actions"
                   git config --global user.email actions@github.com
