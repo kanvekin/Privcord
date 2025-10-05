@@ -1,6 +1,7 @@
 import { addContextMenuPatch, NavContextMenuPatchCallback, removeContextMenuPatch } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
-import definePlugin, { OptionType, PluginDef } from "@utils/types";
+import { Devs } from "@utils/constants";
+import definePlugin, { OptionType } from "@utils/types";
 import { Menu, Toasts, UserStore, MessageStore, RestAPI, ChannelStore } from "@webpack/common";
 import { findByProps } from "@webpack";
 import { getCurrentChannel, openUserProfile } from "@utils/discord";
@@ -87,7 +88,7 @@ let oldUsers: {
 } = {};
 let loggedMessages: Record<string, Message> = {};
 
-const _plugin: PluginDef & Record<string, any> = {
+export default definePlugin({
     name: "Stalker",
     description: "This plugin allows you to stalk users, made for delusional people like myself.",
     authors: [Devs.examplegit],
@@ -294,7 +295,7 @@ const _plugin: PluginDef & Record<string, any> = {
         removeFromWhitelist(id);
         delete oldUsers[id];
     }
-};
+});
 
 const contextMenuPatch: NavContextMenuPatchCallback = (children, props) => {
     if (!props || props?.user?.id === UserStore.getCurrentUser().id) return;
@@ -306,10 +307,10 @@ const contextMenuPatch: NavContextMenuPatchCallback = (children, props) => {
             <Menu.MenuItem
                 id="stalker-v1"
                 label={isInWhitelist(props.user.id) ? "Stop Stalking User" : "Stalk User"}
-                action={() => isInWhitelist(props.user.id) ? _plugin.unStalkuser(props.user.id) : _plugin.stalkUser(props.user.id)} />
+                action={() => isInWhitelist(props.user.id)
+                    ? (Vencord.Plugins.plugins.Stalker as any).unStalkuser(props.user.id)
+                    : (Vencord.Plugins.plugins.Stalker as any).stalkUser(props.user.id)} />
         );
     }
 };
-
-export default definePlugin(_plugin);
 export { settings };
