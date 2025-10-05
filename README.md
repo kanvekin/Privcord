@@ -33,7 +33,7 @@ Linux
 sh -c "$(curl -sS https://raw.githubusercontent.com/Equicord/Equicord/refs/heads/main/misc/install.sh)"
 ```
 
-## Installing Equicord Devbuild
+## Installing Privcord Devbuild
 
 ### Dependencies
 
