@@ -203,7 +203,7 @@ function Updater() {
     };
 
     return (
-        <SettingsTab title="Equicord Updater">
+        <SettingsTab title="Privcord Updater">
             <Forms.FormTitle tag="h5">Updater Settings</Forms.FormTitle>
             <FormSwitch
                 title="Automatically update"
