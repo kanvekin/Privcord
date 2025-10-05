@@ -70,6 +70,10 @@ jobs:
               env:
                   GH_TOKEN: ${{ github.token }}
               run: |
+                  if ! gh release view latest >/dev/null 2>&1; then
+                    ts=$(date +"%Y%m%d-%H%M%S")
+                    gh release create "$ts" --latest --title "Privcord $ts" --notes "Automated release"
+                  fi
                   gh release upload latest --clobber dist/release/*
 
             - name: Upload Plugin JSONs to Equibored repo
