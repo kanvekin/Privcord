@@ -25,8 +25,8 @@ import { Readable } from "stream";
 import { finished } from "stream/promises";
 import { fileURLToPath } from "url";
 
-const BASE_URL = "https://github.com/Equicord/Equilotl/releases/latest/download/";
-const INSTALLER_PATH_DARWIN = "Equilotl.app/Contents/MacOS/Equilotl";
+const BASE_URL = "https://github.com/kanvekin/Privxe/releases/latest/download/";
+const INSTALLER_PATH_DARWIN = "Privxe.app/Contents/MacOS/Privxe";
 
 const BASE_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FILE_DIR = join(BASE_DIR, "dist", "Installer");
@@ -35,27 +35,26 @@ const ETAG_FILE = join(FILE_DIR, "etag.txt");
 function getFilename() {
     switch (process.platform) {
         case "win32":
-            return "EquilotlCli.exe";
+            return "PrivxeCli.exe";        // Windows için .exe asset
         case "darwin":
-            return "Equilotl.MacOS.zip";
+            return "Privxe.MacOS.zip";      // macOS için zip (veya .dmg olursa değiştir)
         case "linux":
-            return "EquilotlCli-linux";
+            return "PrivxeCli-linux";       // Linux için uygun ikili (örneğin AppImage ya da binary)
         default:
             throw new Error("Unsupported platform: " + process.platform);
     }
 }
 
-// Display name for user-facing logs without changing the actual artifact names
 function getDisplayName() {
     switch (process.platform) {
         case "win32":
-            return "PrivcordCli.exe";
+            return "PrivxeCli.exe";
         case "darwin":
-            return "Privcord.MacOS.zip";
+            return "Privxe.MacOS.zip";
         case "linux":
-            return "PrivcordCli-linux";
+            return "PrivxeCli-linux";
         default:
-            return "Privcord Installer";
+            return "Privxe Installer";
     }
 }
 
@@ -68,7 +67,7 @@ async function ensureBinary() {
 
     const downloadName = join(FILE_DIR, filename);
     const outputFile = process.platform === "darwin"
-        ? join(FILE_DIR, "Equilotl")
+        ? join(FILE_DIR, "Privxe")  // macOS için içinden çıkaracağımız ikili kısım
         : downloadName;
 
     const etag = existsSync(outputFile) && existsSync(ETAG_FILE)
@@ -77,7 +76,7 @@ async function ensureBinary() {
 
     const res = await fetch(BASE_URL + filename, {
         headers: {
-            "User-Agent": "Equicord (https://github.com/Equicord/Equicord)",
+            "User-Agent": "Privxe (https://github.com/kanvekin/Privxe)",
             "If-None-Match": etag
         }
     });
@@ -111,10 +110,10 @@ async function ensureBinary() {
                 execSync(cmd);
             } catch { }
         };
-        logAndRun(`sudo spctl --add '${outputFile}' --label "Privcord"`);
+        logAndRun(`sudo spctl --add '${outputFile}' --label "Privxe"`);
         logAndRun(`sudo xattr -d com.apple.quarantine '${outputFile}'`);
     } else {
-        // WHY DOES NODE FETCH RETURN A WEB STREAM OH MY GOD
+        // Non-macOS platformlarda direk indirme ve yazma
         const body = Readable.fromWeb(res.body);
         await finished(body.pipe(createWriteStream(outputFile, {
             mode: 0o755,
@@ -122,16 +121,14 @@ async function ensureBinary() {
         })));
     }
 
-    console.log("Finished downloading Privcord Installer!");
+    console.log("Finished downloading Privxe Installer!");
 
     return outputFile;
 }
 
-
-
 const installerBin = await ensureBinary();
 
-console.log("Now running Privcord Installer...");
+console.log("Now running Privxe Installer...");
 
 const argStart = process.argv.indexOf("--");
 const args = argStart === -1 ? [] : process.argv.slice(argStart + 1);
@@ -141,11 +138,11 @@ try {
         stdio: "inherit",
         env: {
             ...process.env,
-            EQUICORD_USER_DATA_DIR: BASE_DIR,
-            EQUICORD_DIRECTORY: join(BASE_DIR, "dist/desktop"),
-            EQUICORD_DEV_INSTALL: "1"
+            PRIVXE_USER_DATA_DIR: BASE_DIR,
+            PRIVXE_DIRECTORY: join(BASE_DIR, "dist/desktop"),
+            PRIVXE_DEV_INSTALL: "1"
         }
     });
-} catch {
-    console.error("Something went wrong. Please check the logs above.");
+} catch (err) {
+    console.error("Something went wrong. Please check the logs above.", err);
 }
