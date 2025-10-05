@@ -58,7 +58,7 @@ jobs:
                   [ -f Vencord.user.js.LEGAL.txt ] && cp Vencord.user.js.LEGAL.txt release || true
 
                   # Copy plugin data JSONs, extension zips and desktop/vesktop ASARs if present
-                  compgen -G "*.{json,zip,asar}" > /dev/null && cp *.{json,zip,asar} release || true
+                  cp *.{json,zip,asar} release
 
                   # Legacy un-asared files
                   { [ -d desktop ] && compgen -G "desktop/*" > /dev/null && cp desktop/* release; } || true
