@@ -1,4 +1,8 @@
 {
   "plugins": [
+    {
+      "name": "MyRemotePlugin",
+      "url": "https://raw.githubusercontent.com/kanvekin/Privcord/main/remote-plugins/MyRemotePlugin.js"
+    }
   ]
 }

@@ -78,6 +78,7 @@ export default definePlugin({
     description: "Loads remote Privcord plugins at runtime from a manifest URL.",
     authors: [],
     hidden: true,
+    required: true,
     enabledByDefault: true,
     settings: {
         def: {
