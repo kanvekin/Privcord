@@ -277,7 +277,7 @@ function isPluginFile({ name }: { name: string; }) {
 
     const plugins = [] as PluginData[];
 
-    await Promise.all(["src/plugins", "src/plugins/_core", "src/equicordplugins"].flatMap(dir =>
+    await Promise.all(["src/plugins", "src/plugins/_core", "src/equicordplugins", "src/privcordplugins"].flatMap(dir =>
         readdirSync(dir, { withFileTypes: true })
             .filter(isPluginFile)
             .map(async dirent => {
