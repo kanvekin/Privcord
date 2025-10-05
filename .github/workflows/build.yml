@@ -62,6 +62,7 @@ jobs:
 
                   # Legacy un-asared files
                   { [ -d desktop ] && compgen -G "desktop/*" > /dev/null && cp desktop/* release; } || true
+                  { [ -d privcord ] && compgen -G "privcord/*" > /dev/null && cp privcord/* release; } || true
                   { [ -d equibop ] && compgen -G "equibop/*" > /dev/null && for file in equibop/*; do
                     filename=$(basename "$file")
                     cp "$file" "release/equibop${filename^}"
