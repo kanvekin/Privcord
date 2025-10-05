@@ -57,9 +57,9 @@ jobs:
 
                   # legacy un-asared files
                   cp desktop/* release
-                  for file in equibop/*; do
+                  for file in privcord/*; do
                     filename=$(basename "$file")
-                    cp "$file" "release/equibop${filename^}"
+                    cp "$file" "release/privcord${filename^}"
                   done
 
                   find release -size 0 -delete
