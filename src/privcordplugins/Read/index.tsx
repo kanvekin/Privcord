@@ -22,13 +22,23 @@ const DOM_CHANGE_THROTTLE = 1000; // 1 second throttle
 const DOM_CHANGE_DEBOUNCE = 500; // 500ms debounce
 
 // Debug mode - set to false to reduce log spam
-const DEBUG_MODE = false; // Can be enabled via window.togglePrivcordRRDebug()
+const DEBUG_MODE = true; // default ON during stabilization; can be toggled via window.togglePrivcordRRDebug()
 
 // Expose debug toggle to window for testing
 if (typeof window !== 'undefined') {
     (window as any).togglePrivcordRRDebug = () => {
         (window as any).PRIVCORD_RR_DEBUG = !(window as any).PRIVCORD_RR_DEBUG;
         console.log(`PrivcordRR Debug mode: ${(window as any).PRIVCORD_RR_DEBUG ? 'ON' : 'OFF'}`);
+    };
+
+    // Helper to set the API base quickly from console
+    (window as any).setPrivcordRRApi = (url: string) => {
+        try {
+            localStorage.setItem(STORAGE_KEY, url);
+            console.log(`[PrivcordRR] API base set to: ${url}`);
+        } catch (e) {
+            console.error("[PrivcordRR] Failed to set API base", e);
+        }
     };
 
     // Test function to manually create a badge
@@ -188,6 +198,8 @@ function openSocket(userId: string): WebSocket {
     s.onopen = () => {
         log("WebSocket connected successfully");
         debugLog("WebSocket readyState:", s.readyState);
+        // Request hydration on connect
+        try { void hydrateReceiptsBadges(); } catch {}
     };
 
     s.onclose = (event) => {
@@ -274,27 +286,27 @@ function markBubbleAsRead(messageId: string, readerId: string, readAt: number) {
 
         // Better styling to match Discord's UI - more visible
         badge.style.cssText = `
-            margin-left: 4px;
+            margin-left: 6px;
             margin-right: 2px;
-            font-size: 14px;
-            color: #43b581 !important;
-            font-weight: 600 !important;
+            font-size: 13px;
+            color: #99aab5 !important; /* grey by default */
+            font-weight: 700 !important;
             display: inline-flex !important;
             align-items: center;
             justify-content: center;
-            min-width: 20px;
-            height: 20px;
+            min-width: 18px;
+            height: 18px;
             border-radius: 4px;
-            background: rgba(67, 181, 129, 0.2) !important;
-            border: 2px solid #43b581 !important;
-            padding: 2px 6px;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 2px;
             line-height: 1;
             vertical-align: middle;
-            opacity: 1 !important;
+            opacity: 0.95 !important;
             position: relative;
             z-index: 1000;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.15);
+            transition: color 0.2s ease, transform 0.1s ease;
         `;
         badge.textContent = "✓✓";
 
@@ -388,23 +400,22 @@ function markBubbleAsRead(messageId: string, readerId: string, readAt: number) {
 
         // Add hover effect
         badge.addEventListener('mouseenter', () => {
-            if (badge) {
-                badge.style.opacity = '1';
-                badge.style.transform = 'scale(1.05)';
-            }
+            badge.style.opacity = '1';
+            badge.style.transform = 'scale(1.05)';
         });
 
         badge.addEventListener('mouseleave', () => {
-            if (badge) {
-                badge.style.opacity = '0.9';
-                badge.style.transform = 'scale(1)';
-            }
+            badge.style.opacity = '0.95';
+            badge.style.transform = 'scale(1)';
         });
 
     } else {
         debugLog("Badge already exists for message:", messageId);
     }
 
+    // Turn blue when read
+    const isRead = !!readerId && !!readAt;
+    (badge as HTMLElement).style.color = isRead ? '#00b0f4' : '#99aab5';
     badge.title = `Seen by ${readerId} at ${new Date(readAt).toLocaleString()}`;
     log("✓✓ Badge displayed for message:", messageId);
 }
@@ -440,8 +451,10 @@ async function sendReceiptsForVisibleMessages(): Promise<void> {
         }
 
         if (authorId === me) {
-            debugLog("Skipping own message:", messageId);
-            continue; // never send for my own messages
+            // Always render grey ticks on my own outgoing messages
+            try { markBubbleAsRead(messageId, me, 0); } catch {}
+            debugLog("Own message detected; badge rendered grey:", messageId);
+            continue; // do not send receipts for own messages
         }
 
         if (reportedMessageIds.has(messageId)) {
@@ -542,13 +555,14 @@ function onDomChange(): void {
 
     // Debounce the actual operations
     if (domChangeTimeout) {
-        window.clearTimeout(domChangeTimeout);
+        clearTimeout(domChangeTimeout);
     }
 
-    domChangeTimeout = window.setTimeout(() => {
+    domChangeTimeout = setTimeout(() => {
         debugLog("Triggering receipt operations...");
-        void sendReceiptsForVisibleMessages();
-        void hydrateReceiptsBadges();
+        // Ensure badges exist for my outgoing messages (grey)
+        try { void sendReceiptsForVisibleMessages(); } catch {}
+        try { void hydrateReceiptsBadges(); } catch {}
     }, DOM_CHANGE_DEBOUNCE);
 }
 
@@ -628,7 +642,7 @@ export default definePlugin({
 
         // Clear any pending timeouts
         if (domChangeTimeout) {
-            window.clearTimeout(domChangeTimeout);
+            clearTimeout(domChangeTimeout);
             domChangeTimeout = null;
         }
 
