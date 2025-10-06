@@ -357,7 +357,9 @@ export const ScreenshareSettingsModal = (props: ScreenshareSettingsModalProps) =
                                     {...props_} />;
                         });
                 }}
-                children={"Open"} />
+            >
+                {"Open"}
+            </Button>
         </SettingsModalCardItem>;
 
     const settingsCardAudio =
