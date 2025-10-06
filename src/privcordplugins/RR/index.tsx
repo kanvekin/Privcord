@@ -31,7 +31,7 @@ function waitFor<T>(fn: () => T | null | undefined, timeoutMs = 15000): Promise<
             try {
                 const v = fn();
                 if (v) return resolve(v);
-            } catch {}
+            } catch { }
             if (Date.now() - start > timeoutMs) return reject(new Error("timeout"));
             requestAnimationFrame(tick);
         };
@@ -43,7 +43,7 @@ function waitFor<T>(fn: () => T | null | undefined, timeoutMs = 15000): Promise<
 // These are provided by Vencord runtime; during static analysis they may be undefined.
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 // @ts-ignore
-import { UserStore, ChannelStore } from "@webpack/common";
+import { UserStore, ChannelStore, SelectedChannelStore } from "@webpack/common";
 
 function getCurrentUserId(): string | null {
     try {
@@ -57,7 +57,7 @@ function getCurrentUserId(): string | null {
 
 function getSelectedChannelId(): string | null {
     try {
-        const cid = ChannelStore?.getChannelId?.();
+        const cid = SelectedChannelStore?.getChannelId?.();
         return cid ?? null;
     } catch {
         return null;
@@ -103,12 +103,12 @@ function openSocket(userId: string): WebSocket {
             if (msg?.type === "read") {
                 markBubbleAsRead(msg.payload.messageId, msg.payload.readerId, msg.payload.readAt);
             }
-        } catch {}
+        } catch { }
     };
     return s;
 }
 
-function extractMessageData(li: HTMLElement): { channelId: string; messageId: string; authorId: string | null } | null {
+function extractMessageData(li: HTMLElement): { channelId: string; messageId: string; authorId: string | null; } | null {
     // Expect li id like: chat-messages-<channelId>-<messageId>
     const id = li?.id || "";
     const m = id.match(/chat-messages-(\d+)-(\d+)/);
@@ -221,7 +221,7 @@ export default definePlugin({
                 }
                 try {
                     ws = openSocket(me);
-                } catch {}
+                } catch { }
 
                 observer = new MutationObserver(onDomChange);
                 observer.observe(document.body, { childList: true, subtree: true });
@@ -243,16 +243,16 @@ export default definePlugin({
                 observer.disconnect();
                 observer = null;
             }
-        } catch {}
+        } catch { }
         try {
             window.removeEventListener("focus", onDomChange);
             window.removeEventListener("popstate", onDomChange);
             window.removeEventListener("hashchange", onDomChange);
-        } catch {}
+        } catch { }
         try {
             if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) ws.close();
             ws = null;
-        } catch {}
+        } catch { }
         reportedMessageIds.clear();
     },
 
