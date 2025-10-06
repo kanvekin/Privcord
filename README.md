@@ -4,7 +4,7 @@
 [![Tests](https://github.com/kanvekin/Privcord/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/kanvekin/Privcord/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/discord/1173279886065029291.svg?color=768AD4&label=Discord&logo=discord&logoColor=white)](https://discord.gg/)
 
-Privcord is a fork of [Equicord](https://github.com/Equicord/Equicord), with over 300+ plugins.
+Privcord is a fork of [Equicord](https://github.com/Equicord/Equicord), with over 100+ plugins.
 
 You can join our [Discord server](https://discord.gg/) for commits, changes, chatting, or even support.
 
