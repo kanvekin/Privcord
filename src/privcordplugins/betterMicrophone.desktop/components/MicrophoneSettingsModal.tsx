@@ -292,6 +292,7 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
                     {simpleToggle}
                 </Flex>
             }
+            transitionState={props.transitionState}
             {...props}
             onDone={() => {
                 props.onClose();

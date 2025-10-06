@@ -430,6 +430,7 @@ export const ScreenshareSettingsModal = (props: ScreenshareSettingsModalProps) =
                     {simpleToggle}
                 </Flex>
             }
+            transitionState={props.transitionState}
             {...props}
             onDone={() => {
                 props.onClose();

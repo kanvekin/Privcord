@@ -17,6 +17,7 @@
 */
 
 import { UserStore } from "@webpack/common";
+import EventEmitter from "events";
 
 import { Emitter, MediaEngineStore, Patcher, types } from "../../philsPluginLibrary";
 import { patchConnectionVideoSetDesktopSourceWithOptions, patchConnectionVideoTransportOptions } from "../../philsPluginLibrary/patches/video";
@@ -69,24 +70,50 @@ export class ScreensharePatcher extends Patcher {
                 this.forceUpdateDesktopSourceOptions = forceUpdateDesktopSourceOptions;
                 this.forceUpdateTransportationOptions = forceUpdateTransportationOptions;
 
-                Emitter.addListener(connection.emitter as any, "on", "connected" as any, () => {
-                    this.forceUpdateTransportationOptions();
-                    this.forceUpdateDesktopSourceOptions();
-                });
+                const addUntypedListener = Emitter.addListener as unknown as (
+                    emitter: EventEmitter,
+                    type: "on" | "once",
+                    event: string,
+                    fn: (...args: any[]) => void,
+                    plugin?: string
+                ) => () => void;
 
-                Emitter.addListener(connection.emitter as any, "on", "destroy" as any, () => {
-                    this.forceUpdateTransportationOptions = () => void 0;
-                    this.forceUpdateDesktopSourceOptions = () => void 0;
-                    this.oldSetTransportOptions = () => void 0;
-                    this.oldSetDesktopSourceWithOptions = () => void 0;
-                });
+                addUntypedListener(
+                    connection.emitter as unknown as EventEmitter,
+                    "on",
+                    "connected",
+                    () => {
+                        this.forceUpdateTransportationOptions();
+                        this.forceUpdateDesktopSourceOptions();
+                    }
+                );
+
+                addUntypedListener(
+                    connection.emitter as unknown as EventEmitter,
+                    "on",
+                    "destroy",
+                    () => {
+                        this.forceUpdateTransportationOptions = () => void 0;
+                        this.forceUpdateDesktopSourceOptions = () => void 0;
+                        this.oldSetTransportOptions = () => void 0;
+                        this.oldSetDesktopSourceWithOptions = () => void 0;
+                    }
+                );
             };
 
-        Emitter.addListener(
-            this.mediaEngine.emitter as any,
-            "on" as any,
-            "connection" as any,
-            connectionEventFunction as any,
+        const addUntypedListener = Emitter.addListener as unknown as (
+            emitter: EventEmitter,
+            type: "on" | "once",
+            event: string,
+            fn: (...args: any[]) => void,
+            plugin?: string
+        ) => () => void;
+
+        addUntypedListener(
+            this.mediaEngine.emitter as unknown as EventEmitter,
+            "on",
+            "connection",
+            connectionEventFunction,
             PluginInfo.PLUGIN_NAME
         );
 

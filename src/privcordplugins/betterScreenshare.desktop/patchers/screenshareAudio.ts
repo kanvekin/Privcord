@@ -17,6 +17,7 @@
 */
 
 import { UserStore } from "@webpack/common";
+import EventEmitter from "events";
 
 import { Emitter, MediaEngineStore, patchConnectionAudioTransportOptions, Patcher, types } from "../../philsPluginLibrary";
 import { PluginInfo } from "../constants";
@@ -59,20 +60,46 @@ export class ScreenshareAudioPatcher extends Patcher {
                 this.forceUpdateTransportationOptions = forceUpdateTransportationOptionsAudio;
                 this.oldSetTransportOptions = oldSetTransportOptionsAudio;
 
-                Emitter.addListener(connection.emitter as any, "on" as any, "connected" as any, () => {
-                    this.forceUpdateTransportationOptions();
-                });
+                const addUntypedListener = Emitter.addListener as unknown as (
+                    emitter: EventEmitter,
+                    type: "on" | "once",
+                    event: string,
+                    fn: (...args: any[]) => void,
+                    plugin?: string
+                ) => () => void;
 
-                Emitter.addListener(connection.emitter as any, "on" as any, "destroy" as any, () => {
-                    this.forceUpdateTransportationOptions = () => void 0;
-                });
+                addUntypedListener(
+                    connection.emitter as unknown as EventEmitter,
+                    "on",
+                    "connected",
+                    () => {
+                        this.forceUpdateTransportationOptions();
+                    }
+                );
+
+                addUntypedListener(
+                    connection.emitter as unknown as EventEmitter,
+                    "on",
+                    "destroy",
+                    () => {
+                        this.forceUpdateTransportationOptions = () => void 0;
+                    }
+                );
             };
 
-        Emitter.addListener(
-            this.mediaEngine.emitter as any,
-            "on" as any,
-            "connection" as any,
-            connectionEventFunction as any,
+        const addUntypedListener = Emitter.addListener as unknown as (
+            emitter: EventEmitter,
+            type: "on" | "once",
+            event: string,
+            fn: (...args: any[]) => void,
+            plugin?: string
+        ) => () => void;
+
+        addUntypedListener(
+            this.mediaEngine.emitter as unknown as EventEmitter,
+            "on",
+            "connection",
+            connectionEventFunction,
             PluginInfo.PLUGIN_NAME
         );
 
