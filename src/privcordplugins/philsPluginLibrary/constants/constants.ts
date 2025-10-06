@@ -22,9 +22,9 @@ import * as types from "../types/constants";
 
 export const PluginInfo: types.PluginInfo = {
     PLUGIN_NAME: "PhilsPluginLibrary",
-    DESCRIPTION: "A library for phil's plugins",
+    DESCRIPTION: "A library for feelslove's plugins",
     AUTHOR: {
-        ...Devs.phil,
-        github: "https://github.com/philhk"
+        ...Devs.feelslove,
+        github: "https://github.com/kanvekin"
     },
 } as const;

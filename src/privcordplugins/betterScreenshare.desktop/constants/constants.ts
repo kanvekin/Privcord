@@ -24,14 +24,14 @@ export const PluginInfo = {
     PLUGIN_NAME: "BetterScreenshare",
     DESCRIPTION: "This plugin allows you to further customize your screen sharing.",
     AUTHOR: {
-        ...Devs.phil,
-        github: "https://github.com/philhk"
+        ...Devs.feelslove,
+        github: "https://github.com/kanvekin"
     },
     CONTRIBUTORS: {
-        walrus: {
-            github: "https://github.com/philhk",
-            id: 305317288775778306n,
-            name: "walrus"
+        feelslove: {
+            github: "https://github.com/kanvekin",
+            id: 1368308663504343041n,
+            name: "kaanseas"
         },
     },
     README: "https://github.com/Vendicated/Vencord/tree/main/src/plugins/betterScreenshare"
