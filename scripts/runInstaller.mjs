@@ -17,7 +17,7 @@ const ETAG_FILE = join(FILE_DIR, "etag.txt");
 function getFilename() {
     switch (process.platform) {
         case "win32":
-            return "Privcord.exe";
+            return "PrivcordCli.exe";
         case "darwin":
             return "Privcord.MacOS.zip";
         case "linux":
