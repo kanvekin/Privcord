@@ -20,7 +20,7 @@ import { Flex } from "@components/Flex";
 import { Switch } from "@components/Switch";
 import { ModalSize, openModalLazy } from "@utils/modal";
 import { Button, Card, Forms, React, Select, Slider, TextInput, useEffect, useState } from "@webpack/common";
-import { SelectOption } from "@webpack/types";
+type SelectOption = { label: string; value: any; };
 
 import { MicrophoneSettingsModal } from "../../betterMicrophone.desktop/components";
 import {
@@ -97,11 +97,14 @@ const simpleVideoBitrates: readonly SelectOption[] = [
     }
 ] as const;
 
-export interface ScreenshareSettingsModalProps extends React.ComponentProps<typeof SettingsModal> {
+export type ScreenshareSettingsModalProps = {
     screenshareStore: ProfilableStore<ScreenshareStore, ScreenshareProfile>;
     screenshareAudioStore?: ProfilableStore<ScreenshareAudioStore, ScreenshareAudioProfile>;
     onAudioDone?: () => void;
-}
+    onClose: () => void;
+    onDone?: () => void;
+    [key: string]: any;
+};
 
 export const ScreenshareSettingsModal = (props: ScreenshareSettingsModalProps) => {
     const { screenshareStore, screenshareAudioStore, onAudioDone } = props;
@@ -190,7 +193,7 @@ export const ScreenshareSettingsModal = (props: ScreenshareSettingsModalProps) =
                 <Select
                     isDisabled={!resolutionEnabled || isSaving}
                     options={simpleResolutions}
-                    select={(value: types.Resolution) => void setWidth(value.width) ?? setHeight(value.height)}
+                    select={(value: types.Resolution) => { setWidth(value.width); setHeight(value.height); }}
                     isSelected={(value: types.Resolution) => width === value.width && height === value.height}
                     serialize={() => ""} />
             </SettingsModalCardItem>
@@ -262,7 +265,7 @@ export const ScreenshareSettingsModal = (props: ScreenshareSettingsModalProps) =
                 }} />
         </SettingsModalCardItem>;
 
-    const settingsCardFramerateProps: React.ComponentProps<typeof SettingsModalCard> = {
+    const settingsCardFramerateProps: any = {
         title: "Framerate",
         switchEnabled: true,
         switchProps: {
@@ -334,7 +337,7 @@ export const ScreenshareSettingsModal = (props: ScreenshareSettingsModalProps) =
             </SettingsModalCardItem>
         </SettingsModalCard>;
 
-    const settingsCardAudioProps: React.ComponentProps<typeof SettingsModalCard> = {
+    const settingsCardAudioProps: any = {
         title: "Audio Settings"
     };
 
@@ -348,8 +351,6 @@ export const ScreenshareSettingsModal = (props: ScreenshareSettingsModalProps) =
                         openModalLazy(async () => {
                             return props_ =>
                                 <MicrophoneSettingsModal
-                                    author={props.author}
-                                    contributors={props.contributors}
                                     title="Screenshare Audio Settings"
                                     onDone={onAudioDone}
                                     microphoneStore={screenshareAudioStore}
@@ -401,7 +402,8 @@ export const ScreenshareSettingsModal = (props: ScreenshareSettingsModalProps) =
                 checked: hdrEnabled ?? false,
                 disabled: isSaving,
                 onChange: status => setHdrEnabled(status)
-            }} />;
+            }}>
+        </SettingsModalCard>;
 
     const guideCard =
         <Card style={{ ...Styles.infoCard, flex: 0.4 }}>
@@ -410,7 +412,7 @@ export const ScreenshareSettingsModal = (props: ScreenshareSettingsModalProps) =
         </Card>;
 
     const settingsCardProfiles =
-        <SettingsModalProfilesCard flex={0.5} onSaveStateChanged={state => setIsSaving(state)} profileableStore={screenshareStore} />;
+        <SettingsModalProfilesCard onSaveStateChanged={state => setIsSaving(state)} profileableStore={screenshareStore} />;
 
     const simpleToggle =
         <Flex style={{ justifyContent: "center", alignItems: "center", gap: "0.6em" }}>
@@ -421,7 +423,6 @@ export const ScreenshareSettingsModal = (props: ScreenshareSettingsModalProps) =
 
     return (
         <SettingsModal
-            size={simpleMode ? ModalSize.DYNAMIC : ModalSize.LARGE}
             title="Screenshare Settings"
             closeButtonName="Apply"
             footerContent={

@@ -18,9 +18,9 @@
 
 import React from "react";
 
-export interface SettingsModalRowProps extends Pick<React.ComponentProps<"div">,
-    | "children"
-    | "style"> {
+export interface SettingsModalRowProps {
+    children?: React.ReactNode;
+    style?: React.CSSProperties;
     gap?: string;
 }
 
