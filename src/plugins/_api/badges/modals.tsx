@@ -123,3 +123,60 @@ export function EquicordDonorModal() {
         </ErrorBoundary>
     ));
 }
+
+export function PrivcordDonorModal() {
+    const modalKey = openModal(props => (
+        <ErrorBoundary noop onError={() => {
+            closeModal(modalKey);
+            // Will get my own in the future
+            VencordNative.native.openExternal("https://github.com/sponsors/kanvekin");
+        }}>
+            <ModalRoot {...props}>
+                <ModalHeader>
+                    <Flex style={{ width: "100%", justifyContent: "center" }}>
+                        <Forms.FormTitle
+                            tag="h2"
+                            style={{
+                                width: "100%",
+                                textAlign: "center",
+                                margin: 0
+                            }}
+                        >
+                            <Heart />
+                            Equicord Donor
+                        </Forms.FormTitle>
+                    </Flex>
+                </ModalHeader>
+                <ModalContent>
+                    <Flex>
+                        <img
+                            role="presentation"
+                            src="https://cdn.discordapp.com/emojis/1026533070955872337.png"
+                            alt=""
+                            style={{ margin: "auto" }}
+                        />
+                        <img
+                            role="presentation"
+                            src="https://cdn.discordapp.com/emojis/1026533090627174460.png"
+                            alt=""
+                            style={{ margin: "auto" }}
+                        />
+                    </Flex>
+                    <div style={{ padding: "1em" }}>
+                        <Forms.FormText>
+                            This Badge is a special perk for Equicord (Not Vencord) Donors
+                        </Forms.FormText>
+                        <Forms.FormText className={Margins.top20}>
+                            Please consider supporting the development of Equicord by becoming a donor. It would mean a lot! :3
+                        </Forms.FormText>
+                    </div>
+                </ModalContent>
+                <ModalFooter>
+                    <Flex style={{ width: "100%", justifyContent: "center" }}>
+                        <DonateButton />
+                    </Flex>
+                </ModalFooter>
+            </ModalRoot>
+        </ErrorBoundary>
+    ));
+}

@@ -38,6 +38,7 @@ jobs:
               run: |
                 pnpm generatePluginJson dist/plugins.json
                 pnpm generateEquicordPluginJson dist/equicordplugins.json
+                pnpm generatePrivcordPluginJson dist/privcordplugins.json
                 pnpm generateVencordPluginJson dist/vencordplugins.json
                 pnpm generateDevsList dist/devs.json
 

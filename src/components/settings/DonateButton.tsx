@@ -50,7 +50,7 @@ export function DonateButton({
             {...props}
             look={look}
             color={color}
-            onClick={() => VencordNative.native.openExternal("https://github.com/sponsors/thororen1234")}
+            onClick={() => VencordNative.native.openExternal("https://github.com/sponsors/kanvekin")}
             innerClassName="vc-donate-button"
         >
             <Heart />

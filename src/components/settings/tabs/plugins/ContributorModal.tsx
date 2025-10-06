@@ -10,7 +10,7 @@ import { useSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Link } from "@components/Link";
-import { EquicordDevsById, VencordDevsById } from "@utils/constants";
+import { EquicordDevsById, VencordDevsById, PrivcordDevsById } from "@utils/constants";
 import { fetchUserProfile } from "@utils/discord";
 import { classes, pluralise } from "@utils/misc";
 import { ModalContent, ModalRoot, openModal } from "@utils/modal";
@@ -51,14 +51,21 @@ function ContributorModal({ user }: { user: User; }) {
 
     const plugins = useMemo(() => {
         const allPlugins = Object.values(Plugins);
-        const pluginsByAuthor = VencordDevsById[user.id] || EquicordDevsById[user.id]
-            ? allPlugins.filter(p => p.authors.includes(VencordDevsById[user.id] || EquicordDevsById[user.id]))
+
+        const authorInfo =
+            VencordDevsById[user.id] ||
+            EquicordDevsById[user.id] ||
+            PrivcordDevsById[user.id];
+
+        const pluginsByAuthor = authorInfo
+            ? allPlugins.filter(p => p.authors.includes(authorInfo))
             : allPlugins.filter(p => p.authors.some(a => a.name === user.username));
 
         return pluginsByAuthor
             .filter(p => !p.name.endsWith("API"))
             .sort((a, b) => Number(a.required ?? false) - Number(b.required ?? false));
     }, [user.id, user.username]);
+
 
     const ContributedHyperLink = <Link href="https://github.com/kanvekin/Privcord">contributed</Link>;
 
