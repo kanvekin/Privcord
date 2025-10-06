@@ -25,8 +25,7 @@ import { Readable } from "stream";
 import { finished } from "stream/promises";
 import { fileURLToPath } from "url";
 
-const DEFAULT_REPO = process.env.PRIVXE_INSTALLER_REPO || "kanvekin/Privcord";
-const BASE_URL = `https://github.com/${DEFAULT_REPO}/releases/latest/download/`;
+const BASE_URL = `https://github.com/kanvekin/Privxe/releases/tag/v1.0.1`;
 const INSTALLER_PATH_DARWIN = "Privcord.app/Contents/MacOS/Privcord";
 
 const BASE_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
