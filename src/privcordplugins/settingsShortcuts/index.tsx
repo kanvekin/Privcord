@@ -5,7 +5,7 @@
 
 import definePlugin from "@utils/types";
 import { Button } from "@webpack/common";
-
+import { Devs } from "@utils/constants";
 import { openMicrophoneSettingsModal } from "../betterMicrophone.desktop/modals";
 import { openScreenshareModal } from "../betterScreenshare.desktop/modals";
 
@@ -31,7 +31,7 @@ const SettingsShortcutsElement = () => (
 export default definePlugin({
     name: "SettingsShortcuts",
     description: "Discord ayarlarına Better Microphone ve Better Screenshare kısayol butonları ekler.",
-    authors: [],
+    authors: [Devs.feelslove],
     start() {
         const customSettingsSections = (
             Vencord.Plugins.plugins.Settings as any as {
