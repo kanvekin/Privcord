@@ -15,6 +15,41 @@ let lastChannelId: string | null = null;
 const reportedMessageIds = new Set<string>();
 const messageEventListeners: any[] = [];
 
+// Throttling and debouncing
+let lastDomChangeTime = 0;
+let domChangeTimeout: number | null = null;
+const DOM_CHANGE_THROTTLE = 1000; // 1 second throttle
+const DOM_CHANGE_DEBOUNCE = 500; // 500ms debounce
+
+// Debug mode - set to false to reduce log spam
+const DEBUG_MODE = false; // Can be enabled via window.togglePrivcordRRDebug()
+
+// Expose debug toggle to window for testing
+if (typeof window !== 'undefined') {
+    (window as any).togglePrivcordRRDebug = () => {
+        (window as any).PRIVCORD_RR_DEBUG = !(window as any).PRIVCORD_RR_DEBUG;
+        console.log(`PrivcordRR Debug mode: ${(window as any).PRIVCORD_RR_DEBUG ? 'ON' : 'OFF'}`);
+    };
+
+    // Test function to manually create a badge
+    (window as any).testPrivcordRRBadge = (messageId?: string) => {
+        const testId = messageId || "test123";
+        console.log(`Creating test badge for message: ${testId}`);
+        markBubbleAsRead(testId, "test-user", Date.now());
+    };
+
+    // Function to find all message elements
+    (window as any).findPrivcordRRMessages = () => {
+        const messages = getVisibleMessageElements();
+        console.log(`Found ${messages.length} message elements:`, messages.map(el => ({
+            id: el.id,
+            classes: el.className,
+            innerHTML: el.innerHTML.substring(0, 100) + '...'
+        })));
+        return messages;
+    };
+}
+
 const STORAGE_KEY = "privcord_rr_api";
 
 function getApiBase(): string {
@@ -28,6 +63,8 @@ function log(...args: unknown[]) {
 }
 
 function debugLog(...args: unknown[]) {
+    const debugEnabled = DEBUG_MODE || (typeof window !== 'undefined' && (window as any).PRIVCORD_RR_DEBUG);
+    if (!debugEnabled) return;
     const timestamp = new Date().toISOString();
     // eslint-disable-next-line no-console
     console.log(`[${timestamp}] [PrivcordRR-DEBUG]`, ...args);
@@ -84,13 +121,25 @@ function getSelectedChannelId(): string | null {
 }
 
 function getVisibleMessageElements(): HTMLElement[] {
-    const elements = Array.from(
-        document.querySelectorAll<HTMLElement>(
-            '[id^="chat-messages-"] [data-list-id="chat-messages"] li[id^="chat-messages-"], [aria-label="Messages in"] li[id^="chat-messages-"]'
-        )
-    );
-    debugLog(`Found ${elements.length} visible message elements`);
-    return elements;
+    // More specific selectors to avoid false positives
+    const selectors = [
+        '[id^="chat-messages-"] li[id*="-"]',
+        '[data-list-id="chat-messages"] li[id^="chat-messages-"]',
+        'li[id^="chat-messages-"][id$=""]'
+    ];
+
+    const elements = new Set<HTMLElement>();
+    selectors.forEach(selector => {
+        document.querySelectorAll<HTMLElement>(selector).forEach(el => {
+            if (el.id && el.id.match(/chat-messages-\d+-\d+/)) {
+                elements.add(el);
+            }
+        });
+    });
+
+    const result = Array.from(elements);
+    debugLog(`Found ${result.length} visible message elements`);
+    return result;
 }
 
 async function postJSON(path: string, body: unknown): Promise<unknown> {
@@ -180,8 +229,29 @@ function extractMessageData(li: HTMLElement): { channelId: string; messageId: st
     const channelId = m[1];
     const messageId = m[2];
 
-    // Author id heuristic: prefer data-author-id if present; else try to read from avatar anchor/title when present
-    const authorId = li.getAttribute("data-author-id") || null;
+    // Author id heuristic: try multiple methods to get author ID
+    let authorId = li.getAttribute("data-author-id");
+
+    // If not found, try to get from avatar or other elements
+    if (!authorId) {
+        const avatar = li.querySelector('[class*="avatar"]') as HTMLElement;
+        if (avatar) {
+            authorId = avatar.getAttribute("data-user-id") ||
+                avatar.getAttribute("data-author-id") ||
+                avatar.getAttribute("title") ||
+                null;
+        }
+    }
+
+    // If still not found, try to get from message wrapper
+    if (!authorId) {
+        const messageWrapper = li.querySelector('[class*="message"]') as HTMLElement;
+        if (messageWrapper) {
+            authorId = messageWrapper.getAttribute("data-author-id") ||
+                messageWrapper.getAttribute("data-user-id") ||
+                null;
+        }
+    }
 
     debugLog("Extracted message data:", { channelId, messageId, authorId });
     return { channelId, messageId, authorId };
@@ -201,20 +271,132 @@ function markBubbleAsRead(messageId: string, readerId: string, readAt: number) {
         debugLog("Creating new read receipt badge for message:", messageId);
         badge = document.createElement("span");
         badge.className = "privcord-rr";
-        badge.style.marginLeft = "6px";
-        badge.style.fontSize = "11px";
-        badge.style.opacity = "0.7";
-        badge.style.color = "#00ff00";
+
+        // Better styling to match Discord's UI - more visible
+        badge.style.cssText = `
+            margin-left: 4px;
+            margin-right: 2px;
+            font-size: 14px;
+            color: #43b581 !important;
+            font-weight: 600 !important;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background: rgba(67, 181, 129, 0.2) !important;
+            border: 2px solid #43b581 !important;
+            padding: 2px 6px;
+            line-height: 1;
+            vertical-align: middle;
+            opacity: 1 !important;
+            position: relative;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+        `;
         badge.textContent = "✓✓";
 
-        const timeEl = el.querySelector("time");
-        if (timeEl && timeEl.parentElement) {
-            timeEl.parentElement.appendChild(badge);
-            debugLog("Badge added to time element parent");
-        } else {
-            el.appendChild(badge);
-            debugLog("Badge added directly to message element");
+        // Try multiple placement strategies for better Discord integration
+        let badgePlaced = false;
+
+        debugLog("Attempting to place badge in message element:", {
+            id: el.id,
+            classes: el.className,
+            children: Array.from(el.children).map(child => ({
+                tagName: child.tagName,
+                className: child.className,
+                id: child.id
+            }))
+        });
+
+        // Strategy 1: Try to place in message header/metadata area
+        const messageHeader = el.querySelector('[class*="header"]') ||
+            el.querySelector('[class*="messageHeader"]') ||
+            el.querySelector('[class*="metadata"]') ||
+            el.querySelector('[class*="timestamp"]')?.parentElement ||
+            el.querySelector('time')?.parentElement;
+        if (messageHeader && !badgePlaced) {
+            messageHeader.appendChild(badge);
+            debugLog("Badge added to message header/metadata");
+            badgePlaced = true;
         }
+
+        // Strategy 2: Try to place after timestamp specifically
+        const timeEl = el.querySelector("time");
+        if (timeEl && timeEl.parentElement && !badgePlaced) {
+            timeEl.parentElement.appendChild(badge);
+            debugLog("Badge added after timestamp");
+            badgePlaced = true;
+        }
+
+        // Strategy 3: Try to place in message content wrapper
+        if (!badgePlaced) {
+            const contentWrapper = el.querySelector('[class*="content"]') ||
+                el.querySelector('[class*="messageContent"]') ||
+                el.querySelector('[class*="textContainer"]');
+            if (contentWrapper) {
+                // Try to add at the end of content
+                contentWrapper.appendChild(badge);
+                debugLog("Badge added to content wrapper");
+                badgePlaced = true;
+            }
+        }
+
+        // Strategy 4: Try to place in message actions area (hover buttons)
+        if (!badgePlaced) {
+            const actionsArea = el.querySelector('[class*="actions"]') ||
+                el.querySelector('[class*="buttonContainer"]') ||
+                el.querySelector('[class*="hoverButton"]')?.parentElement;
+            if (actionsArea) {
+                actionsArea.appendChild(badge);
+                debugLog("Badge added to actions area");
+                badgePlaced = true;
+            }
+        }
+
+        // Strategy 5: Try to place as a sibling to message content
+        if (!badgePlaced) {
+            const messageContent = el.querySelector('[class*="message"]') ||
+                el.querySelector('[class*="content"]') ||
+                el.querySelector('[class*="text"]');
+            if (messageContent && messageContent.parentElement) {
+                messageContent.parentElement.appendChild(badge);
+                debugLog("Badge added as sibling to message content");
+                badgePlaced = true;
+            }
+        }
+
+        // Strategy 6: Try to place in the main message container
+        if (!badgePlaced) {
+            const mainContainer = el.querySelector('[class*="container"]') ||
+                el.querySelector('[class*="wrapper"]') ||
+                el.querySelector('div[class*="message"]');
+            if (mainContainer) {
+                mainContainer.appendChild(badge);
+                debugLog("Badge added to main container");
+                badgePlaced = true;
+            }
+        }
+
+        // Strategy 7: Fallback - add to message element directly
+        if (!badgePlaced) {
+            el.appendChild(badge);
+            debugLog("Badge added directly to message element (fallback)");
+        }
+
+        // Add hover effect
+        badge.addEventListener('mouseenter', () => {
+            badge.style.opacity = '1';
+            badge.style.transform = 'scale(1.05)';
+        });
+
+        badge.addEventListener('mouseleave', () => {
+            badge.style.opacity = '0.9';
+            badge.style.transform = 'scale(1)';
+        });
+
     } else {
         debugLog("Badge already exists for message:", messageId);
     }
@@ -335,6 +517,14 @@ async function hydrateReceiptsBadges(): Promise<void> {
 }
 
 function onDomChange(): void {
+    const now = Date.now();
+
+    // Throttle DOM changes
+    if (now - lastDomChangeTime < DOM_CHANGE_THROTTLE) {
+        return;
+    }
+    lastDomChangeTime = now;
+
     debugLog("=== DOM CHANGE DETECTED ===");
 
     const currentChannel = getSelectedChannelId();
@@ -346,9 +536,16 @@ function onDomChange(): void {
         log("🔄 Channel changed, cleared message cache");
     }
 
-    debugLog("Triggering receipt operations...");
-    void sendReceiptsForVisibleMessages();
-    void hydrateReceiptsBadges();
+    // Debounce the actual operations
+    if (domChangeTimeout) {
+        clearTimeout(domChangeTimeout);
+    }
+
+    domChangeTimeout = setTimeout(() => {
+        debugLog("Triggering receipt operations...");
+        void sendReceiptsForVisibleMessages();
+        void hydrateReceiptsBadges();
+    }, DOM_CHANGE_DEBOUNCE);
 }
 
 export default definePlugin({
@@ -424,6 +621,12 @@ export default definePlugin({
 
     stop() {
         log("🛑 Stopping Privcord Read Receipts Plugin");
+
+        // Clear any pending timeouts
+        if (domChangeTimeout) {
+            clearTimeout(domChangeTimeout);
+            domChangeTimeout = null;
+        }
 
         try {
             if (observer) {
