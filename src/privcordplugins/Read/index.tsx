@@ -388,13 +388,17 @@ function markBubbleAsRead(messageId: string, readerId: string, readAt: number) {
 
         // Add hover effect
         badge.addEventListener('mouseenter', () => {
-            badge.style.opacity = '1';
-            badge.style.transform = 'scale(1.05)';
+            if (badge) {
+                badge.style.opacity = '1';
+                badge.style.transform = 'scale(1.05)';
+            }
         });
 
         badge.addEventListener('mouseleave', () => {
-            badge.style.opacity = '0.9';
-            badge.style.transform = 'scale(1)';
+            if (badge) {
+                badge.style.opacity = '0.9';
+                badge.style.transform = 'scale(1)';
+            }
         });
 
     } else {
@@ -538,10 +542,10 @@ function onDomChange(): void {
 
     // Debounce the actual operations
     if (domChangeTimeout) {
-        clearTimeout(domChangeTimeout);
+        window.clearTimeout(domChangeTimeout);
     }
 
-    domChangeTimeout = setTimeout(() => {
+    domChangeTimeout = window.setTimeout(() => {
         debugLog("Triggering receipt operations...");
         void sendReceiptsForVisibleMessages();
         void hydrateReceiptsBadges();
@@ -624,7 +628,7 @@ export default definePlugin({
 
         // Clear any pending timeouts
         if (domChangeTimeout) {
-            clearTimeout(domChangeTimeout);
+            window.clearTimeout(domChangeTimeout);
             domChangeTimeout = null;
         }
 
