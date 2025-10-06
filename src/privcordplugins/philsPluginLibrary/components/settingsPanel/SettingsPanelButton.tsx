@@ -19,6 +19,7 @@
 import { classes } from "@utils/misc";
 import { Button } from "@webpack/common";
 import React from "react";
+import type { JSX } from "react";
 
 import { panelClasses } from "../../../philsPluginLibrary";
 

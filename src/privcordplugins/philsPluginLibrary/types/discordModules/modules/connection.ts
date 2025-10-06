@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import TypedEmitter from "typed-emitter";
+type TypedEmitter<T> = import("events").EventEmitter & { on: any; once: any; removeListener: any; };
 
 import { Framerate, Resolution } from "../../../types";
 import { Conn, FramerateReducer, VideoQualityManager } from "./";

@@ -17,7 +17,8 @@
 */
 
 import EventEmitter from "events";
-import TypedEmitter from "typed-emitter";
+// typed-emitter kaldırıldı; yerel minimal tip ile değiştirildi
+type TypedEmitter<T> = import("events").EventEmitter & { on: any; once: any; removeListener: any; };
 
 export type TypedEmitterEvents<J extends TypedEmitter<any>> = J extends TypedEmitter<
     infer N

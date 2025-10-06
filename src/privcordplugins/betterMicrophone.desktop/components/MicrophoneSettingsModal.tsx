@@ -148,9 +148,9 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
             flex={0.2}
             switchEnabled
             switchProps={{
-                checked: (channelsEnabled && channels === 2) ?? false,
+                checked: Boolean(channelsEnabled && channels === 2),
                 disabled: isSaving,
-                onChange: status => void setChannelsEnabled(status) ?? setChannels(2)
+                onChange: status => { setChannelsEnabled(status); setChannels(2); }
             }}>
         </SettingsModalCard>;
 

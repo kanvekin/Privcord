@@ -72,14 +72,14 @@ export function replacedScreenshareModalSettingsContentType(oldType: (...args: a
 export function replacedScreenshareModalComponent(oldComponent: (...args: any[]) => any, thisContext: any, functionArguments: any) {
     const oldComponentResult = Reflect.apply(oldComponent, thisContext, functionArguments);
 
-    const { children, parent } = findChildren(oldComponentResult, c => c.props.selectedFPS);
+    const { children } = findChildren(oldComponentResult, (c: any) => (c as any)?.props?.selectedFPS !== undefined);
     const oldContentType = children.type;
 
     children.type = function () {
         return replacedScreenshareModalSettingsContentType(oldContentType, this, arguments);
     };
 
-    const { children: buttonsChildren } = findChildren(oldComponentResult, c => c.props.justify && c.props.children.length === 3);
+    const { children: buttonsChildren } = findChildren(oldComponentResult, (c: any) => Boolean((c as any)?.props?.justify) && Array.isArray((c as any)?.props?.children) && (c as any).props.children.length === 3);
     const [submitBtn] = buttonsChildren.props.children;
 
     submitBtn.props.onClick = () => {

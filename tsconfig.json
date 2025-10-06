@@ -21,18 +21,45 @@
         "jsx": "preserve",
         "baseUrl": "./src/",
         "paths": {
-            "@main/*": ["./main/*"],
-            "@api/*": ["./api/*"],
-            "@components/*": ["./components/*"],
-            "@utils/*": ["./utils/*"],
-            "@shared/*": ["./shared/*"],
-            "@webpack/common": ["./webpack/common"],
-            "@webpack": ["./webpack/webpack"],
-            "@webpack/patcher": ["./webpack/patchWebpack"],
-            "@webpack/wreq.d": ["./webpack/wreq.d"],
-            "@plugins/*": ["./plugins/*"],
-            "@equicordplugins/*": ["./equicordplugins/*"],
-            "@privcordplugins/*": ["./privcordplugins/*"]
+            "@main/*": [
+                "./main/*"
+            ],
+            "@api/*": [
+                "./api/*"
+            ],
+            "@components/*": [
+                "./components/*"
+            ],
+            "@utils/*": [
+                "./utils/*"
+            ],
+            "@shared/*": [
+                "./shared/*"
+            ],
+            "@webpack/common": [
+                "./webpack/common"
+            ],
+            "@webpack": [
+                "./webpack/webpack"
+            ],
+            "@webpack/types": [
+                "./webpack/types"
+            ],
+            "@webpack/patcher": [
+                "./webpack/patchWebpack"
+            ],
+            "@webpack/wreq.d": [
+                "./webpack/wreq.d"
+            ],
+            "@plugins/*": [
+                "./plugins/*"
+            ],
+            "@equicordplugins/*": [
+                "./equicordplugins/*"
+            ],
+            "@privcordplugins/*": [
+                "./privcordplugins/*"
+            ]
         },
         "plugins": [
             // Transform paths in output .d.ts files (Include this line if you output declarations files)

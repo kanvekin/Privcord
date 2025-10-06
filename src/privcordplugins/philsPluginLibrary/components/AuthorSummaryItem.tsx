@@ -18,7 +18,7 @@
 
 import { PluginAuthor } from "@utils/types";
 import { useEffect, UserUtils, useState } from "@webpack/common";
-import { User } from "discord-types/general";
+import { User } from "@vencord/discord-types";
 import React from "react";
 
 import { createDummyUser, types, UserSummaryItem } from "../../philsPluginLibrary";

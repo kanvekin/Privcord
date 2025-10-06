@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { React,UserStore } from "@webpack/common";
-import { User } from "discord-types/general";
+import { React, UserStore } from "@webpack/common";
+import { User } from "@vencord/discord-types";
 
 export const createDummyUser = (props: Partial<User>) => new (UserStore.getCurrentUser().constructor as any)(props);
 export const openURL = (url: string) => VencordNative.native.openExternal(url);
@@ -43,9 +43,10 @@ export function findChildren(element: React.ReactNode, callback: Callback): { ch
         return { children: element };
     }
 
-    const children = Array.isArray(element.props.children)
-        ? element.props.children
-        : [element.props.children];
+    const propsChildren = (element as any).props?.children;
+    const children = Array.isArray(propsChildren)
+        ? propsChildren
+        : [propsChildren];
 
     for (const child of children) {
         const { parent, children: _children } = findChildren(child, callback);

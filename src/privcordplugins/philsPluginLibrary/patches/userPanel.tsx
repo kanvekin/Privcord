@@ -17,6 +17,7 @@
 */
 
 import { React } from "@webpack/common";
+import type { JSX } from "react";
 
 import { SettingsPanel } from "../components";
 import { IconComponent, SettingsPanelButton } from "../components/settingsPanel/SettingsPanelButton";
