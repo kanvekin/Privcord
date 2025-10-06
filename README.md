@@ -1,6 +1,6 @@
 # [<img src="./browser/icon.png" width="40" align="left" alt="Privcord">](https://github.com/kanvekin/Privcord) Privcord
 
-[![Equibop]](https://github.com/kanvekin/Privbop)
+[![Privbop]](https://github.com/kanvekin/Privbop)
 [![Tests](https://github.com/kanvekin/Privcord/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/kanvekin/Privcord/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/discord/1173279886065029291.svg?color=768AD4&label=Discord&logo=discord&logoColor=white)](https://discord.gg/privcord)
 
