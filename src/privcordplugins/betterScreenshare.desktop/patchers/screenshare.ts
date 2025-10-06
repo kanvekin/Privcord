@@ -69,12 +69,24 @@ export class ScreensharePatcher extends Patcher {
                 this.forceUpdateDesktopSourceOptions = forceUpdateDesktopSourceOptions;
                 this.forceUpdateTransportationOptions = forceUpdateTransportationOptions;
 
-                Emitter.addListener(connection.emitter as any, "on", "connected" as any, () => {
+                (Emitter.addListener as (
+                    emitter: any,
+                    type: "on" | "once",
+                    event: string,
+                    fn: (...args: any[]) => void,
+                    plugin?: string
+                ) => () => void)(connection.emitter as any, "on", "connected", () => {
                     this.forceUpdateTransportationOptions();
                     this.forceUpdateDesktopSourceOptions();
                 });
 
-                Emitter.addListener(connection.emitter as any, "on", "destroy" as any, () => {
+                (Emitter.addListener as (
+                    emitter: any,
+                    type: "on" | "once",
+                    event: string,
+                    fn: (...args: any[]) => void,
+                    plugin?: string
+                ) => () => void)(connection.emitter as any, "on", "destroy", () => {
                     this.forceUpdateTransportationOptions = () => void 0;
                     this.forceUpdateDesktopSourceOptions = () => void 0;
                     this.oldSetTransportOptions = () => void 0;
@@ -82,11 +94,17 @@ export class ScreensharePatcher extends Patcher {
                 });
             };
 
-        Emitter.addListener(
+        (Emitter.addListener as (
+            emitter: any,
+            type: "on" | "once",
+            event: string,
+            fn: (...args: any[]) => void,
+            plugin?: string
+        ) => () => void)(
             this.mediaEngine.emitter as any,
             "on",
-            "connection" as any,
-            connectionEventFunction as any,
+            "connection",
+            connectionEventFunction as (...args: any[]) => void,
             PluginInfo.PLUGIN_NAME
         );
 

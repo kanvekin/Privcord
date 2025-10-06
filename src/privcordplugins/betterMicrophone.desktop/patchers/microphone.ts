@@ -54,11 +54,17 @@ export class MicrophonePatcher extends Patcher {
                 this.forceUpdateTransportationOptions = forceUpdateTransportationOptions;
             };
 
-        Emitter.addListener(
+        (Emitter.addListener as (
+            emitter: any,
+            type: "on" | "once",
+            event: string,
+            fn: (...args: any[]) => void,
+            plugin?: string
+        ) => () => void)(
             this.mediaEngine.emitter as any,
             "on",
-            "connection" as any,
-            connectionEventFunction as any,
+            "connection",
+            connectionEventFunction as (...args: any[]) => void,
             PluginInfo.PLUGIN_NAME
         );
 
