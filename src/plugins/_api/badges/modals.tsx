@@ -86,7 +86,7 @@ export function EquicordDonorModal() {
                             }}
                         >
                             <Heart />
-                            Equicord Donor
+                            Privcord Donor
                         </Forms.FormTitle>
                     </Flex>
                 </ModalHeader>
@@ -107,10 +107,10 @@ export function EquicordDonorModal() {
                     </Flex>
                     <div style={{ padding: "1em" }}>
                         <Forms.FormText>
-                            This Badge is a special perk for Equicord (Not Vencord) Donors
+                            This badge is a special perk for Privcord donors.
                         </Forms.FormText>
                         <Forms.FormText className={Margins.top20}>
-                            Please consider supporting the development of Equicord by becoming a donor. It would mean a lot! :3
+                            Please consider supporting the development of Privcord by becoming a donor. It would mean a lot! :3
                         </Forms.FormText>
                     </div>
                 </ModalContent>
@@ -143,7 +143,7 @@ export function PrivcordDonorModal() {
                             }}
                         >
                             <Heart />
-                            Equicord Donor
+                            Privcord Donor
                         </Forms.FormTitle>
                     </Flex>
                 </ModalHeader>
@@ -164,10 +164,10 @@ export function PrivcordDonorModal() {
                     </Flex>
                     <div style={{ padding: "1em" }}>
                         <Forms.FormText>
-                            This Badge is a special perk for Equicord (Not Vencord) Donors
+                            This badge is a special perk for Privcord donors.
                         </Forms.FormText>
                         <Forms.FormText className={Margins.top20}>
-                            Please consider supporting the development of Equicord by becoming a donor. It would mean a lot! :3
+                            Please consider supporting the development of Privcord by becoming a donor. It would mean a lot! :3
                         </Forms.FormText>
                     </div>
                 </ModalContent>
