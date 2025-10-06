@@ -22,7 +22,7 @@ import React from "react";
 
 import { panelClasses } from "../../../philsPluginLibrary";
 
-export type IconComponent = <T extends { className: string; }>(props: T) => React.ReactElement | null;
+export type IconComponent = <T extends { className: string; }>(props: T) => JSX.Element;
 export interface SettingsPanelButtonProps extends Partial<React.ComponentProps<typeof Button>> {
     icon?: IconComponent;
 }
@@ -34,9 +34,7 @@ export const SettingsPanelButton = (props: SettingsPanelButtonProps) => {
             className={classes(panelClasses.button, panelClasses.buttonColor)}
             innerClassName={classes(panelClasses.buttonContents)}
             wrapperClassName={classes(panelClasses.button)}
-            {...props}
-        >
-            {props.icon && <props.icon className={classes(panelClasses.buttonIcon)} />}
-        </Button>
+            children={props.icon && <props.icon className={classes(panelClasses.buttonIcon)} />}
+            {...props} />
     );
 };

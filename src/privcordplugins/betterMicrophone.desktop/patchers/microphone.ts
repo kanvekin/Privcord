@@ -54,9 +54,8 @@ export class MicrophonePatcher extends Patcher {
                 this.forceUpdateTransportationOptions = forceUpdateTransportationOptions;
             };
 
-        // Relax typed emitter to avoid TS 'never' on event name
-        (Emitter as any).addListener(
-            this.mediaEngine.emitter as any,
+        Emitter.addListener(
+            this.mediaEngine.emitter,
             "on",
             "connection",
             connectionEventFunction,

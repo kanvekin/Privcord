@@ -55,16 +55,16 @@ export const ButtonsSettingsPanel = () => {
 
     const convertRawPanelButtons = (buttons: PanelButton[]) => {
         const settingsPanelButtonsClone = [...buttons].sort();
-        const groupedButtons: React.ReactElement[][] = [];
+        const groupedButtons: JSX.Element[][] = [];
 
         while (settingsPanelButtonsClone.length) {
             const splicedButtons =
                 settingsPanelButtonsClone
                     .splice(0, 3)
-                    .map(({ name, icon, tooltipText, onClick }) =>
+                    .map(({ icon, tooltipText, onClick }) =>
                         tooltipText
-                            ? <SettingsPanelTooltipButton key={`btn-${name}`} tooltipProps={{ text: tooltipText }} icon={icon} onClick={onClick} />
-                            : <SettingsPanelButton key={`btn-${name}`} icon={icon} onClick={onClick} />
+                            ? <SettingsPanelTooltipButton tooltipProps={{ text: tooltipText }} icon={icon} onClick={onClick} />
+                            : <SettingsPanelButton icon={icon} onClick={onClick} />
                     );
 
             groupedButtons.push(splicedButtons);
@@ -75,16 +75,14 @@ export const ButtonsSettingsPanel = () => {
 
     return rawPanelButtons.length > 0
         ? <SettingsPanel>
-            {convertRawPanelButtons(rawPanelButtons).map((value, idx) => <SettingsPanelRow key={`row-${idx}`}>
-                {value}
-            </SettingsPanelRow>)}
+            {...convertRawPanelButtons(rawPanelButtons).map(value => <SettingsPanelRow children={value} />)}
         </SettingsPanel>
         : <>
         </>;
 };
 
 export function replacedUserPanelComponent(oldComponent: (...args: any[]) => any, thisContext: any, functionArguments: any) {
-    const componentResult: React.ReactElement | any = Reflect.apply(oldComponent, thisContext, functionArguments);
+    const componentResult: JSX.Element = Reflect.apply(oldComponent, thisContext, functionArguments);
     if (!componentResult?.props) return componentResult;
 
     const { children } = componentResult.props;

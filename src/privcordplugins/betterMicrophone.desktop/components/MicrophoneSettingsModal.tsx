@@ -20,7 +20,7 @@ import { Flex } from "@components/Flex";
 import { Switch } from "@components/Switch";
 import { ModalSize } from "@utils/modal";
 import { Card, Forms, Select, Slider, TextInput, useEffect, useState } from "@webpack/common";
-type SelectOption = { label: string; value: number | string; };
+import { SelectOption } from "@webpack/types";
 
 import {
     ProfilableStore,
@@ -54,14 +54,10 @@ const simpleVoiceBitrates: readonly SelectOption[] = [
     }
 ] as const;
 
-export type MicrophoneSettingsModalProps = {
+export interface MicrophoneSettingsModalProps extends React.ComponentProps<typeof SettingsModal> {
     microphoneStore: ProfilableStore<MicrophoneStore, MicrophoneProfile>;
     showInfo?: boolean;
-    title?: string;
-    onDone?: () => void;
-    onClose: () => void;
-    [key: string]: any;
-};
+}
 
 export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => {
     const { microphoneStore, showInfo } = props;
@@ -154,7 +150,7 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
             switchProps={{
                 checked: (channelsEnabled && channels === 2) ?? false,
                 disabled: isSaving,
-                onChange: status => { setChannelsEnabled(status); if (!status) setChannels(2); }
+                onChange: status => void setChannelsEnabled(status) ?? setChannels(2)
             }}>
         </SettingsModalCard>;
 
@@ -272,6 +268,7 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
 
     const settingsCardProfiles =
         <SettingsModalProfilesCard
+            flex={0.6}
             onSaveStateChanged={state => setIsSaving(state)}
             profileableStore={microphoneStore} />;
 
@@ -285,6 +282,7 @@ export const MicrophoneSettingsModal = (props: MicrophoneSettingsModalProps) => 
 
     return (
         <SettingsModal
+            size={simpleMode ? ModalSize.DYNAMIC : ModalSize.DYNAMIC}
             title="Microphone Settings"
             closeButtonName="Apply"
             footerContent={

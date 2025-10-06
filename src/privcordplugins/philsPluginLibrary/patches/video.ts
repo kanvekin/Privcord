@@ -19,10 +19,7 @@
 import { Logger } from "@utils/Logger";
 import { lodash } from "@webpack/common";
 
-// Fallback local types to avoid hard dependency on betterScreenshare.desktop
-// Only the shape for typing is required here
-type ScreenshareProfile = any;
-type ScreenshareStore = any;
+import { ScreenshareProfile, ScreenshareStore } from "../../betterScreenshare.desktop/stores";
 import { ProfilableStore, replaceObjectValuesIfExist, types, utils } from "../../philsPluginLibrary";
 
 

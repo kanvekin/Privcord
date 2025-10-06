@@ -69,12 +69,12 @@ export class ScreensharePatcher extends Patcher {
                 this.forceUpdateDesktopSourceOptions = forceUpdateDesktopSourceOptions;
                 this.forceUpdateTransportationOptions = forceUpdateTransportationOptions;
 
-                Emitter.addListener(connection.emitter as any, "on", "connected" as any, () => {
+                Emitter.addListener(connection.emitter, "on", "connected", () => {
                     this.forceUpdateTransportationOptions();
                     this.forceUpdateDesktopSourceOptions();
                 });
 
-                Emitter.addListener(connection.emitter as any, "on", "destroy" as any, () => {
+                Emitter.addListener(connection.emitter, "on", "destroy", () => {
                     this.forceUpdateTransportationOptions = () => void 0;
                     this.forceUpdateDesktopSourceOptions = () => void 0;
                     this.oldSetTransportOptions = () => void 0;
@@ -83,10 +83,10 @@ export class ScreensharePatcher extends Patcher {
             };
 
         Emitter.addListener(
-            this.mediaEngine.emitter as any,
-            "on" as any,
-            "connection" as any,
-            connectionEventFunction as any,
+            this.mediaEngine.emitter,
+            "on",
+            "connection",
+            connectionEventFunction,
             PluginInfo.PLUGIN_NAME
         );
 

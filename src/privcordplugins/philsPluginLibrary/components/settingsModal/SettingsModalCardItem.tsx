@@ -19,8 +19,8 @@
 import { Forms } from "@webpack/common";
 import React from "react";
 
-export interface SettingsModalCardItemProps {
-    children?: React.ReactNode;
+export interface SettingsModalCardItemProps extends Pick<React.ComponentProps<"div">,
+    | "children"> {
     title?: string;
 }
 

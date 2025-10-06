@@ -17,7 +17,7 @@
 */
 
 import { React,UserStore } from "@webpack/common";
-type User = any;
+import { User } from "discord-types/general";
 
 export const createDummyUser = (props: Partial<User>) => new (UserStore.getCurrentUser().constructor as any)(props);
 export const openURL = (url: string) => VencordNative.native.openExternal(url);
@@ -43,9 +43,9 @@ export function findChildren(element: React.ReactNode, callback: Callback): { ch
         return { children: element };
     }
 
-    const children = Array.isArray((element as any).props?.children)
-        ? (element as any).props.children
-        : [(element as any).props?.children];
+    const children = Array.isArray(element.props.children)
+        ? element.props.children
+        : [element.props.children];
 
     for (const child of children) {
         const { parent, children: _children } = findChildren(child, callback);

@@ -18,12 +18,12 @@
 
 import { PluginAuthor } from "@utils/types";
 import { useEffect, UserUtils, useState } from "@webpack/common";
-type User = any;
+import { User } from "discord-types/general";
 import React from "react";
 
-import { createDummyUser, UserSummaryItem } from "../../philsPluginLibrary";
+import { createDummyUser, types, UserSummaryItem } from "../../philsPluginLibrary";
 
-export interface AuthorUserSummaryItemProps extends Partial<React.ComponentProps<typeof UserSummaryItem>> {
+export interface AuthorUserSummaryItemProps extends Partial<React.ComponentProps<types.UserSummaryItem>> {
     authors: PluginAuthor[];
 }
 

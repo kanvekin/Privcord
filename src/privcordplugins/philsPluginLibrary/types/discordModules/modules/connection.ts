@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-type TypedEmitter<T> = any;
+import TypedEmitter from "typed-emitter";
 
 import { Framerate, Resolution } from "../../../types";
 import { Conn, FramerateReducer, VideoQualityManager } from "./";

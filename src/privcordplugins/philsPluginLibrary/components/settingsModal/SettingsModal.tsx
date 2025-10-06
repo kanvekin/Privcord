@@ -29,7 +29,7 @@ export interface SettingsModalProps extends React.ComponentProps<typeof ModalRoo
     title?: string;
     onClose: () => void;
     onDone?: () => void;
-    footerContent?: React.ReactNode;
+    footerContent?: JSX.Element;
     closeButtonName?: string;
     author?: Author,
     contributors?: Contributor[];

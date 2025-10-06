@@ -17,11 +17,12 @@
 */
 
 import { Button } from "@webpack/common";
+import * as types from "@webpack/types";
 import React from "react";
 
 import { IconTooltipButton } from ".";
 
-export const DeleteButton = (props: React.ComponentProps<typeof Button>) => {
+export const DeleteButton = (props: types.Button["defaultProps"]) => {
     return (
         <IconTooltipButton
             color={Button.Colors.RED}

@@ -17,11 +17,12 @@
 */
 
 import { Select, useEffect, useState } from "@webpack/common";
+import React from "react";
 
 import { MediaEngineStore, types } from "../../philsPluginLibrary";
 import { screenshareStore } from "../stores";
 
-export const AudioSourceSelect = (props?: any) => {
+export const AudioSourceSelect = (props?: typeof Select["defaultProps"]) => {
     const { use } = screenshareStore;
 
     const { audioSource, setAudioSource } = use();
