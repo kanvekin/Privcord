@@ -118,10 +118,10 @@ function PrivcordSettings() {
                     subtitle="Thank you for donating!"
                     description={
                         isEquicordDonor(user?.id) && isVencordDonor(user?.id)
-                            ? "All Vencord users can see your Vencord donor badge, and Equicord users can see your Equicord donor badge. To change your Vencord donor badge, contact @vending.machine. For your Equicord donor badge, make a ticket in Equicord's server."
+                            ? "All Vencord users can see your Vencord donor badge, and Privcord users can see your Privcord donor badge. To change your Vencord donor badge, contact @vending.machine. For your Privcord donor badge, make a ticket in Privcord's server."
                             : isVencordDonor(user?.id)
                                 ? "All Vencord users can see your badge! You can manage your perks by messaging @vending.machine."
-                                : "All Equicord users can see your badge! You can manage your perks by making a ticket in Equicord's server."
+                                : "All Privcord users can see your badge! You can manage your perks by making a ticket in Privcord's server."
                     }
                     cardImage={VENNIE_DONATOR_IMAGE}
                     backgroundImage={DONOR_BACKGROUND_IMAGE}

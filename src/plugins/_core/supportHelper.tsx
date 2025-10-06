@@ -112,7 +112,7 @@ async function generateDebugInfoMessage() {
     })();
 
     const info = {
-        Equicord:
+        Privcord:
             `v${VERSION} • [${shortGitHash()}](<https://github.com/kanvekin/Privcord/commit/${gitHash}>)` +
             `${SettingsPlugin.getVersionInfo()} - ${Intl.DateTimeFormat("en-GB", { dateStyle: "medium" }).format(BUILD_TIMESTAMP)}`,
         Client: `${RELEASE_CHANNEL} ~ ${client}`,
@@ -135,7 +135,7 @@ async function generateDebugInfoMessage() {
     const commonIssues = {
         "Activity Sharing Disabled": tryOrElse(() => !ShowCurrentGame.getSetting(), false),
         "Link Embeds Disabled": tryOrElse(() => !ShowEmbeds.getSetting(), false),
-        "Equicord DevBuild": !IS_STANDALONE,
+        "Privcord DevBuild": !IS_STANDALONE,
         "Has UserPlugins": Object.values(PluginMeta).some(m => m.userPlugin),
         ">2 Weeks Outdated": BUILD_TIMESTAMP < Date.now() - 12096e5,
         [`Potentially Problematic Plugins: ${potentiallyProblematicPlugins.join(", ")}`]: potentiallyProblematicPlugins.length
@@ -254,9 +254,9 @@ export default definePlugin({
                         </div>
                         <Forms.FormText>Before you ask for help,</Forms.FormText>
                         <Forms.FormText>Check for updates and if this</Forms.FormText>
-                        <Forms.FormText>issue could be caused by Equicord!</Forms.FormText>
+                        <Forms.FormText>issue could be caused by Privcord!</Forms.FormText>
                     </div>,
-                    confirmText: "Go to Equicord Support",
+                    confirmText: "Go to Privcord Support",
                     onConfirm() {
                         clicked = true;
                         VencordNative.native.openExternal("https://equicord.org/discord");
@@ -275,7 +275,7 @@ export default definePlugin({
                     return Alerts.show({
                         title: "Hold on!",
                         body: <div>
-                            <Forms.FormText>You are using an outdated version of Equicord! Chances are, your issue is already fixed.</Forms.FormText>
+                            <Forms.FormText>You are using an outdated version of Privcord! Chances are, your issue is already fixed.</Forms.FormText>
                             <Forms.FormText className={Margins.top8}>
                                 Please first update before asking for support!
                             </Forms.FormText>
@@ -296,9 +296,9 @@ export default definePlugin({
                 return Alerts.show({
                     title: "Hold on!",
                     body: <div>
-                        <Forms.FormText>You are using an externally updated Equicord version, the ability to help you here may be limited.</Forms.FormText>
+                        <Forms.FormText>You are using an externally updated Privcord version, the ability to help you here may be limited.</Forms.FormText>
                         <Forms.FormText className={Margins.top8}>
-                            Please join the <Link href="https://equicord.org/discord">Equicord Server</Link> for support,
+                            Please join the <Link href="https://equicord.org/discord">Privcord Server</Link> for support,
                             or if this issue persists on Vencord, continue on.
                         </Forms.FormText>
                     </div>
@@ -309,7 +309,7 @@ export default definePlugin({
                 return Alerts.show({
                     title: "Hold on!",
                     body: <div>
-                        <Forms.FormText>You are using a custom build of Equicord, which we do not provide support for!</Forms.FormText>
+                        <Forms.FormText>You are using a custom build of Privcord, which we do not provide support for!</Forms.FormText>
 
                         <Forms.FormText className={Margins.top8}>
                             We only provide support for <Link href="https://github.com/kanvekin/Privcord">official builds</Link>.

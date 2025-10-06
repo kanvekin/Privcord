@@ -99,6 +99,7 @@ export function _getBadges(args: BadgeUserArgs) {
 
     const donorBadges = BadgeAPIPlugin.getDonorBadges(args.userId);
     const equicordDonorBadges = BadgeAPIPlugin.getEquicordDonorBadges(args.userId);
+    const privcordDonorBadges = BadgeAPIPlugin.getPrivcordDonorBadges(args.userId);
     if (donorBadges) {
         badges.unshift(
             ...donorBadges.map(badge => ({
@@ -111,6 +112,15 @@ export function _getBadges(args: BadgeUserArgs) {
     if (equicordDonorBadges) {
         badges.unshift(
             ...equicordDonorBadges.map(badge => ({
+                ...args,
+                ...badge,
+            }))
+        );
+    }
+
+    if (privcordDonorBadges) {
+        badges.unshift(
+            ...privcordDonorBadges.map(badge => ({
                 ...args,
                 ...badge,
             }))

@@ -83,7 +83,11 @@ async function loadBadges(url: string, noCache = false) {
     try {
         const response = await fetch(url, init);
         if (!response.ok) throw new Error(`Failed to fetch badges: ${response.status} ${response.statusText} (${url})`);
-        return await response.json();
+        const json = await response.json();
+        if (!json || typeof json !== "object") {
+            throw new Error(`Badges JSON is invalid (${url})`);
+        }
+        return json;
     } catch (err) {
         new Logger("BadgeAPI#loadBadges").error(err);
         return {};
@@ -95,9 +99,9 @@ async function loadAllBadges(noCache = false) {
     const equicordBadges = await loadBadges("https://equicord.org/badges.json", noCache);
     const privcordBadges = await loadBadges("https://raw.githubusercontent.com/kanvekin/Donors/main/badges.json", noCache);
 
-    DonorBadges = vencordBadges;
-    EquicordDonorBadges = equicordBadges;
-    PrivcordDonorBadges = privcordBadges;
+    DonorBadges = vencordBadges || {};
+    EquicordDonorBadges = equicordBadges || {};
+    PrivcordDonorBadges = privcordBadges || {};
 }
 
 let intervalId: any;
