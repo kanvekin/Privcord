@@ -59,20 +59,20 @@ export class ScreenshareAudioPatcher extends Patcher {
                 this.forceUpdateTransportationOptions = forceUpdateTransportationOptionsAudio;
                 this.oldSetTransportOptions = oldSetTransportOptionsAudio;
 
-                Emitter.addListener(connection.emitter, "on", "connected", () => {
+                Emitter.addListener(connection.emitter as any, "on", "connected" as any, () => {
                     this.forceUpdateTransportationOptions();
                 });
 
-                Emitter.addListener(connection.emitter, "on", "destroy", () => {
+                Emitter.addListener(connection.emitter as any, "on", "destroy" as any, () => {
                     this.forceUpdateTransportationOptions = () => void 0;
                 });
             };
 
         Emitter.addListener(
-            this.mediaEngine.emitter,
+            this.mediaEngine.emitter as any,
             "on",
-            "connection",
-            connectionEventFunction,
+            "connection" as any,
+            connectionEventFunction as any,
             PluginInfo.PLUGIN_NAME
         );
 

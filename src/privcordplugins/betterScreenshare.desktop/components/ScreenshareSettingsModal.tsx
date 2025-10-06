@@ -20,7 +20,6 @@ import { Flex } from "@components/Flex";
 import { Switch } from "@components/Switch";
 import { ModalSize, openModalLazy } from "@utils/modal";
 import { Button, Card, Forms, React, Select, Slider, TextInput, useEffect, useState } from "@webpack/common";
-import { SelectOption } from "@webpack/types";
 
 import { MicrophoneSettingsModal } from "../../betterMicrophone.desktop/components";
 import {
@@ -40,7 +39,9 @@ import { Styles } from "../../philsPluginLibrary/styles";
 import { PluginInfo } from "../constants";
 import { ScreenshareAudioProfile, ScreenshareAudioStore, ScreenshareProfile, ScreenshareStore } from "../stores";
 
-const simpleResolutions: readonly (SelectOption & { value: types.Resolution; })[] = [
+type Option<T> = { label: string; value: T; };
+
+const simpleResolutions: readonly (Option<types.Resolution>)[] = [
     {
         label: "480p",
         value: {
@@ -78,7 +79,7 @@ const simpleResolutions: readonly (SelectOption & { value: types.Resolution; })[
     }
 ] as const;
 
-const simpleVideoBitrates: readonly SelectOption[] = [
+const simpleVideoBitrates: readonly Option<number>[] = [
     {
         label: "Low",
         value: 2500

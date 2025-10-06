@@ -22,7 +22,9 @@ import React from "react";
 import { MediaEngineStore, types } from "../../philsPluginLibrary";
 import { screenshareStore } from "../stores";
 
-export const AudioSourceSelect = (props?: React.ComponentProps<typeof Select>) => {
+export const AudioSourceSelect = (
+    props?: Omit<React.ComponentProps<typeof Select>, "options" | "select" | "isSelected" | "serialize">
+) => {
     const { use } = screenshareStore;
 
     const { audioSource, setAudioSource } = use();

@@ -55,10 +55,10 @@ export class MicrophonePatcher extends Patcher {
             };
 
         Emitter.addListener(
-            this.mediaEngine.emitter,
+            this.mediaEngine.emitter as any,
             "on",
-            "connection",
-            connectionEventFunction,
+            "connection" as any,
+            connectionEventFunction as any,
             PluginInfo.PLUGIN_NAME
         );
 

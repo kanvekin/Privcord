@@ -20,7 +20,6 @@ import { Flex } from "@components/Flex";
 import { Switch } from "@components/Switch";
 import { ModalSize } from "@utils/modal";
 import { Card, Forms, Select, Slider, TextInput, useEffect, useState } from "@webpack/common";
-import { SelectOption } from "@webpack/types";
 
 import {
     ProfilableStore,
@@ -35,7 +34,9 @@ import {
 import { Styles } from "../../philsPluginLibrary/styles";
 import { MicrophoneProfile, MicrophoneStore } from "../stores";
 
-const simpleVoiceBitrates: readonly SelectOption[] = [
+type Option<T> = { label: string; value: T; };
+
+const simpleVoiceBitrates: readonly Option<number>[] = [
     {
         label: "Normal",
         value: 96
