@@ -80,13 +80,20 @@ let PrivcordDonorBadges = {} as Record<string, Array<Record<"tooltip" | "badge",
 async function loadBadges(url: string, noCache = false) {
     const init = {} as RequestInit;
     if (noCache) init.cache = "no-cache";
-    return await fetch(url, init).then(r => r.json());
+    try {
+        const response = await fetch(url, init);
+        if (!response.ok) throw new Error(`Failed to fetch badges: ${response.status} ${response.statusText} (${url})`);
+        return await response.json();
+    } catch (err) {
+        new Logger("BadgeAPI#loadBadges").error(err);
+        return {};
+    }
 }
 
 async function loadAllBadges(noCache = false) {
     const vencordBadges = await loadBadges("https://badges.vencord.dev/badges.json", noCache);
     const equicordBadges = await loadBadges("https://equicord.org/badges.json", noCache);
-    const privcordBadges = await loadBadges("https://raw.githubusercontent.com/kanvekin/Donors/refs/heads/main/badges.json", noCache);
+    const privcordBadges = await loadBadges("https://raw.githubusercontent.com/kanvekin/Donors/main/badges.json", noCache);
 
     DonorBadges = vencordBadges;
     EquicordDonorBadges = equicordBadges;
