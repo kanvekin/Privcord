@@ -25,7 +25,7 @@ import { Readable } from "stream";
 import { finished } from "stream/promises";
 import { fileURLToPath } from "url";
 
-const DEFAULT_REPO = process.env.PRIVXE_INSTALLER_REPO || "kanvekin/Privxe";
+const DEFAULT_REPO = process.env.PRIVXE_INSTALLER_REPO || "kanvekin/Privcord";
 const BASE_URL = `https://github.com/${DEFAULT_REPO}/releases/latest/download/`;
 const INSTALLER_PATH_DARWIN = "Privxe.app/Contents/MacOS/Privxe";
 
@@ -67,6 +67,7 @@ function getCandidateAssetNames(platform, arch) {
         candidates.push(
             // Exact names we expect
             "PrivxeCli.exe",
+            "Privcord.exe",
             "PrivcordCli.exe",
             "PrivxeInstaller.exe",
             "PrivcordInstaller.exe",
@@ -83,12 +84,14 @@ function getCandidateAssetNames(platform, arch) {
             "PrivcordCli-linux",
             "PrivxeCli",
             "privxe",
-            "privcord"
+            "privcord",
+            "Privcord-x11"
         );
         for (const a of archHints) candidates.push(`PrivxeCli-linux-${a}`, `PrivcordCli-linux-${a}`);
     } else if (platform === "darwin") {
         candidates.push(
             "Privxe.MacOS.zip",
+            "Privcord.MacOS.zip",
             "Privxe-macos.zip",
             "Privcord-macos.zip",
             "Privxe.dmg",
@@ -99,9 +102,18 @@ function getCandidateAssetNames(platform, arch) {
 
     // Regex patterns to catch broader variations
     const regexPatterns = [];
-    if (platform === "win32") regexPatterns.push(/priv(x|c)ord.*(cli|setup|install).*\.exe$/i);
-    if (platform === "linux") regexPatterns.push(/priv(x|c)ord.*(cli|linux).*$/i);
-    if (platform === "darwin") regexPatterns.push(/priv(x|c)ord.*(mac|darwin).*(zip|dmg)$/i);
+    if (platform === "win32") {
+        regexPatterns.push(/priv(x|c)ord.*(cli|setup|install).*\.exe$/i);
+        regexPatterns.push(/priv(x|c)ord.*\.exe$/i);
+    }
+    if (platform === "linux") {
+        regexPatterns.push(/priv(x|c)ord.*(cli|linux|x11|appimage|deb|rpm|tar|zip).*$/i);
+        regexPatterns.push(/priv(x|c)ord.*$/i);
+    }
+    if (platform === "darwin") {
+        regexPatterns.push(/priv(x|c)ord.*(mac|darwin|macos).*(zip|dmg)$/i);
+        regexPatterns.push(/priv(x|c)ord.*\.(zip|dmg)$/i);
+    }
 
     return { candidates, regexPatterns };
 }
@@ -208,9 +220,35 @@ async function ensureBinary() {
         const zip = new Uint8Array(await res.arrayBuffer());
 
         const ff = await import("fflate");
-        const bytes = ff.unzipSync(zip, {
-            filter: f => f.name === INSTALLER_PATH_DARWIN
-        })[INSTALLER_PATH_DARWIN];
+        const unzipped = ff.unzipSync(zip);
+
+        const expectedPaths = [
+            INSTALLER_PATH_DARWIN,
+            "Privcord.app/Contents/MacOS/Privcord"
+        ];
+
+        let bytes = null;
+        for (const p of expectedPaths) {
+            if (unzipped[p]) {
+                bytes = unzipped[p];
+                break;
+            }
+        }
+
+        if (!bytes) {
+            const keys = Object.keys(unzipped);
+            const macBinCandidates = keys.filter(k => /\.app\/Contents\/MacOS\/.+/.test(k) && !k.endsWith("/"));
+            if (macBinCandidates.length > 0) {
+                const chosen = macBinCandidates[0];
+                console.log(`Detected macOS binary inside zip: ${chosen}`);
+                bytes = unzipped[chosen];
+            }
+        }
+
+        if (!bytes) {
+            const keys = Object.keys(unzipped).slice(0, 20).join(", ");
+            throw new Error(`Could not locate macOS binary inside zip. Expected one of ${expectedPaths.join(" | ")}. Found entries: ${keys} ...`);
+        }
 
         writeFileSync(outputFile, bytes, { mode: 0o755 });
 
