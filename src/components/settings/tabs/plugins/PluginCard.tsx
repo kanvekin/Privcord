@@ -110,7 +110,7 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
         />
     ) : isPrivcordPlugin ? (
         <img
-            src="https://static.vecteezy.com/system/resources/previews/026/328/700/non_2x/private-icon-symbol-design-illustration-vector.jpg"
+            src="https://raw.githubusercontent.com/UygunUmitcan/depo/refs/heads/main/privcord_icon.png"
             alt="Privcord"
             title="Privcord Plugin"
             style={{
