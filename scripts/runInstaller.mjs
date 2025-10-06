@@ -27,7 +27,7 @@ import { fileURLToPath } from "url";
 
 const DEFAULT_REPO = process.env.PRIVXE_INSTALLER_REPO || "kanvekin/Privcord";
 const BASE_URL = `https://github.com/${DEFAULT_REPO}/releases/latest/download/`;
-const INSTALLER_PATH_DARWIN = "Privxe.app/Contents/MacOS/Privxe";
+const INSTALLER_PATH_DARWIN = "Privcord.app/Contents/MacOS/Privcord";
 
 const BASE_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FILE_DIR = join(BASE_DIR, "dist", "Installer");
@@ -36,11 +36,11 @@ const ETAG_FILE = join(FILE_DIR, "etag.txt");
 function getFilename() {
     switch (process.platform) {
         case "win32":
-            return "PrivxeCli.exe";        // Windows için .exe asset
+            return "PrivcordCli.exe";        // Windows için .exe asset
         case "darwin":
-            return "Privxe.MacOS.zip";      // macOS için zip (veya .dmg olursa değiştir)
+            return "Privcord.MacOS.zip";      // macOS için zip (veya .dmg olursa değiştir)
         case "linux":
-            return "PrivxeCli-linux";       // Linux için uygun ikili (örneğin AppImage ya da binary)
+            return "PrivcordCli-linux";       // Linux için uygun ikili (örneğin AppImage ya da binary)
         default:
             throw new Error("Unsupported platform: " + process.platform);
     }
@@ -49,13 +49,13 @@ function getFilename() {
 function getDisplayName() {
     switch (process.platform) {
         case "win32":
-            return "PrivxeCli.exe";
+            return "PrivcordCli.exe";
         case "darwin":
-            return "Privxe.MacOS.zip";
+            return "Privcord.MacOS.zip";
         case "linux":
-            return "PrivxeCli-linux";
+            return "PrivcordCli-linux";
         default:
-            return "Privxe Installer";
+            return "Privcord Installer";
     }
 }
 
