@@ -8,7 +8,7 @@ import { finished } from "stream/promises";
 import { fileURLToPath } from "url";
 
 const REPO = "Privcord";
-const BASE_URL = `https://github.com/kanvekin/Privxe/releases/tag/v1.0.1/download`;
+const BASE_URL = `https://github.com/kanvekin/Privxe/releases/download/v1.0.1/`;
 
 const BASE_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FILE_DIR = join(BASE_DIR, "dist", "Installer");
