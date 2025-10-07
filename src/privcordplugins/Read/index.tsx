@@ -17,12 +17,12 @@ const messageEventListeners: any[] = [];
 
 // Throttling and debouncing
 let lastDomChangeTime = 0;
-let domChangeTimeout: number | null = null;
+let domChangeTimeout: ReturnType<typeof setTimeout> | null = null;
 const DOM_CHANGE_THROTTLE = 1000; // 1 second throttle
 const DOM_CHANGE_DEBOUNCE = 500; // 500ms debounce
 
 // Debug mode - set to false to reduce log spam
-const DEBUG_MODE = false; // default OFF to avoid console spam; can be toggled via window.togglePrivcordRRDebug()
+const DEBUG_MODE = true; // temporarily ON for troubleshooting; can be toggled via window.togglePrivcordRRDebug()
 
 // Expose debug toggle to window for testing
 if (typeof window !== 'undefined') {
@@ -57,6 +57,77 @@ if (typeof window !== 'undefined') {
             innerHTML: el.innerHTML.substring(0, 100) + '...'
         })));
         return messages;
+    };
+
+    // Enhanced debug function to test badge creation
+    (window as any).testPrivcordRRBadgeCreation = (messageId?: string) => {
+        const messages = getVisibleMessageElements();
+        if (messages.length === 0) {
+            console.log("❌ No messages found!");
+            return;
+        }
+        
+        const targetMessage = messageId ? 
+            messages.find(el => el.id.includes(messageId)) : 
+            messages[0];
+            
+        if (!targetMessage) {
+            console.log("❌ Target message not found!");
+            return;
+        }
+        
+        console.log("🧪 Testing badge creation for message:", {
+            id: targetMessage.id,
+            classes: targetMessage.className
+        });
+        
+        // Extract message data
+        const data = extractMessageData(targetMessage);
+        console.log("📊 Extracted data:", data);
+        
+        if (data) {
+            // Create a test badge
+            markBubbleAsRead(data.messageId, "test-user", Date.now());
+            console.log("✅ Test badge created!");
+        } else {
+            console.log("❌ Could not extract message data");
+        }
+    };
+
+    // Function to inspect Discord's DOM structure
+    (window as any).inspectDiscordDOM = () => {
+        const messages = document.querySelectorAll('li[id*="chat-messages"]');
+        console.log(`🔍 Found ${messages.length} potential message elements`);
+        
+        messages.forEach((el, index) => {
+            if (index < 3) { // Only show first 3 for brevity
+                console.log(`Message ${index + 1}:`, {
+                    id: el.id,
+                    classes: el.className,
+                    children: Array.from(el.children).map(child => ({
+                        tagName: child.tagName,
+                        classes: child.className,
+                        hasContent: child.textContent?.length > 0
+                    }))
+                });
+            }
+        });
+    };
+
+    // Function to force badge creation on all visible messages
+    (window as any).forcePrivcordRRBadges = () => {
+        console.log("🚀 Forcing badge creation on all visible messages...");
+        const messages = getVisibleMessageElements();
+        
+        messages.forEach((el, index) => {
+            const data = extractMessageData(el);
+            if (data) {
+                console.log(`Creating badge for message ${index + 1}:`, data.messageId);
+                markBubbleAsRead(data.messageId, "force-test", Date.now());
+            }
+        });
+        
+        console.log(`✅ Attempted to create badges for ${messages.length} messages`);
     };
 }
 
@@ -141,24 +212,59 @@ function getSelectedChannelId(): string | null {
 }
 
 function getVisibleMessageElements(): HTMLElement[] {
-    // More specific selectors to avoid false positives
+    // Enhanced selectors to better match Discord's current structure
     const selectors = [
-        '[id^="chat-messages-"] li[id*="-"]',
+        // Discord's main message list container
         '[data-list-id="chat-messages"] li[id^="chat-messages-"]',
-        'li[id^="chat-messages-"][id$=""]'
+        // Alternative selectors for different Discord versions
+        'li[id^="chat-messages-"][id*="-"]',
+        '[id^="chat-messages-"] li[id*="-"]',
+        // More generic fallback
+        'li[id*="chat-messages-"][id*="-"]'
     ];
 
     const elements = new Set<HTMLElement>();
+    
+    // Try each selector
     selectors.forEach(selector => {
-        document.querySelectorAll<HTMLElement>(selector).forEach(el => {
-            if (el.id && el.id.match(/chat-messages-\d+-\d+/)) {
+        try {
+            document.querySelectorAll<HTMLElement>(selector).forEach(el => {
+                // More flexible ID matching - Discord IDs can be very long
+                if (el.id && el.id.match(/chat-messages-[\d-]+$/)) {
+                    elements.add(el);
+                    debugLog("Found message element:", { id: el.id, className: el.className });
+                }
+            });
+        } catch (error) {
+            debugLog("Selector error:", selector, error);
+        }
+    });
+
+    // Additional fallback: look for any li with message-like structure
+    if (elements.size === 0) {
+        debugLog("No elements found with primary selectors, trying fallback...");
+        document.querySelectorAll<HTMLElement>('li[class*="message"]').forEach(el => {
+            if (el.id && el.id.includes('-') && !elements.has(el)) {
                 elements.add(el);
+                debugLog("Fallback found message element:", { id: el.id, className: el.className });
             }
         });
-    });
+    }
 
     const result = Array.from(elements);
     debugLog(`Found ${result.length} visible message elements`);
+    
+    // Log details about found elements for debugging
+    if (result.length > 0) {
+        debugLog("Message elements details:", result.map(el => ({
+            id: el.id,
+            classes: el.className,
+            hasContent: !!el.querySelector('[class*="content"]'),
+            hasTimestamp: !!el.querySelector('time'),
+            hasActions: !!el.querySelector('[class*="actions"]')
+        })));
+    }
+    
     return result;
 }
 
@@ -243,36 +349,74 @@ function extractMessageData(li: HTMLElement): { channelId: string; messageId: st
     const id = li?.id || "";
     debugLog("Extracting message data from element:", { id, className: li.className });
 
-    const m = id.match(/chat-messages-(\d+)-(\d+)/);
+    // More flexible ID matching for different Discord versions
+    const m = id.match(/chat-messages-(\d+)-(\d+)/) || 
+              id.match(/chat-messages-(\d+)-(\d+)-/) ||
+              id.match(/(\d+)-(\d+)/);
+    
     if (!m) {
         debugLog("Failed to match message ID pattern for:", id);
+        // Try to extract from other attributes
+        const altId = li.getAttribute("data-message-id") || 
+                     li.getAttribute("data-id") ||
+                     li.querySelector('[class*="message"]')?.getAttribute("data-message-id");
+        if (altId) {
+            debugLog("Found alternative message ID:", altId);
+            // For fallback, we'll use the selected channel ID
+            const channelId = getSelectedChannelId();
+            if (channelId) {
+                return { channelId, messageId: altId, authorId: null };
+            }
+        }
         return null;
     }
 
     const channelId = m[1];
     const messageId = m[2];
 
-    // Author id heuristic: try multiple methods to get author ID
-    let authorId = li.getAttribute("data-author-id");
+    // Enhanced author ID detection
+    let authorId = li.getAttribute("data-author-id") ||
+                  li.getAttribute("data-user-id");
 
-    // If not found, try to get from avatar or other elements
+    // Try multiple selectors for author ID
     if (!authorId) {
-        const avatar = li.querySelector('[class*="avatar"]') as HTMLElement;
-        if (avatar) {
-            authorId = avatar.getAttribute("data-user-id") ||
-                avatar.getAttribute("data-author-id") ||
-                avatar.getAttribute("title") ||
-                null;
+        const selectors = [
+            '[class*="avatar"]',
+            '[class*="author"]',
+            '[class*="username"]',
+            '[class*="displayName"]',
+            '[class*="message"]'
+        ];
+        
+        for (const selector of selectors) {
+            const element = li.querySelector(selector) as HTMLElement;
+            if (element) {
+                authorId = element.getAttribute("data-user-id") ||
+                          element.getAttribute("data-author-id") ||
+                          element.getAttribute("data-id") ||
+                          element.getAttribute("title") ||
+                          element.getAttribute("aria-label");
+                
+                if (authorId) {
+                    debugLog("Found author ID via selector:", selector, authorId);
+                    break;
+                }
+            }
         }
     }
 
-    // If still not found, try to get from message wrapper
+    // Last resort: try to extract from any data attribute
     if (!authorId) {
-        const messageWrapper = li.querySelector('[class*="message"]') as HTMLElement;
-        if (messageWrapper) {
-            authorId = messageWrapper.getAttribute("data-author-id") ||
-                messageWrapper.getAttribute("data-user-id") ||
-                null;
+        const allElements = li.querySelectorAll('[data-user-id], [data-author-id], [data-id]');
+        for (const el of allElements) {
+            const candidate = el.getAttribute("data-user-id") ||
+                             el.getAttribute("data-author-id") ||
+                             el.getAttribute("data-id");
+            if (candidate && candidate.length > 10) { // Discord IDs are typically long
+                authorId = candidate;
+                debugLog("Found author ID via data attributes:", authorId);
+                break;
+            }
         }
     }
 
@@ -295,30 +439,34 @@ function markBubbleAsRead(messageId: string, readerId: string, readAt: number) {
         badge = document.createElement("span");
         badge.className = "privcord-rr";
 
-        // Styling to fit hover action buttons area
+        // Enhanced styling to ensure visibility
         badge.style.cssText = `
-            margin-left: 6px;
-            margin-right: 2px;
-            font-size: 13px;
+            margin-left: 6px !important;
+            margin-right: 2px !important;
+            font-size: 14px !important;
             color: #000000 !important; /* black by default */
             font-weight: 700 !important;
             display: inline-flex !important;
-            align-items: center;
-            justify-content: center;
-            min-width: 18px;
-            height: 18px;
-            border-radius: 4px;
-            background: transparent !important;
-            border: none !important;
-            padding: 0 2px;
-            line-height: 1;
-            vertical-align: middle;
-            text-shadow: 0 1px 1px rgba(0,0,0,0.15);
-            transition: color 0.2s ease, transform 0.1s ease;
+            align-items: center !important;
+            justify-content: center !important;
+            min-width: 20px !important;
+            height: 20px !important;
+            border-radius: 4px !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            padding: 2px 4px !important;
+            line-height: 1 !important;
+            vertical-align: middle !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+            transition: color 0.2s ease, transform 0.1s ease, opacity 0.2s ease !important;
+            opacity: 0.95 !important;
+            position: relative !important;
+            z-index: 1000 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
         `;
         badge.textContent = "✓";
 
-        // Try multiple placement strategies for better Discord integration
+        // Enhanced placement strategies for better Discord integration
         let badgePlaced = false;
 
         debugLog("Attempting to place badge in message element:", {
@@ -331,78 +479,106 @@ function markBubbleAsRead(messageId: string, readerId: string, readAt: number) {
             }))
         });
 
-        // Strategy 1: Prefer to place in message actions area (hover buttons)
-        const actionsAreaPrimary = el.querySelector('[class*="actions"]') ||
-            el.querySelector('[class*="buttonContainer"]') ||
-            el.querySelector('[class*="hoverButton"]')?.parentElement;
-        if (actionsAreaPrimary && !badgePlaced) {
-            actionsAreaPrimary.appendChild(badge);
-            debugLog("Badge added to actions area (preferred)");
-            badgePlaced = true;
-        }
-
-        // Strategy 2: Try to place in message header/metadata area
-        const messageHeader = el.querySelector('[class*="header"]') ||
-            el.querySelector('[class*="messageHeader"]') ||
-            el.querySelector('[class*="metadata"]') ||
-            el.querySelector('[class*="timestamp"]')?.parentElement ||
-            el.querySelector('time')?.parentElement;
-        if (messageHeader && !badgePlaced) {
-            messageHeader.appendChild(badge);
-            debugLog("Badge added to message header/metadata");
-            badgePlaced = true;
-        }
-
-        // Strategy 3: Try to place after timestamp specifically
-        const timeEl = el.querySelector("time");
-        if (timeEl && timeEl.parentElement && !badgePlaced) {
-            timeEl.parentElement.appendChild(badge);
-            debugLog("Badge added after timestamp");
-            badgePlaced = true;
-        }
-
-        // Strategy 4: Try to place in message content wrapper
-        if (!badgePlaced) {
-            const contentWrapper = el.querySelector('[class*="content"]') ||
-                el.querySelector('[class*="messageContent"]') ||
-                el.querySelector('[class*="textContainer"]');
-            if (contentWrapper) {
-                // Try to add at the end of content
-                contentWrapper.appendChild(badge);
-                debugLog("Badge added to content wrapper");
+        // Strategy 1: Look for Discord's message wrapper with proper structure
+        const messageWrapper = el.querySelector('[class*="message"][class*="wrapper"]') ||
+                              el.querySelector('[class*="messageContent"]') ||
+                              el.querySelector('[class*="message"][class*="content"]');
+        
+        if (messageWrapper && !badgePlaced) {
+            // Try to find the header area within the message wrapper
+            const headerArea = messageWrapper.querySelector('[class*="header"]') ||
+                              messageWrapper.querySelector('[class*="metadata"]') ||
+                              messageWrapper.querySelector('[class*="top"]') ||
+                              messageWrapper.querySelector('[class*="author"]')?.parentElement;
+            
+            if (headerArea) {
+                headerArea.appendChild(badge);
+                debugLog("Badge added to message header area");
+                badgePlaced = true;
+            } else {
+                // Add to the message wrapper itself
+                messageWrapper.appendChild(badge);
+                debugLog("Badge added to message wrapper");
                 badgePlaced = true;
             }
         }
 
-
-        // Strategy 5: Try to place as a sibling to message content
+        // Strategy 2: Look for timestamp area specifically
         if (!badgePlaced) {
-            const messageContent = el.querySelector('[class*="message"]') ||
-                el.querySelector('[class*="content"]') ||
-                el.querySelector('[class*="text"]');
-            if (messageContent && messageContent.parentElement) {
-                messageContent.parentElement.appendChild(badge);
-                debugLog("Badge added as sibling to message content");
+            const timestampArea = el.querySelector('time')?.parentElement;
+            if (timestampArea) {
+                timestampArea.appendChild(badge);
+                debugLog("Badge added to timestamp area");
                 badgePlaced = true;
             }
         }
 
-        // Strategy 6: Try to place in the main message container
+        // Strategy 3: Look for message actions area (hover buttons)
         if (!badgePlaced) {
-            const mainContainer = el.querySelector('[class*="container"]') ||
-                el.querySelector('[class*="wrapper"]') ||
-                el.querySelector('div[class*="message"]');
-            if (mainContainer) {
-                mainContainer.appendChild(badge);
-                debugLog("Badge added to main container");
+            const actionsArea = el.querySelector('[class*="actions"]') ||
+                               el.querySelector('[class*="buttonContainer"]') ||
+                               el.querySelector('[class*="hoverButton"]')?.parentElement ||
+                               el.querySelector('[class*="toolbar"]');
+            if (actionsArea) {
+                actionsArea.appendChild(badge);
+                debugLog("Badge added to actions area");
                 badgePlaced = true;
             }
         }
 
-        // Strategy 7: Fallback - add to message element directly
+        // Strategy 4: Try to place after the author name or username
+        if (!badgePlaced) {
+            const authorElement = el.querySelector('[class*="author"]') ||
+                                 el.querySelector('[class*="username"]') ||
+                                 el.querySelector('[class*="displayName"]');
+            if (authorElement && authorElement.parentElement) {
+                authorElement.parentElement.appendChild(badge);
+                debugLog("Badge added after author element");
+                badgePlaced = true;
+            }
+        }
+
+        // Strategy 5: Try to place in message content area
+        if (!badgePlaced) {
+            const contentArea = el.querySelector('[class*="content"]') ||
+                               el.querySelector('[class*="textContainer"]') ||
+                               el.querySelector('[class*="messageContent"]');
+            if (contentArea) {
+                contentArea.appendChild(badge);
+                debugLog("Badge added to content area");
+                badgePlaced = true;
+            }
+        }
+
+        // Strategy 6: Try to place as a sibling to the main message content
+        if (!badgePlaced) {
+            const mainContent = el.querySelector('[class*="message"]') ||
+                               el.querySelector('[class*="content"]') ||
+                               el.querySelector('[class*="text"]');
+            if (mainContent && mainContent.parentElement) {
+                mainContent.parentElement.appendChild(badge);
+                debugLog("Badge added as sibling to main content");
+                badgePlaced = true;
+            }
+        }
+
+        // Strategy 7: Try to place in any container within the message
+        if (!badgePlaced) {
+            const container = el.querySelector('[class*="container"]') ||
+                             el.querySelector('[class*="wrapper"]') ||
+                             el.querySelector('div[class*="message"]');
+            if (container) {
+                container.appendChild(badge);
+                debugLog("Badge added to container");
+                badgePlaced = true;
+            }
+        }
+
+        // Strategy 8: Fallback - add to message element directly
         if (!badgePlaced) {
             el.appendChild(badge);
             debugLog("Badge added directly to message element (fallback)");
+            badgePlaced = true;
         }
 
         // Add hover effect
@@ -422,11 +598,42 @@ function markBubbleAsRead(messageId: string, readerId: string, readAt: number) {
 
     // Turn blue when read; default black when unread
     const isRead = !!readerId && !!readAt && readAt > 0;
-    (badge as HTMLElement).style.color = isRead ? '#00b0f4' : '#000000';
-    badge.title = isRead
-        ? `Görüldü: ${new Date(readAt).toLocaleString()} • ${readerId}`
-        : `Henüz görülmedi`;
-    debugLog("✓ Badge updated for message:", messageId, { isRead });
+    if (badge) {
+        badge.style.color = isRead ? '#00b0f4' : '#000000';
+        badge.title = isRead
+            ? `Görüldü: ${new Date(readAt).toLocaleString()} • ${readerId}`
+            : `Henüz görülmedi`;
+    }
+    debugLog("✓ Badge updated for message:", messageId, { isRead, badgeExists: !!badge });
+    
+    // Fallback: if badge still doesn't exist, try a more aggressive approach
+    if (!badge && el) {
+        debugLog("Badge still not found, trying aggressive fallback...");
+        // Create badge directly in the message element
+        const fallbackBadge = document.createElement("span");
+        fallbackBadge.className = "privcord-rr-fallback";
+        fallbackBadge.style.cssText = `
+            position: absolute !important;
+            top: 5px !important;
+            right: 5px !important;
+            font-size: 12px !important;
+            color: #00b0f4 !important;
+            background: white !important;
+            border: 1px solid #ccc !important;
+            border-radius: 3px !important;
+            padding: 2px 4px !important;
+            z-index: 9999 !important;
+            font-weight: bold !important;
+        `;
+        fallbackBadge.textContent = "✓";
+        fallbackBadge.title = isRead
+            ? `Görüldü: ${new Date(readAt).toLocaleString()} • ${readerId}`
+            : `Henüz görülmedi`;
+        
+        el.style.position = "relative";
+        el.appendChild(fallbackBadge);
+        debugLog("✓ Fallback badge created for message:", messageId);
+    }
 }
 
 async function sendReceiptsForVisibleMessages(): Promise<void> {
@@ -635,7 +842,25 @@ export default definePlugin({
                 }
 
                 observer = new MutationObserver(onDomChange);
-                observer.observe(document.body, { childList: true, subtree: true });
+                observer.observe(document.body, { 
+                    childList: true, 
+                    subtree: true, 
+                    attributes: true,
+                    attributeFilter: ['class', 'id']
+                });
+                
+                // Also add a periodic check to ensure badges are created
+                const badgeCheckInterval: ReturnType<typeof setInterval> = setInterval(() => {
+                    try {
+                        debugLog("Periodic badge check...");
+                        void sendReceiptsForVisibleMessages();
+                    } catch (error) {
+                        debugLog("Periodic check error:", error);
+                    }
+                }, 5000); // Check every 5 seconds
+                
+                // Store interval for cleanup
+                (window as any).privcordRRInterval = badgeCheckInterval;
 
                 window.addEventListener("focus", onDomChange);
                 window.addEventListener("popstate", onDomChange);
@@ -666,6 +891,16 @@ export default definePlugin({
             }
         } catch (error) {
             errorLog("Error disconnecting observer:", error);
+        }
+
+        try {
+            if ((window as any).privcordRRInterval) {
+                clearInterval((window as any).privcordRRInterval);
+                (window as any).privcordRRInterval = null;
+                debugLog("Badge check interval cleared");
+            }
+        } catch (error) {
+            errorLog("Error clearing badge check interval:", error);
         }
 
         try {
