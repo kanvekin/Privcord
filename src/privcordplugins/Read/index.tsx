@@ -18,8 +18,8 @@ const messageEventListeners: any[] = [];
 // Throttling and debouncing
 let lastDomChangeTime = 0;
 let domChangeTimeout: ReturnType<typeof setTimeout> | null = null;
-const DOM_CHANGE_THROTTLE = 1000; // 1 second throttle
-const DOM_CHANGE_DEBOUNCE = 500; // 500ms debounce
+const DOM_CHANGE_THROTTLE = 100000; // 1 second throttle
+const DOM_CHANGE_DEBOUNCE = 50000; // 500ms debounce
 
 // Debug mode - set to false to reduce log spam
 const DEBUG_MODE = true; // temporarily ON for troubleshooting; can be toggled via window.togglePrivcordRRDebug()
