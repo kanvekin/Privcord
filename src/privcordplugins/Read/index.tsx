@@ -22,7 +22,7 @@ const DOM_CHANGE_THROTTLE = 1000; // 1 second throttle
 const DOM_CHANGE_DEBOUNCE = 500; // 500ms debounce
 
 // Debug mode - set to false to reduce log spam
-const DEBUG_MODE = true; // default ON during stabilization; can be toggled via window.togglePrivcordRRDebug()
+const DEBUG_MODE = false; // default OFF to avoid console spam; can be toggled via window.togglePrivcordRRDebug()
 
 // Expose debug toggle to window for testing
 if (typeof window !== 'undefined') {
@@ -70,6 +70,16 @@ function log(...args: unknown[]) {
     const timestamp = new Date().toISOString();
     // eslint-disable-next-line no-console
     console.log(`[${timestamp}] [PrivcordRR]`, ...args);
+}
+
+// Throttled logger: logs at most once per key per interval
+const LAST_LOG_TIMES = new Map<string, number>();
+function logEvery(key: string, intervalMs: number, ...args: unknown[]) {
+    const now = Date.now();
+    const last = LAST_LOG_TIMES.get(key) || 0;
+    if (now - last < intervalMs) return;
+    LAST_LOG_TIMES.set(key, now);
+    log(...args);
 }
 
 function debugLog(...args: unknown[]) {
@@ -216,7 +226,8 @@ function openSocket(userId: string): WebSocket {
             debugLog("WebSocket message received:", ev.data);
             const msg = JSON.parse(ev.data);
             if (msg?.type === "read") {
-                log("Read receipt received:", msg.payload);
+                // Reduce spam: log this at most once per minute
+                logEvery("ws_read", 60_000, "Read receipt received");
                 markBubbleAsRead(msg.payload.messageId, msg.payload.readerId, msg.payload.readAt);
             }
         } catch (error) {
@@ -284,12 +295,12 @@ function markBubbleAsRead(messageId: string, readerId: string, readAt: number) {
         badge = document.createElement("span");
         badge.className = "privcord-rr";
 
-        // Better styling to match Discord's UI - more visible
+        // Styling to fit hover action buttons area
         badge.style.cssText = `
             margin-left: 6px;
             margin-right: 2px;
             font-size: 13px;
-            color: #99aab5 !important; /* grey by default */
+            color: #000000 !important; /* black by default */
             font-weight: 700 !important;
             display: inline-flex !important;
             align-items: center;
@@ -302,13 +313,10 @@ function markBubbleAsRead(messageId: string, readerId: string, readAt: number) {
             padding: 0 2px;
             line-height: 1;
             vertical-align: middle;
-            opacity: 0.95 !important;
-            position: relative;
-            z-index: 1000;
             text-shadow: 0 1px 1px rgba(0,0,0,0.15);
             transition: color 0.2s ease, transform 0.1s ease;
         `;
-        badge.textContent = "✓✓";
+        badge.textContent = "✓";
 
         // Try multiple placement strategies for better Discord integration
         let badgePlaced = false;
@@ -323,7 +331,17 @@ function markBubbleAsRead(messageId: string, readerId: string, readAt: number) {
             }))
         });
 
-        // Strategy 1: Try to place in message header/metadata area
+        // Strategy 1: Prefer to place in message actions area (hover buttons)
+        const actionsAreaPrimary = el.querySelector('[class*="actions"]') ||
+            el.querySelector('[class*="buttonContainer"]') ||
+            el.querySelector('[class*="hoverButton"]')?.parentElement;
+        if (actionsAreaPrimary && !badgePlaced) {
+            actionsAreaPrimary.appendChild(badge);
+            debugLog("Badge added to actions area (preferred)");
+            badgePlaced = true;
+        }
+
+        // Strategy 2: Try to place in message header/metadata area
         const messageHeader = el.querySelector('[class*="header"]') ||
             el.querySelector('[class*="messageHeader"]') ||
             el.querySelector('[class*="metadata"]') ||
@@ -335,7 +353,7 @@ function markBubbleAsRead(messageId: string, readerId: string, readAt: number) {
             badgePlaced = true;
         }
 
-        // Strategy 2: Try to place after timestamp specifically
+        // Strategy 3: Try to place after timestamp specifically
         const timeEl = el.querySelector("time");
         if (timeEl && timeEl.parentElement && !badgePlaced) {
             timeEl.parentElement.appendChild(badge);
@@ -343,7 +361,7 @@ function markBubbleAsRead(messageId: string, readerId: string, readAt: number) {
             badgePlaced = true;
         }
 
-        // Strategy 3: Try to place in message content wrapper
+        // Strategy 4: Try to place in message content wrapper
         if (!badgePlaced) {
             const contentWrapper = el.querySelector('[class*="content"]') ||
                 el.querySelector('[class*="messageContent"]') ||
@@ -356,17 +374,6 @@ function markBubbleAsRead(messageId: string, readerId: string, readAt: number) {
             }
         }
 
-        // Strategy 4: Try to place in message actions area (hover buttons)
-        if (!badgePlaced) {
-            const actionsArea = el.querySelector('[class*="actions"]') ||
-                el.querySelector('[class*="buttonContainer"]') ||
-                el.querySelector('[class*="hoverButton"]')?.parentElement;
-            if (actionsArea) {
-                actionsArea.appendChild(badge);
-                debugLog("Badge added to actions area");
-                badgePlaced = true;
-            }
-        }
 
         // Strategy 5: Try to place as a sibling to message content
         if (!badgePlaced) {
@@ -413,11 +420,13 @@ function markBubbleAsRead(messageId: string, readerId: string, readAt: number) {
         debugLog("Badge already exists for message:", messageId);
     }
 
-    // Turn blue when read
-    const isRead = !!readerId && !!readAt;
-    (badge as HTMLElement).style.color = isRead ? '#00b0f4' : '#99aab5';
-    badge.title = `Seen by ${readerId} at ${new Date(readAt).toLocaleString()}`;
-    log("✓✓ Badge displayed for message:", messageId);
+    // Turn blue when read; default black when unread
+    const isRead = !!readerId && !!readAt && readAt > 0;
+    (badge as HTMLElement).style.color = isRead ? '#00b0f4' : '#000000';
+    badge.title = isRead
+        ? `Görüldü: ${new Date(readAt).toLocaleString()} • ${readerId}`
+        : `Henüz görülmedi`;
+    debugLog("✓ Badge updated for message:", messageId, { isRead });
 }
 
 async function sendReceiptsForVisibleMessages(): Promise<void> {
@@ -474,7 +483,8 @@ async function sendReceiptsForVisibleMessages(): Promise<void> {
             });
 
             reportedMessageIds.add(messageId);
-            log("✓ Read receipt sent for message:", messageId);
+            // Reduce spam: keep success logs in debug only
+            debugLog("✓ Read receipt sent for message:", messageId);
         } catch (error) {
             errorLog("Failed to send read receipt for message:", messageId, error);
         }
@@ -596,6 +606,8 @@ export default definePlugin({
 
                     // Message send listener - when user sends a message, mark it as read by them
                     const sendListener = addMessagePreSendListener(async (channelId, messageObj, options) => {
+                        // Log when the user sends a message (explicit request)
+                        log("✉️ Mesaj gönderildi");
                         debugLog("Message pre-send detected:", { channelId, content: messageObj.content });
                         // Plugin automatically handles read receipts through DOM observation
                         // This listener is mainly for debugging
