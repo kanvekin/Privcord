@@ -1036,15 +1036,31 @@ export default definePlugin({
             ]
         },
         {
-            // Sorts the "All Quests" tab.
+            // Adds the "Questify" sort option to the sort enum.
+            find: "SUGGESTED=\"suggested\",",
+            replacement: {
+                match: /return ((\i).SUGGESTED="suggested",)/,
+                replace: "return $2.QUESTIFY=\"questify\",$1"
+            }
+        },
+        {
+            // Adds the "Questify" sort option to the sort dropdown.
+            find: "NOT_SHAREABLE}",
+            replacement: {
+                match: /(?=case (\i.\i).SUGGESTED)/,
+                replace: "case $1.QUESTIFY:return \"Questify\";"
+            },
+        },
+        {
             find: "CLAIMED=\"claimed\",",
             group: true,
             replacement: [
+
                 {
                     // Run Questify's sort function every time due to hook requirements but return
                     // early if not applicable. If the sort method is set to "Questify", replace the
                     // quests with the sorted ones. Also, setup a trigger to rerender the memo.
-                    match: /(?<=function \i\((\i).{0,100}?useRef\(\i\);)(return \i.useMemo\(\(\)=>{)/,
+                    match: /(?<=function \i\((\i),\i,\i\){let \i=\i.useRef.{0,100}?;)(return \i.useMemo\(\(\)=>{)/,
                     replace: "const questRerenderTrigger=$self.useQuestRerender();const questifySorted=$self.sortQuests($1,arguments[1].sortMethod!==\"questify\");$2if(arguments[1].sortMethod===\"questify\"){$1=questifySorted;};"
                 },
                 {
@@ -1059,34 +1075,15 @@ export default definePlugin({
                 },
                 {
                     // Add the trigger to the memo for rerendering Quests order due to progress changes, etc.
-                    match: /(?<=current=\i,\i},\[\i,\i,\i)/,
+                    match: /(?<=id\);.{0,100}?,\i},\[\i,\i,\i)/,
                     replace: ",questRerenderTrigger,questifySorted"
-                }
-            ]
-        },
-        {
-            // Adds the "Questify" sort option to the sort enum.
-            find: "SUGGESTED=\"suggested\",",
-            replacement: {
-                match: /return ((\i).SUGGESTED="suggested",)/,
-                replace: "return $2.QUESTIFY=\"questify\",$1"
-            }
-        },
-        {
-            // Adds the "Questify" sort option to the sort dropdown.
-            find: "radioItemTitle,options",
-            group: true,
-            replacement: [
-                {
-                    match: /(?=case (\i.\i).SUGGESTED)/,
-                    replace: "case $1.QUESTIFY:return \"Questify\";"
                 }
             ]
         },
         {
             // Loads the last used sort method and filter choices.
             // Defaults to sorting by "Questify" and no filters.
-            find: "QUEST_HOME_SORT_METHOD_CHANGED,",
+            find: "filterSortOption,selectedFilters",
             group: true,
             replacement: [
                 {

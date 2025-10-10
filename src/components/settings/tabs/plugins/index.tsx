@@ -21,6 +21,7 @@ import "./styles.css";
 import * as DataStore from "@api/DataStore";
 import { useSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
+import ErrorBoundary from "@components/ErrorBoundary";
 import { SettingsTab } from "@components/settings";
 import { debounce } from "@shared/debounce";
 import { ChangeList } from "@utils/ChangeList";
@@ -365,7 +366,9 @@ export default function PluginSettings() {
             </Forms.FormTitle>
 
             <div className={classes(Margins.bottom20, cl("filter-controls"))}>
-                <TextInput autoFocus value={searchValue.value} placeholder="Search for a plugin..." onChange={onSearch} />
+                <ErrorBoundary noop>
+                    <TextInput autoFocus value={searchValue.value} placeholder="Search for a plugin..." onChange={onSearch} />
+                </ErrorBoundary>
                 <div className={InputStyles.inputWrapper}>
                     <Select
                         options={[

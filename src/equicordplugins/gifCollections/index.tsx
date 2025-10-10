@@ -16,9 +16,10 @@ import { ModalContent, ModalFooter, ModalHeader, ModalRoot, ModalSize, openModal
 import definePlugin, { OptionType } from "@utils/types";
 import { Alerts, Button, ContextMenuApi, FluxDispatcher, Forms, Menu, React, showToast, TextInput, Toasts, useCallback, useState } from "@webpack/common";
 
-import { addToCollection, cache_collections, createCollection, DATA_COLLECTION_NAME, deleteCollection, fixPrefix, getCollections, getGifById, getItemCollectionNameFromId, moveGifToCollection, refreshCacheCollection, removeFromCollection, renameCollection } from "./utils/collectionManager";
+import { addToCollection, cache_collections, createCollection, DATA_COLLECTION_NAME, deleteCollection, fixPrefix, getCollections, getGifById, getItemCollectionNameFromId, moveGifToCollection, refreshCacheCollection, removeFromCollection, renameCollection, updateGif } from "./utils/collectionManager";
 import { getFormat } from "./utils/getFormat";
 import { getGif } from "./utils/getGif";
+import { refreshGifUrl } from "./utils/refreshUrl";
 import { downloadCollections, uploadGifCollections } from "./utils/settingsUtils";
 import { uuidv4 } from "./utils/uuidv4";
 
@@ -128,6 +129,11 @@ export const settings = definePluginSettings({
     },
     showCopyImageLink: {
         description: "Show 'Copy Image Link' option in context menus",
+        type: OptionType.BOOLEAN,
+        default: false,
+    },
+    preventDuplicates: {
+        description: "Prevent adding the same GIF to a collection multiple times",
         type: OptionType.BOOLEAN,
         default: false,
     },
@@ -455,7 +461,7 @@ const RemoveItemContextMenu = ({ type, nameOrId, instance }) => (
                                     <Forms.FormText className="custom-modal-title">Collection Information</Forms.FormText>
                                 </ModalHeader>
                                 <ModalContent className="custom-modal-content">
-                                    <Forms.FormSection>
+                                    <section>
                                         <Flex className="collection-info">
                                             <Forms.FormTitle tag="h5" className="collection-info-title">Name</Forms.FormTitle>
                                             <Forms.FormText className="collection-info-text">{collection.name.replace(/.+?:/, "")}</Forms.FormText>
@@ -472,7 +478,7 @@ const RemoveItemContextMenu = ({ type, nameOrId, instance }) => (
                                             <Forms.FormTitle tag="h5" className="collection-info-title">Last Updated</Forms.FormTitle>
                                             <Forms.FormText className="collection-info-text">{collection.lastUpdated ? new Date(collection.lastUpdated).toLocaleString() : "Unknown"}</Forms.FormText>
                                         </Flex>
-                                    </Forms.FormSection>
+                                    </section>
                                 </ModalContent>
                                 <ModalFooter className="custom-modal-footer">
                                     <Button onClick={modalProps.onClose} className="custom-modal-button">Close</Button>
@@ -516,7 +522,7 @@ const RemoveItemContextMenu = ({ type, nameOrId, instance }) => (
                                     <Forms.FormText className="custom-modal-title">Information</Forms.FormText>
                                 </ModalHeader>
                                 <ModalContent className="custom-modal-content">
-                                    <Forms.FormSection>
+                                    <section>
                                         <Flex className="gif-info">
                                             <Forms.FormTitle tag="h5" className="gif-info-title">Added At</Forms.FormTitle>
                                             <Forms.FormText className="gif-info-text">{gifInfo.addedAt ? new Date(gifInfo.addedAt).toLocaleString() : "Unknown"}</Forms.FormText>
@@ -529,13 +535,47 @@ const RemoveItemContextMenu = ({ type, nameOrId, instance }) => (
                                             <Forms.FormTitle tag="h5" className="gif-info-title">Height</Forms.FormTitle>
                                             <Forms.FormText className="gif-info-text">{gifInfo.height}</Forms.FormText>
                                         </Flex>
-                                    </Forms.FormSection>
+                                    </section>
                                 </ModalContent>
                                 <ModalFooter className="custom-modal-footer">
                                     <Button onClick={modalProps.onClose} className="custom-modal-button">Close</Button>
                                 </ModalFooter>
                             </ModalRoot>
                         ));
+                    }}
+                />
+                <Menu.MenuSeparator />
+                <Menu.MenuItem
+                    key="refresh-url"
+                    id="refresh-url"
+                    label="Refresh URL"
+                    action={async () => {
+                        const gifInfo = getGifById(nameOrId);
+                        if (!gifInfo) return;
+
+                        if (!gifInfo.channelId || !gifInfo.messageId || !gifInfo.attachmentId) {
+                            showToast("Cannot refresh: GIF missing metadata (re-add to collection)", Toasts.Type.FAILURE);
+                            return;
+                        }
+
+                        showToast("Refreshing URL...", Toasts.Type.MESSAGE);
+                        const refreshedGif = await refreshGifUrl(gifInfo);
+
+                        if (refreshedGif) {
+                            await updateGif(nameOrId, refreshedGif);
+                            const collectionName = getItemCollectionNameFromId(nameOrId);
+                            FluxDispatcher.dispatch({
+                                type: "GIF_PICKER_QUERY",
+                                query: `${collectionName} `
+                            });
+                            FluxDispatcher.dispatch({
+                                type: "GIF_PICKER_QUERY",
+                                query: `${collectionName}`
+                            });
+                            showToast("URL refreshed successfully", Toasts.Type.SUCCESS);
+                        } else {
+                            showToast("Failed to refresh URL", Toasts.Type.FAILURE);
+                        }
                     }}
                 />
                 <Menu.MenuSeparator />

@@ -57,13 +57,13 @@ const timeFormats: Record<string, TimeFormat> = {
     sameDayFormat: {
         name: "Same day",
         description: "[calendar] format for today",
-        default: "[Today at ] HH:mm:ss",
+        default: "[Today at] HH:mm:ss",
         offset: 0,
     },
     lastDayFormat: {
         name: "Last day",
         description: "[calendar] format for yesterday",
-        default: "[Yesterday at ] HH:mm:ss",
+        default: "[Yesterday at] HH:mm:ss",
         offset: -1000 * 60 * 60 * 24,
     },
     lastWeekFormat: {
@@ -195,7 +195,7 @@ const settings = definePluginSettings({
                 <>
                     <DemoMessageContainer />
                     {Object.entries(timeFormats).map(([key, value]) => (
-                        <Forms.FormSection key={key}>
+                        <section key={key}>
                             {key === "sameDayFormat" && (
                                 <div className={Margins.bottom20}>
                                     <Forms.FormDivider style={{ marginBottom: "10px" }} />
@@ -211,7 +211,7 @@ const settings = definePluginSettings({
                                 onChange={setNewValue}
                                 pluginSettings={settingsState}
                             />
-                        </Forms.FormSection>
+                        </section>
                     ))}
                 </>);
         }
@@ -264,17 +264,17 @@ export default definePlugin({
                 },
                 {
                     // Tooltips when hovering over message timestamps
-                    match: /(?<=text:)\(\)=>\(0,\i.\i\)\((\i),"LLLL"\)(?=,)/,
-                    replace: "$self.renderTimestamp($1,'tooltip')",
+                    match: /__unsupportedReactNodeAsText:\(0,\i.\i\)\((\i),"LLLL"\)/,
+                    replace: "text:$self.renderTimestamp($1,'tooltip')",
                 },
             ]
         },
         {
-            find: ".full,tooltipClassName:",
+            find: ".full,children:",
             replacement: {
                 // Tooltips for timestamp markdown (e.g. <t:1234567890>)
-                match: /text:(\i).full,/,
-                replace: "text: $self.renderTimestamp(new Date($1.timestamp*1000),'tooltip'),"
+                match: /(\i).full/,
+                replace: "$self.renderTimestamp(new Date($1.timestamp*1000),'tooltip')"
             }
         }
     ],
