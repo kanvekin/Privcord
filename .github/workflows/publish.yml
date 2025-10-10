@@ -77,7 +77,7 @@ jobs:
         run: pnpm buildWebStandalone
 
       - name: Publish extension
-        if: steps.check.outputs.release == 'true'
+        if: ${{ steps.check.outputs.release == 'true' && secrets.CHROME_EXTENSION_ID != '' && secrets.CHROME_CLIENT_ID != '' && secrets.CHROME_CLIENT_SECRET != '' && secrets.CHROME_REFRESH_TOKEN != '' }}
         run: |
           cd dist/browser/chromium-unpacked
           pnpx chrome-webstore-upload-cli@2.1.0 upload --auto-publish
@@ -86,3 +86,6 @@ jobs:
           CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+      - name: Skip publish (missing Chrome secrets)
+        if: ${{ steps.check.outputs.release == 'true' && (secrets.CHROME_EXTENSION_ID == '' || secrets.CHROME_CLIENT_ID == '' || secrets.CHROME_CLIENT_SECRET == '' || secrets.CHROME_REFRESH_TOKEN == '') }}
+        run: echo "Skipping Chrome Web Store publish: missing CHROME_* secrets"
