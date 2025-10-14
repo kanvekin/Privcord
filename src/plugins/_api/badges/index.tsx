@@ -21,7 +21,7 @@ import { EquicordDonorModal, VencordDonorModal, PrivcordDonorModal } from "./mod
 
 const CONTRIBUTOR_BADGE = "https://cdn.discordapp.com/emojis/1092089799109775453.png?size=64";
 const EQUICORD_CONTRIBUTOR_BADGE = "https://equicord.org/assets/favicon.png";
-const PRIVCORD_CONTRIBUTOR_BADGE = "https://cdn.discordapp.com/emojis/1272646182165938268.webp?size=64";
+const PRIVCORD_CONTRIBUTOR_BADGE = "https://cdn.discordapp.com/emojis/1349141323705352222.webp?size=64";
 const EQUICORD_DONOR_BADGE = "https://cdn.nest.rip/uploads/78cb1e77-b7a6-4242-9089-e91f866159bf.png";
 const PRIVCORD_DONOR_BADGE = "https://cdn.discordapp.com/emojis/1422406660281995264.webp?size=64";
 
