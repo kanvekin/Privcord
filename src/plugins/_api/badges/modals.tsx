@@ -84,8 +84,8 @@ export function EquicordDonorModal() {
                         <Flex style={{ justifyContent: "center", alignItems: "center", gap: "0.5em" }}>
                             <Heart />
                             Privcord Donor
-                        </Forms.FormTitle>
-                    </Flex>
+                        </Flex>
+                    </HeadingPrimary>
                 </ModalHeader>
                 <ModalContent>
                     <Flex>
