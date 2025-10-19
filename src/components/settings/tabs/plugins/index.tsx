@@ -21,7 +21,10 @@ import "./styles.css";
 import * as DataStore from "@api/DataStore";
 import { useSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
+import { Divider } from "@components/Divider";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { HeadingTertiary } from "@components/Heading";
+import { Paragraph } from "@components/Paragraph";
 import { SettingsTab } from "@components/settings";
 import { debounce } from "@shared/debounce";
 import { ChangeList } from "@utils/ChangeList";
@@ -30,8 +33,7 @@ import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { useAwaiter, useIntersection } from "@utils/react";
-import { findByPropsLazy } from "@webpack";
-import { Alerts, Button, Card, Forms, lodash, Parser, React, Select, Text, TextInput, Toasts, Tooltip, useMemo } from "@webpack/common";
+import { Alerts, Button, Card, lodash, Parser, React, Select, TextInput, Toasts, Tooltip, useMemo } from "@webpack/common";
 import { JSX } from "react";
 
 import Plugins, { ExcludedPlugins, PluginMeta } from "~plugins";
@@ -45,9 +47,6 @@ const { startDependenciesRecursive, startPlugin, stopPlugin } = proxyLazy(() => 
 
 export const cl = classNameFactory("vc-plugins-");
 export const logger = new Logger("PluginSettings", "#a6d189");
-
-const InputStyles = findByPropsLazy("inputWrapper", "inputError", "error");
-const ButtonClasses = findByPropsLazy("button", "disabled", "enabled");
 
 function showErrorToast(message: string) {
     Toasts.show({
@@ -65,19 +64,19 @@ function ReloadRequiredCard({ required, enabledPlugins, openWarningModal, resetC
         <Card className={classes(cl("info-card"), required && "vc-warning-card")}>
             {required ? (
                 <>
-                    <Forms.FormTitle tag="h5">Restart required!</Forms.FormTitle>
-                    <Forms.FormText className={cl("dep-text")}>
+                    <HeadingTertiary>Restart required!</HeadingTertiary>
+                    <Paragraph className={cl("dep-text")}>
                         Restart now to apply new plugins and their settings
-                    </Forms.FormText>
+                    </Paragraph>
                     <Button className={cl("restart-button")} onClick={() => location.reload()}>
                         Restart
                     </Button>
                 </>
             ) : (
                 <>
-                    <Forms.FormTitle tag="h5">Plugin Management</Forms.FormTitle>
-                    <Forms.FormText>Press the cog wheel or info icon to get more info on a plugin</Forms.FormText>
-                    <Forms.FormText>Plugins with a cog wheel have settings you can modify!</Forms.FormText>
+                    <HeadingTertiary>Plugin Management</HeadingTertiary>
+                    <Paragraph>Press the cog wheel or info icon to get more info on a plugin</Paragraph>
+                    <Paragraph>Plugins with a cog wheel have settings you can modify!</Paragraph>
                 </>
             )}
             {enabledPlugins.length > 0 && !required && (
@@ -120,10 +119,10 @@ function ExcludedPluginsList({ search }: { search: string; }) {
         .filter(([name]) => name.toLowerCase().includes(search));
 
     return (
-        <Text variant="text-md/normal" className={Margins.top16}>
+        <Paragraph className={Margins.top16}>
             {matchingExcludedPlugins.length
                 ? <>
-                    <Forms.FormText>Are you looking for:</Forms.FormText>
+                    <Paragraph>Are you looking for:</Paragraph>
                     <ul>
                         {matchingExcludedPlugins.map(([name, reason]) => (
                             <li key={name}>
@@ -134,7 +133,7 @@ function ExcludedPluginsList({ search }: { search: string; }) {
                 </>
                 : "No plugins meet the search criteria."
             }
-        </Text>
+        </Paragraph>
     );
 }
 
@@ -361,9 +360,9 @@ export default function PluginSettings() {
                 />
             </div>
 
-            <Forms.FormTitle tag="h5" className={classes(Margins.top20, Margins.bottom8)}>
+            <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
                 Filters
-            </Forms.FormTitle>
+            </HeadingTertiary>
 
             <div className={classes(Margins.bottom20, cl("filter-controls"))}>
                 <ErrorBoundary noop>
@@ -389,7 +388,7 @@ export default function PluginSettings() {
                 </div>
             </div>
 
-            <Forms.FormTitle className={Margins.top20}>Plugins</Forms.FormTitle>
+            <HeadingTertiary className={Margins.top20}>Plugins</HeadingTertiary>
 
             {plugins.length || requiredPlugins.length
                 ? (
@@ -397,7 +396,7 @@ export default function PluginSettings() {
                         <div className={cl("grid")}>
                             {visiblePlugins.length
                                 ? visiblePlugins
-                                : <Text variant="text-md/normal">No plugins meet the search criteria.</Text>
+                                : <Paragraph>No plugins meet the search criteria.</Paragraph>
                             }
                         </div>
                         {visibleCount < plugins.length && (
@@ -408,15 +407,16 @@ export default function PluginSettings() {
                 : <ExcludedPluginsList search={search} />
             }
 
-            <Forms.FormDivider className={Margins.top20} />
 
-            <Forms.FormTitle tag="h5" className={classes(Margins.top20, Margins.bottom8)}>
+            <Divider className={Margins.top20} />
+
+            <HeadingTertiary className={classes(Margins.top20, Margins.bottom8)}>
                 Required Plugins
-            </Forms.FormTitle>
+            </HeadingTertiary>
             <div className={cl("grid")}>
                 {requiredPlugins.length
                     ? requiredPlugins
-                    : <Text variant="text-md/normal">No plugins meet the search criteria.</Text>
+                    : <Paragraph>No plugins meet the search criteria.</Paragraph>
                 }
             </div>
         </SettingsTab >
@@ -425,9 +425,9 @@ export default function PluginSettings() {
 
 export function PluginDependencyList({ deps }: { deps: string[]; }) {
     return (
-        <React.Fragment>
-            <Forms.FormText>This plugin is required by:</Forms.FormText>
-            {deps.map((dep: string) => <Forms.FormText key={dep} className={cl("dep-text")}>{dep}</Forms.FormText>)}
-        </React.Fragment>
+        <>
+            <Paragraph>This plugin is required by:</Paragraph>
+            {deps.map((dep: string) => <Paragraph key={dep} className={cl("dep-text")}>{dep}</Paragraph>)}
+        </>
     );
 }

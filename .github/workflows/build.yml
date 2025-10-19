@@ -11,7 +11,8 @@ env:
     REPO: kanvekin/Privbored
     USERNAME: GitHub-Actions
 
-permissions: write-all
+permissions:
+    contents: write
 
 jobs:
     Build:

@@ -10,9 +10,8 @@ import { CogWheel, InfoIcon } from "@components/Icons";
 import { AddonCard } from "@components/settings/AddonCard";
 import { proxyLazy } from "@utils/lazy";
 import { Logger } from "@utils/Logger";
-import { classes, isObjectEmpty } from "@utils/misc";
+import { isObjectEmpty } from "@utils/misc";
 import { Plugin } from "@utils/types";
-import { findByPropsLazy } from "@webpack";
 import { React, showToast, Toasts } from "@webpack/common";
 import { Settings } from "Vencord";
 
@@ -26,9 +25,7 @@ const cl = classNameFactory("vc-plugins-");
 // Avoid circular dependency
 const { startDependenciesRecursive, startPlugin, stopPlugin, isPluginEnabled } = proxyLazy(() => require("plugins") as typeof import("plugins"));
 
-export const ButtonClasses = findByPropsLazy("button", "disabled", "enabled");
-
-interface PluginCardProps {
+interface PluginCardProps extends React.HTMLProps<HTMLDivElement> {
     plugin: Plugin;
     disabled?: boolean;
     onRestartNeeded(name: string, key: string): void;
@@ -96,17 +93,40 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
         settings.enabled = !wasEnabled;
     }
 
-    const sourceBadge = isEquicordPlugin ? (
+    const pluginInfo = [
+        {
+            condition: isModifiedPlugin,
+            src: "https://equicord.org/assets/icons/equicord/modified.png",
+            alt: "Modified",
+            title: "Modified Vencord Plugin"
+        },
+        {
+            condition: isEquicordPlugin,
+            src: "https://equicord.org/assets/icons/equicord/icon.png",
+            alt: "Equicord",
+            title: "Equicord Plugin"
+        },
+        {
+            condition: isVencordPlugin,
+            src: "https://equicord.org/assets/icons/vencord/icon-light.png",
+            alt: "Vencord",
+            title: "Vencord Plugin"
+        },
+        {
+            condition: isUserPlugin,
+            src: "https://equicord.org/assets/icons/misc/userplugin.png",
+            alt: "User",
+            title: "User Plugin"
+        }
+    ];
+
+    const pluginDetails = pluginInfo.find(p => p.condition);
+
+    const sourceBadge = pluginDetails ? (
         <img
-            src="https://equicord.org/assets/favicon.png"
-            alt="Equicord"
-            title="Equicord Plugin"
-            style={{
-                width: "20px",
-                height: "20px",
-                marginLeft: "8px",
-                borderRadius: "2px"
-            }}
+            src={pluginDetails.src}
+            alt={pluginDetails.alt}
+            className={cl("source")}
         />
     ) : isPrivcordPlugin ? (
         <img
@@ -150,6 +170,7 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
         <AddonCard
             name={plugin.name}
             sourceBadge={sourceBadge}
+            tooltip={tooltip}
             description={plugin.description}
             isNew={isNew}
             enabled={isEnabled()}
@@ -161,7 +182,7 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
                 <button
                     role="switch"
                     onClick={() => openPluginModal(plugin, onRestartNeeded)}
-                    className={classes(ButtonClasses.button, cl("info-button"))}
+                    className={cl("info-button")}
                 >
                     {plugin.options && !isObjectEmpty(plugin.options)
                         ? <CogWheel className={cl("info-icon")} />

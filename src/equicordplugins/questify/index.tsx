@@ -17,7 +17,7 @@ import { JSX } from "react";
 
 import { addIgnoredQuest, addRerenderCallback, autoFetchCompatible, fetchAndAlertQuests, maximumAutoFetchIntervalValue, minimumAutoFetchIntervalValue, questIsIgnored, removeIgnoredQuest, rerenderQuests, settings, startAutoFetchingQuests, stopAutoFetchingQuests, validateAndOverwriteIgnoredQuests } from "./settings";
 import { ExcludedQuestMap, GuildlessServerListItem, Quest, QuestIcon, QuestMap, QuestStatus, RGB } from "./utils/components";
-import { adjustRGB, decimalToRGB, fetchAndDispatchQuests, formatLowerBadge, getFormattedNow, getIgnoredQuestIDs, getQuestStatus, isDarkish, leftClick, middleClick, normalizeQuestName, q, QuestifyLogger, questPath, QuestsStore, refreshQuest, reportPlayGameQuestProgress, reportVideoQuestProgress, rightClick, setIgnoredQuestIDs, waitUntilEnrolled } from "./utils/misc";
+import { adjustRGB, decimalToRGB, fetchAndDispatchQuests, formatLowerBadge, getFormattedNow, getIgnoredQuestIDs, getIntlMessageQuestify, getQuestStatus, isDarkish, leftClick, middleClick, normalizeQuestName, q, QuestifyLogger, questPath, QuestsStore, refreshQuest, reportPlayGameQuestProgress, reportVideoQuestProgress, rightClick, setIgnoredQuestIDs, waitUntilEnrolled } from "./utils/misc";
 
 const patchedMobileQuests = new Set<string>();
 export const activeQuestIntervals = new Map<string, { progressTimeout: NodeJS.Timeout; rerenderTimeout: NodeJS.Timeout; progress: number; duration: number, type: string; }>();
@@ -728,6 +728,7 @@ function shouldDisableQuestAcceptedButton(quest: Quest): boolean | null {
 
 function getQuestAcceptedButtonText(quest: Quest): string | null {
     const { completeGameQuestsInBackground, completeVideoQuestsInBackground } = settings.store;
+    const questEnrolledAt = quest.userStatus?.enrolledAt ? new Date(quest.userStatus.enrolledAt) : null;
     const playType = quest.config.taskConfigV2?.tasks.PLAY_ON_DESKTOP || quest.config.taskConfigV2?.tasks.PLAY_ON_XBOX || quest.config.taskConfigV2?.tasks.PLAY_ON_PLAYSTATION || quest.config.taskConfigV2?.tasks.PLAY_ACTIVITY;
     const watchType = quest.config.taskConfigV2?.tasks.WATCH_VIDEO || quest.config.taskConfigV2?.tasks.WATCH_VIDEO_ON_MOBILE;
     const taskType = playType || watchType;
@@ -740,11 +741,12 @@ function getQuestAcceptedButtonText(quest: Quest): string | null {
     const timeRemaining = Math.max(0, duration - progress);
     const progressFormatted = `${String(Math.floor(timeRemaining / 60)).padStart(2, "0")}:${String(timeRemaining % 60).padStart(2, "0")}`;
 
-    if ((playType && completeGameQuestsInBackground) || (watchType && completeVideoQuestsInBackground)) {
+    // TODO: Revert to using the built-in getIntlMessage once Discord has properly deployed the new system.
+    if (questEnrolledAt && ((playType && completeGameQuestsInBackground) || (watchType && completeVideoQuestsInBackground))) {
         if (!!intervalData) {
-            return getIntlMessage("QUESTS_VIDEO_WATCH_RESUME_WITH_TIME_CTA", { remainTime: progressFormatted })[0].replace(getIntlMessage("GAME_LIBRARY_UPDATES_ACTION_RESUME"), getIntlMessage(playType ? "USER_ACTIVITY_PLAYING" : "USER_ACTIVITY_WATCHING"));
+            return getIntlMessageQuestify("QUESTS_VIDEO_WATCH_RESUME_WITH_TIME_CTA", { remainTime: progressFormatted })[0].replace(getIntlMessage("GAME_LIBRARY_UPDATES_ACTION_RESUME"), getIntlMessage(playType ? "USER_ACTIVITY_PLAYING" : "USER_ACTIVITY_WATCHING"));
         } else if (watchType || (playType && IS_DISCORD_DESKTOP)) {
-            return getIntlMessage("QUESTS_VIDEO_WATCH_RESUME_WITH_TIME_CTA", { remainTime: progressFormatted })[0];
+            return getIntlMessageQuestify("QUESTS_VIDEO_WATCH_RESUME_WITH_TIME_CTA", { remainTime: progressFormatted })[0];
         }
     }
 
@@ -832,7 +834,8 @@ function getQuestAcceptedButtonProps(quest: Quest, text: string) {
     return {
         disabled: shouldDisableQuestAcceptedButton(quest) ?? true,
         text: getQuestAcceptedButtonText(quest) ?? text,
-        onClick: () => { processQuestForAutoComplete(quest); }
+        onClick: () => { processQuestForAutoComplete(quest); },
+        icon: () => { }
     };
 }
 
@@ -1055,12 +1058,11 @@ export default definePlugin({
             find: "CLAIMED=\"claimed\",",
             group: true,
             replacement: [
-
                 {
                     // Run Questify's sort function every time due to hook requirements but return
                     // early if not applicable. If the sort method is set to "Questify", replace the
                     // quests with the sorted ones. Also, setup a trigger to rerender the memo.
-                    match: /(?<=function \i\((\i),\i,\i\){let \i=\i.useRef.{0,100}?;)(return \i.useMemo\(\(\)=>{)/,
+                    match: /(?<=function \i\((\i),\i\){let \i=\i.useRef.{0,100}?;)(return \i.useMemo\(\(\)=>{)/,
                     replace: "const questRerenderTrigger=$self.useQuestRerender();const questifySorted=$self.sortQuests($1,arguments[1].sortMethod!==\"questify\");$2if(arguments[1].sortMethod===\"questify\"){$1=questifySorted;};"
                 },
                 {
@@ -1075,7 +1077,7 @@ export default definePlugin({
                 },
                 {
                     // Add the trigger to the memo for rerendering Quests order due to progress changes, etc.
-                    match: /(?<=id\);.{0,100}?,\i},\[\i,\i,\i)/,
+                    match: /(?<=id\);.{0,100}?,\i},\[\i,\i)/,
                     replace: ",questRerenderTrigger,questifySorted"
                 }
             ]
@@ -1171,6 +1173,11 @@ export default definePlugin({
                     match: /(\i.intl.string\(\i.\i#{intl::QUESTS_SEE_CODE}\)}\)}},\[)/,
                     replace: "$1questRerenderTrigger,"
                 },
+                {
+                    // Stop Play Activity Quests from launching the activity.
+                    match: /(?<=,)(\i\(\))(\)}};)/,
+                    replace: "startingAutoComplete&&$1$2"
+                }
             ]
         },
         // This patch covers the new entry point blocked in the above group.
@@ -1199,8 +1206,13 @@ export default definePlugin({
                     // The "Quest Accepted" text is changed to "Resume" if the Quest is in progress but not active.
                     // Then, when the Quest Accepted button is clicked, resume the automatic completion of the
                     // Quest and disable the button again.
-                    match: /(?<=fullWidth:!0}\)}\):.{0,150}?secondary",)disabled:!0,text:(.{0,30}?\["9KoPyM"\]\)),/,
+                    match: /(?<=fullWidth:!0}\)}\):.{0,200}?secondary",)disabled:!0,text:(.{0,30}?#{intl::QUEST_ACCEPTED}\)),/,
                     replace: "...$self.getQuestAcceptedButtonProps(arguments[0].quest,$1),"
+                },
+                {
+                    // Does the above for resuming Play Activity Quests.
+                    match: /(?<=icon:.{0,15}?onClick:.{0,20}?,text:(\i),fullWidth:!0)/,
+                    replace: ",...$self.getQuestAcceptedButtonProps(arguments[0].quest,$1)"
                 }
             ]
         },
@@ -1209,7 +1221,7 @@ export default definePlugin({
             // DM button highlight logic while the Quest button is visible.
             find: "GLOBAL_DISCOVERY),",
             replacement: {
-                match: /(pathname:(\i)}.{0,250}?return )/,
+                match: /(pathname:(\i)}.{0,400}?return )/,
                 replace: "$1$self.disguiseHomeButton($2)?false:"
             }
         }

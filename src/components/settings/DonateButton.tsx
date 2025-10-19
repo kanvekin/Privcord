@@ -32,7 +32,7 @@ export function VCDonateButton({
             look={look}
             color={color}
             onClick={() => VencordNative.native.openExternal("https://github.com/sponsors/Vendicated")}
-            innerClassName="vc-donate-button"
+            className="vc-donate-button"
         >
             <Heart />
             Donate
@@ -75,7 +75,7 @@ export function InviteButton({
                     showToast("Invalid or expired invite"),
                 );
             }}
-            innerClassName="vc-donate-button"
+            className="vc-donate-button"
         >
             Invite
         </Button>
