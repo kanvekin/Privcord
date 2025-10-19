@@ -93,6 +93,10 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
         settings.enabled = !wasEnabled;
     }
 
+    const isModifiedPlugin = pluginMeta.folderName.includes("modified");
+    const isVencordPlugin = !isEquicordPlugin && !isPrivcordPlugin && !isUserplugin;
+    const isUserPlugin = isUserplugin;
+
     const pluginInfo = [
         {
             condition: isModifiedPlugin,
@@ -170,7 +174,7 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
         <AddonCard
             name={plugin.name}
             sourceBadge={sourceBadge}
-            tooltip={tooltip}
+            tooltip={undefined}
             description={plugin.description}
             isNew={isNew}
             enabled={isEnabled()}

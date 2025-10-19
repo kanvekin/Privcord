@@ -32,8 +32,7 @@ export const SettingsPanelButton = (props: SettingsPanelButtonProps) => {
         <Button
             size={Button.Sizes.SMALL}
             className={classes(panelClasses.button, panelClasses.buttonColor)}
-            innerClassName={classes(panelClasses.buttonContents)}
-            wrapperClassName={classes(panelClasses.button)}
+            // ButtonCompat does not support innerClassName/wrapperClassName; use className only
             {...props}
         >
             {props.icon && <props.icon className={classes(panelClasses.buttonIcon)} />}
