@@ -9,6 +9,7 @@ import { Heart } from "@components/Heart";
 import { DonateButton, ErrorBoundary, HeadingPrimary, Paragraph, VCDonateButton } from "@components/index";
 import { Margins } from "@utils/margins";
 import { closeModal, ModalContent, ModalFooter, ModalHeader, ModalRoot, openModal } from "@utils/modal";
+import { Forms } from "@webpack/common";
 
 export function VencordDonorModal() {
     const modalKey = openModal(props => (

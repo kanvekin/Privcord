@@ -368,7 +368,7 @@ export default function PluginSettings() {
                 <ErrorBoundary noop>
                     <TextInput autoFocus value={searchValue.value} placeholder="Search for a plugin..." onChange={onSearch} />
                 </ErrorBoundary>
-                <div className={InputStyles.inputWrapper}>
+                <div className={cl("select-input-wrapper")}>
                     <Select
                         options={[
                             { label: "Show All", value: SearchStatus.ALL, default: true },
