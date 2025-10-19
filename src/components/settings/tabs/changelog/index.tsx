@@ -494,7 +494,7 @@ function ChangelogContent() {
             <Forms.FormText className={Margins.bottom16}>
                 View the most recent changes to Privcord. This fetches commits
                 directly from the repository to show you what's new.
-            </Paragraph>
+            </Forms.FormText>
 
             <Heading>Repository</Heading>
             <Paragraph className={Margins.bottom16}>

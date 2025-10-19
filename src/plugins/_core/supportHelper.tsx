@@ -278,9 +278,9 @@ export default definePlugin({
                         title: "Hold on!",
                         body: <div>
                             <Forms.FormText>You are using an outdated version of Privcord! Chances are, your issue is already fixed.</Forms.FormText>
-                            <Forms.FormText className={Margins.top8}>
-                                Please first update before asking for support!
-                            </Paragraph>
+                        <Forms.FormText className={Margins.top8}>
+                            Please first update before asking for support!
+                        </Forms.FormText>
                         </div>,
                         onCancel: () => openUpdaterModal!(),
                         cancelText: "View Updates",
@@ -302,7 +302,7 @@ export default definePlugin({
                         <Forms.FormText className={Margins.top8}>
                             Please join the <Link href="https://discord.gg/9E9tXjecqy">Privcord Server</Link> for support,
                             or if this issue persists on Vencord, continue on.
-                        </Paragraph>
+                        </Forms.FormText>
                     </div>
                 });
             }
