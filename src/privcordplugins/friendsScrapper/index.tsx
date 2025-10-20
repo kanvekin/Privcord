@@ -1,15 +1,16 @@
 /*
- * Privcord - Friends Scrapper
+ * Vencord, a Discord client mod
+ * Copyright (c) 2025 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import { definePluginSettings } from "@api/Settings";
-import { Devs } from "@utils/constants";
-import definePlugin, { OptionType } from "@utils/types";
-import { openModal } from "@utils/modal";
-import { classNameFactory } from "@utils/styles";
-import { Button, RelationshipStore, Toasts, UserStore, RestAPI, React } from "@webpack/common";
+import { classNameFactory } from "@api/Styles";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { ModalRoot, ModalHeader, ModalContent, ModalFooter, ModalCloseButton, ModalProps } from "@utils/modal";
+import { Devs } from "@utils/constants";
+import { ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot,openModal } from "@utils/modal";
+import definePlugin, { OptionType } from "@utils/types";
+import { Button, React,RelationshipStore, RestAPI, Toasts, UserStore } from "@webpack/common";
 
 const cl = classNameFactory("pc-friends-scrapper-");
 
@@ -147,7 +148,7 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
 const FriendsHeaderPatch = {
     find: "[role=\"tab\"][aria-disabled=\"false\"]",
     replacement: {
-        match: /(\"aria-label\":(\i).{0,25})(\i)\.Children\.map\((\i),this\.renderChildren\)/,
+        match: /("aria-label":(\i).{0,25})(\i)\.Children\.map\((\i),this\.renderChildren\)/,
         replace:
             "$1($3 && $3.Children"
             + "? ($2 === 'Friends'"

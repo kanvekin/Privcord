@@ -16,7 +16,7 @@ import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { Margins } from "@utils/margins";
 import { useAwaiter } from "@utils/react";
 import { getRepo, shortGitHash, UpdateLogger } from "@utils/updater";
-import { Alerts, Button, Card, React, Toasts, Forms } from "@webpack/common";
+import { Alerts, Button, Card, Forms,React, Toasts } from "@webpack/common";
 
 import gitHash from "~git-hash";
 
