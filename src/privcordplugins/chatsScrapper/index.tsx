@@ -1,14 +1,14 @@
 /*
- * Privcord - Chats Scrapper
+ * Vencord, a Discord client mod
+ * Copyright (c) 2025 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
+import { ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot,openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
-import { openModal } from "@utils/modal";
-import { Button, ChannelStore, Menu, RestAPI, Toasts, React } from "@webpack/common";
-import ErrorBoundary from "@components/ErrorBoundary";
-import { ModalRoot, ModalHeader, ModalContent, ModalFooter, ModalCloseButton, ModalProps } from "@utils/modal";
+import { Button, ChannelStore, Menu, React,RestAPI, Toasts } from "@webpack/common";
 
 const settings = definePluginSettings({
     whitelist: {
@@ -116,6 +116,6 @@ export default definePlugin({
     settings,
     contextMenus: {
         "channel-context": dmContextPatch,
-        "gdm-context": (_c) => null // do not add for groups
+        "gdm-context": _c => null // do not add for groups
     }
 });

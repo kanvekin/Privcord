@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { React, UserStore } from "@webpack/common";
 import { User } from "@vencord/discord-types";
+import { React, UserStore } from "@webpack/common";
 
 export const createDummyUser = (props: Partial<User>) => new (UserStore.getCurrentUser().constructor as any)(props);
 export const openURL = (url: string) => VencordNative.native.openExternal(url);

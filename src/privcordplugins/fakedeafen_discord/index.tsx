@@ -1,10 +1,16 @@
-import definePlugin from "@utils/types";               // Função para registrar o plugin no Vencord
-import { Devs } from "@utils/constants";
-import { findByProps, findComponentByCodeLazy } from "@webpack"; // Helpers para buscar módulos internos
-import { React } from "@webpack/common";               // React usado para criar componentes
+/*
+ * Vencord, a Discord client mod
+ * Copyright (c) 2025 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-let originalVoiceStateUpdate: any;                     // Guarda o método original de voiceStateUpdate
-let fakeDeafenEnabled = false;                        // Flag que indica se o “fake deafen” está ativo
+import { Devs } from "@utils/constants";
+import definePlugin from "@utils/types"; // Função para registrar o plugin no Vencord
+import { findByProps, findComponentByCodeLazy } from "@webpack"; // Helpers para buscar módulos internos
+import { React } from "@webpack/common"; // React usado para criar componentes
+
+let originalVoiceStateUpdate: any; // Guarda o método original de voiceStateUpdate
+let fakeDeafenEnabled = false; // Flag que indica se o “fake deafen” está ativo
 
 // Componente Button genérico obtido via busca de código
 const Button = findComponentByCodeLazy(".NONE,disabled:", ".PANEL_BUTTON");
@@ -90,7 +96,7 @@ export default definePlugin({
             }
         }
     ],
-    FakeDeafenButton,  // Expõe o componente para patch
+    FakeDeafenButton, // Expõe o componente para patch
     start() {
         // Ao iniciar, sobrescreve voiceStateUpdate para sempre aplicar fakeDeafenEnabled
         const GatewayConnection = findByProps("voiceStateUpdate", "voiceServerPing");

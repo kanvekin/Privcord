@@ -241,7 +241,7 @@ export default definePlugin({
                     tooltip={`Disconnect user: ${current?.username ?? disconnectUserId} (right-click to disable)`}
                     icon={UnfollowIcon}
                     onClick={() => { }}
-                    onContextMenu={(e) => {
+                    onContextMenu={e => {
                         e.preventDefault();
                         settings.store.disconnectUserId = "";
                     }}
