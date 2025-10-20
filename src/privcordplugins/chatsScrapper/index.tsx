@@ -102,6 +102,60 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
     );
 }
 
+// Quick action to start the chat scrapping process using the saved whitelist
+async function startChatsScrape(): Promise<void> {
+    const whitelist = new Set(getWhitelist());
+    const oneToOne = ChannelStore.getSortedPrivateChannels().filter(c => c.isDM?.());
+    const channelsToClose = oneToOne.filter(c => !whitelist.has(c.recipients?.[0]));
+
+    if (channelsToClose.length === 0) {
+        Toasts.show({ id: Toasts.genId(), type: Toasts.Type.MESSAGE, message: "Nothing to close." });
+        return;
+    }
+
+    Toasts.show({ id: Toasts.genId(), type: Toasts.Type.MESSAGE, message: `Closing ${channelsToClose.length} DMs...` });
+    let numClosedSuccessfully = 0;
+    let numFailedToClose = 0;
+    for (const channel of channelsToClose) {
+        try {
+            await RestAPI.del({ url: `/channels/${channel.id}` });
+            numClosedSuccessfully++;
+        } catch {
+            numFailedToClose++;
+        }
+    }
+    Toasts.show({
+        id: Toasts.genId(),
+        type: numFailedToClose ? Toasts.Type.FAILURE : Toasts.Type.SUCCESS,
+        message: `Done. Closed ${numClosedSuccessfully}${numFailedToClose ? `, failed ${numFailedToClose}` : ""}.`
+    });
+}
+
+// Menu icons
+const PlayIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M8 5v14l11-7z" />
+    </svg>
+);
+
+const EditIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.83H5v-.92l9.06-9.06.92.92L5.92 20.08zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+    </svg>
+);
+
+const TrashIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M9 3v1H4v2h16V4h-5V3H9zm1 6h2v8h-2V9zm-4 0h2v8H6V9zm8 0h2v8h-2V9z" />
+    </svg>
+);
+
+const InfoIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M11 9h2V7h-2v2zm0 8h2v-6h-2v6zm1-14a10 10 0 1 0 0 20a10 10 0 0 0 0-20z" />
+    </svg>
+);
+
 export default definePlugin({
     name: "ChatsScrapper",
     description: "Adds an × button near DM UI to close all 1:1 DMs except whitelist.",
@@ -116,7 +170,19 @@ export default definePlugin({
                 onContextMenu={e =>
                     ContextMenuApi.openContextMenu(e, () => (
                         <Menu.Menu navId="pc-chats-scrapper-menu" onClose={ContextMenuApi.closeContextMenu} aria-label="Chats Scrapper">
-                            <Menu.MenuItem id="pc-chats-scrapper-open" label="Open Chats Scrapper" action={() => openModal(props => <WhitelistModal modalProps={props} />)} />
+                            <Menu.MenuGroup>
+                                <Menu.MenuItem id="pc-chats-scrapper-open" label="Open Chats Scrapper" icon={EditIcon} action={() => openModal(props => <WhitelistModal modalProps={props} />)} />
+                                <Menu.MenuItem id="pc-chats-scrapper-start" label="Start Scrape Now" icon={PlayIcon} action={startChatsScrape} />
+                            </Menu.MenuGroup>
+                            <Menu.MenuSeparator />
+                            <Menu.MenuGroup>
+                                <Menu.MenuItem id="pc-chats-scrapper-edit-whitelist" label="Edit Whitelist…" icon={EditIcon} action={() => openModal(props => <WhitelistModal modalProps={props} />)} />
+                                <Menu.MenuItem id="pc-chats-scrapper-clear-whitelist" label="Clear Whitelist" icon={TrashIcon} action={() => { setWhitelist([]); Toasts.show({ id: Toasts.genId(), type: Toasts.Type.SUCCESS, message: "Whitelist cleared." }); }} />
+                            </Menu.MenuGroup>
+                            <Menu.MenuSeparator />
+                            <Menu.MenuGroup>
+                                <Menu.MenuItem id="pc-chats-scrapper-about" label="About Chats Scrapper" icon={InfoIcon} action={() => Toasts.show({ id: Toasts.genId(), type: Toasts.Type.MESSAGE, message: "Closes all 1:1 DMs except whitelisted. Use with caution." })} />
+                            </Menu.MenuGroup>
                         </Menu.Menu>
                     ))
                 }

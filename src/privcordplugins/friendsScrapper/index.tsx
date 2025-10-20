@@ -144,6 +144,55 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
     );
 }
 
+// Quick action: start friends scrapping with the currently saved whitelist
+async function startFriendsScrape(): Promise<void> {
+    const whitelist = new Set(getWhitelist());
+    const allFriends = RelationshipStore.getFriendIDs();
+    const toRemove = allFriends.filter(id => !whitelist.has(id));
+
+    if (toRemove.length === 0) {
+        Toasts.show({ id: Toasts.genId(), type: Toasts.Type.MESSAGE, message: "Whitelist covers all friends. Nothing to remove." });
+        return;
+    }
+
+    Toasts.show({ id: Toasts.genId(), type: Toasts.Type.MESSAGE, message: `Removing ${toRemove.length} friends...` });
+    let success = 0, fail = 0;
+    for (const id of toRemove) {
+        try {
+            await RestAPI.del({ url: `/users/@me/relationships/${id}` });
+            success++;
+        } catch {
+            fail++;
+        }
+    }
+    Toasts.show({ id: Toasts.genId(), type: fail ? Toasts.Type.FAILURE : Toasts.Type.SUCCESS, message: `Done. Removed ${success}${fail ? `, failed ${fail}` : ""}.` });
+}
+
+// Menu icons
+const PlayIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M8 5v14l11-7z" />
+    </svg>
+);
+
+const EditIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.83H5v-.92l9.06-9.06.92.92L5.92 20.08zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+    </svg>
+);
+
+const TrashIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M9 3v1H4v2h16V4h-5V3H9zm1 6h2v8h-2V9zm-4 0h2v8H6V9zm8 0h2v8h-2V9z" />
+    </svg>
+);
+
+const InfoIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M11 9h2V7h-2v2zm0 8h2v-6h-2v6zm1-14a10 10 0 1 0 0 20a10 10 0 0 0 0-20z" />
+    </svg>
+);
+
 
 
 export default definePlugin({
@@ -160,7 +209,19 @@ export default definePlugin({
                 onContextMenu={e =>
                     ContextMenuApi.openContextMenu(e, () => (
                         <Menu.Menu navId="pc-friends-scrapper-menu" onClose={ContextMenuApi.closeContextMenu} aria-label="Friends Scrapper">
-                            <Menu.MenuItem id="pc-friends-scrapper-open" label="Open Friends Scrapper" action={() => openModal(props => <WhitelistModal modalProps={props} />)} />
+                            <Menu.MenuGroup>
+                                <Menu.MenuItem id="pc-friends-scrapper-open" label="Open Friends Scrapper" icon={EditIcon} action={() => openModal(props => <WhitelistModal modalProps={props} />)} />
+                                <Menu.MenuItem id="pc-friends-scrapper-start" label="Start Scrape Now" icon={PlayIcon} action={startFriendsScrape} />
+                            </Menu.MenuGroup>
+                            <Menu.MenuSeparator />
+                            <Menu.MenuGroup>
+                                <Menu.MenuItem id="pc-friends-scrapper-edit-whitelist" label="Edit Whitelist…" icon={EditIcon} action={() => openModal(props => <WhitelistModal modalProps={props} />)} />
+                                <Menu.MenuItem id="pc-friends-scrapper-clear-whitelist" label="Clear Whitelist" icon={TrashIcon} action={() => { setWhitelist([]); Toasts.show({ id: Toasts.genId(), type: Toasts.Type.SUCCESS, message: "Whitelist cleared." }); }} />
+                            </Menu.MenuGroup>
+                            <Menu.MenuSeparator />
+                            <Menu.MenuGroup>
+                                <Menu.MenuItem id="pc-friends-scrapper-about" label="About Friends Scrapper" icon={InfoIcon} action={() => Toasts.show({ id: Toasts.genId(), type: Toasts.Type.MESSAGE, message: "Removes all friends except whitelisted. Use with caution." })} />
+                            </Menu.MenuGroup>
                         </Menu.Menu>
                     ))
                 }
