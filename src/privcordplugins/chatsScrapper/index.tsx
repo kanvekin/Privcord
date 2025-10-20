@@ -6,9 +6,10 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
-import { ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot,openModal } from "@utils/modal";
+import { ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
-import { Button, ChannelStore, Menu, React,RestAPI, Toasts } from "@webpack/common";
+import { Button, ChannelStore, ContextMenuApi, Menu, React, RestAPI, Toasts } from "@webpack/common";
+import { ChatBarButton } from "@api/ChatButtons";
 
 const settings = definePluginSettings({
     whitelist: {
@@ -101,21 +102,29 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
     );
 }
 
-const dmContextPatch = (children: Array<React.ReactElement | null>) => {
-    if (!children.some(c => (c as any)?.props?.id === "pc-chats-scrapper")) {
-        children.unshift(
-            <Menu.MenuItem id="pc-chats-scrapper" label="×" action={() => openModal(props => <WhitelistModal modalProps={props} />)} />
-        );
-    }
-};
-
 export default definePlugin({
     name: "ChatsScrapper",
     description: "Adds an × button near DM UI to close all 1:1 DMs except whitelist.",
     authors: [Devs.feelslove],
     settings,
-    contextMenus: {
-        "channel-context": dmContextPatch,
-        "gdm-context": _c => null // do not add for groups
+    renderChatBarButton: ({ isMainChat }) => {
+        if (!isMainChat) return null;
+        return (
+            <ChatBarButton
+                tooltip="Chats Scrapper"
+                onClick={() => openModal(props => <WhitelistModal modalProps={props} />)}
+                onContextMenu={e =>
+                    ContextMenuApi.openContextMenu(e, () => (
+                        <Menu.Menu navId="pc-chats-scrapper-menu" onClose={ContextMenuApi.closeContextMenu} aria-label="Chats Scrapper">
+                            <Menu.MenuItem id="pc-chats-scrapper-open" label="Open Chats Scrapper" action={() => openModal(props => <WhitelistModal modalProps={props} />)} />
+                        </Menu.Menu>
+                    ))
+                }
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12 2a10 10 0 1 0 0 20a10 10 0 0 0 0-20Z" />
+                </svg>
+            </ChatBarButton>
+        );
     }
 });
