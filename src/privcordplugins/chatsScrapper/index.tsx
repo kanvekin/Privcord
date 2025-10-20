@@ -8,7 +8,7 @@ import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
-import { Button, ChannelStore, ContextMenuApi, Menu, React, RestAPI, Toasts } from "@webpack/common";
+import { Button, ChannelStore, ContextMenuApi, Menu, React, RestAPI, Toasts, UserStore } from "@webpack/common";
 import { ChatBarButton } from "@api/ChatButtons";
 
 const settings = definePluginSettings({
@@ -27,6 +27,18 @@ function uniq(arr: string[]): string[] { return Array.from(new Set(arr)); }
 function getWhitelist(): string[] { return uniq(parseCsv(settings.store.whitelist)); }
 function setWhitelist(ids: string[]) { settings.store.whitelist = ids.join(","); }
 
+function DmUserTag({ id, onRemove }: { id: string; onRemove: (id: string) => void; }) {
+    const user = UserStore.getUser(id);
+    if (!user) return null as any;
+    return (
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 6px", background: "var(--background-secondary)", borderRadius: 6, marginRight: 6, marginBottom: 6 }}>
+            <img src={user.getAvatarURL?.(undefined, 16, false)} width={16} height={16} style={{ borderRadius: "50%" }} />
+            <span>{(user as any).globalName || user.username}</span>
+            <button aria-label="remove" onClick={() => onRemove(id)} style={{ background: "transparent", border: 0, cursor: "pointer", color: "var(--interactive-normal)" }}>×</button>
+        </div>
+    );
+}
+
 function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
     const [wl, setWl] = React.useState<string[]>(getWhitelist());
     const [query, setQuery] = React.useState("");
@@ -36,7 +48,12 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
         const lower = query.toLowerCase();
         return dms
             .filter(c => !wl.includes(c.recipients?.[0]))
-            .filter(c => (c.name || "").toLowerCase().includes(lower))
+            .filter(c => {
+                const uid = c.recipients?.[0];
+                const u: any = uid ? UserStore.getUser(uid) : null;
+                const name = (u?.globalName || u?.username || c.name || "").toLowerCase();
+                return name.includes(lower);
+            })
             .slice(0, 30);
     }, [dms, query, wl]);
 
@@ -77,18 +94,30 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
             </ModalHeader>
             <ModalContent>
                 <div style={{ marginBottom: 8 }}>Whitelist (kept 1:1 DMs):</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {wl.map(id => <span key={id} style={{ background: "var(--background-secondary)", padding: "4px 8px", borderRadius: 6 }}>{id} <button onClick={() => setWl(wl.filter(x => x !== id))}>×</button></span>)}
+                <div style={{ display: "flex", flexWrap: "wrap" }}>
+                    {wl.map(id => <DmUserTag key={id} id={id} onRemove={idToRemove => setWl(wl.filter(x => x !== idToRemove))} />)}
                 </div>
-                <div style={{ marginTop: 12 }}>Add 1:1 DMs</div>
-                <input placeholder="Search" value={query} onChange={e => setQuery((e.target as HTMLInputElement).value)} style={{ width: "100%", padding: 8, borderRadius: 6, border: "1px solid var(--background-modifier-accent)" }} />
+                <div style={{ marginTop: 12, marginBottom: 6 }}>Add from your DMs</div>
+                <input
+                    placeholder="Search users by name"
+                    value={query}
+                    onChange={e => setQuery((e.target as HTMLInputElement).value)}
+                    style={{ width: "100%", padding: 8, borderRadius: 6, border: "1px solid var(--background-modifier-accent)" }}
+                />
                 <div style={{ marginTop: 8, maxHeight: 260, overflow: "auto" }}>
-                    {items.map(c => (
-                        <div key={c.id} style={{ display: "flex", alignItems: "center", padding: 6, borderRadius: 6, gap: 8 }}>
-                            <div style={{ flex: 1 }}>{c.name || c.recipients?.[0]}</div>
-                            <Button size={Button.Sizes.SMALL} onClick={() => setWl(uniq([...wl, c.recipients?.[0]]))}>Add</Button>
-                        </div>
-                    ))}
+                    {items.map(c => {
+                        const recipientId = c.recipients?.[0];
+                        const u: any = recipientId ? UserStore.getUser(recipientId) : null;
+                        const label = (u?.globalName || u?.username || c.name || recipientId || "Unknown") as string;
+                        const avatar = u?.getAvatarURL?.(undefined, 24, false);
+                        return (
+                            <div key={c.id} style={{ display: "flex", alignItems: "center", padding: 6, borderRadius: 6, gap: 8 }}>
+                                {avatar && <img src={avatar} width={24} height={24} style={{ borderRadius: "50%" }} />}
+                                <div style={{ flex: 1 }}>{label}</div>
+                                <Button size={Button.Sizes.SMALL} onClick={() => setWl(uniq([...wl, recipientId]))} disabled={!recipientId}>Add</Button>
+                            </div>
+                        );
+                    })}
                     {items.length === 0 && <div style={{ opacity: 0.7 }}>No matches</div>}
                 </div>
             </ModalContent>
