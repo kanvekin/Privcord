@@ -6,11 +6,12 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { classNameFactory } from "@api/Styles";
-import ErrorBoundary from "@components/ErrorBoundary";
+
 import { Devs } from "@utils/constants";
-import { ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot,openModal } from "@utils/modal";
+import { ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
-import { Button, React,RelationshipStore, RestAPI, Toasts, UserStore } from "@webpack/common";
+import { Button, ContextMenuApi, Menu, React, RelationshipStore, RestAPI, Toasts, UserStore } from "@webpack/common";
+import { ChatBarButton } from "@api/ChatButtons";
 
 const cl = classNameFactory("pc-friends-scrapper-");
 
@@ -143,32 +144,31 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
     );
 }
 
-// Patch Friends header to add a "Scrap" button on the "Friends" tab
-// Borrowing the injection pattern used in ExportMessages
-const FriendsHeaderPatch = {
-    find: "[role=\"tab\"][aria-disabled=\"false\"]",
-    replacement: {
-        match: /("aria-label":(\i).{0,25})(\i)\.Children\.map\((\i),this\.renderChildren\)/,
-        replace:
-            "$1($3 && $3.Children"
-            + "? ($2 === 'Friends'"
-            + "? [...$3.Children.map($4, this.renderChildren), $self.addScrapButton()]"
-            + ": [...$3.Children.map($4, this.renderChildren)])"
-            + ": $3.map($4, this.renderChildren))"
-    }
-} as const;
+
 
 export default definePlugin({
     name: "FriendsScrapper",
     description: "Adds a Scrap button to Friends > All to unfriend everyone except whitelisted.",
     authors: [Devs.feelslove],
     settings,
-    patches: [FriendsHeaderPatch],
-    addScrapButton() {
-        return <ErrorBoundary noop key=".pc-friends-scrapper">
-            <Button size={Button.Sizes.SMALL} onClick={() => openModal(props => <WhitelistModal modalProps={props} />)}>
-                Scrap
-            </Button>
-        </ErrorBoundary>;
+    renderChatBarButton: ({ isMainChat }) => {
+        if (!isMainChat) return null;
+        return (
+            <ChatBarButton
+                tooltip="Friends Scrapper"
+                onClick={() => openModal(props => <WhitelistModal modalProps={props} />)}
+                onContextMenu={e =>
+                    ContextMenuApi.openContextMenu(e, () => (
+                        <Menu.Menu navId="pc-friends-scrapper-menu" onClose={ContextMenuApi.closeContextMenu} aria-label="Friends Scrapper">
+                            <Menu.MenuItem id="pc-friends-scrapper-open" label="Open Friends Scrapper" action={() => openModal(props => <WhitelistModal modalProps={props} />)} />
+                        </Menu.Menu>
+                    ))
+                }
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12 2a10 10 0 1 0 0 20a10 10 0 0 0 0-20Z" />
+                </svg>
+            </ChatBarButton>
+        );
     }
 });

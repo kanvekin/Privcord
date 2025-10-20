@@ -8,7 +8,8 @@ import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { Message } from "@vencord/discord-types";
-import { ChannelStore, Constants, Menu, React,RestAPI, Toasts } from "@webpack/common";
+import { ChannelStore, Constants, ContextMenuApi, Menu, React, RestAPI, Toasts } from "@webpack/common";
+import { ChatBarButton } from "@api/ChatButtons";
 
 const settings = definePluginSettings({
     includeImages: { type: OptionType.BOOLEAN, default: true, description: "Include image attachments" },
@@ -105,22 +106,36 @@ async function exportChannel(channelId: string) {
     }
 }
 
-const contextPatch = (children: Array<React.ReactElement<any> | null>, props: { channel: { id: string } }) => {
-    if (!props?.channel?.id) return;
-    if (!children.some(c => (c as any)?.props?.id === "pc-export")) {
-        children.push(
-            <Menu.MenuItem id="pc-export" label="Export" action={() => exportChannel(props.channel.id)} />
-        );
-    }
-};
-
 export default definePlugin({
     name: "Exporter",
     description: "Right-click DM/Group -> Export full chat as HTML with unlimited pagination.",
     authors: [Devs.feelslove],
     settings,
-    contextMenus: {
-        "channel-context": contextPatch,
-        "gdm-context": contextPatch
+    renderChatBarButton: ({ channel, isMainChat }) => {
+        if (!isMainChat || !channel?.id) return null;
+        return (
+            <ChatBarButton
+                tooltip="Exporter"
+                onClick={() => exportChannel(channel.id)}
+                onContextMenu={e =>
+                    ContextMenuApi.openContextMenu(e, () => (
+                        <Menu.Menu navId="pc-exporter-menu" onClose={ContextMenuApi.closeContextMenu} aria-label="Exporter">
+                            <Menu.MenuCheckboxItem
+                                id="pc-exporter-include-images"
+                                label="Include images"
+                                checked={settings.store.includeImages}
+                                action={() => settings.store.includeImages = !settings.store.includeImages}
+                            />
+                            <Menu.MenuSeparator />
+                            <Menu.MenuItem id="pc-exporter-run" label="Export chat" action={() => exportChannel(channel.id)} />
+                        </Menu.Menu>
+                    ))
+                }
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12 16l-4-4h3V4h2v8h3l-4 4Zm-8 2h16v2H4v-2Z" />
+                </svg>
+            </ChatBarButton>
+        );
     }
 });
