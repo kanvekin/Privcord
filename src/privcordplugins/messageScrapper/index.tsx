@@ -40,6 +40,16 @@ const settings = definePluginSettings({
         description: "Also delete messages in Group DMs (non-whitelisted participants)",
         default: false
     },
+    selectedGuilds: {
+        type: OptionType.STRING,
+        description: "Comma-separated guild IDs to process",
+        default: ""
+    },
+    selectedChannels: {
+        type: OptionType.STRING,
+        description: "Comma-separated channel IDs to whitelist (keep messages)",
+        default: ""
+    },
     lastLogFilePath: {
         type: OptionType.STRING,
         description: "Path of last deletion log (desktop only)",
@@ -112,20 +122,289 @@ function FriendTag({ id, onRemove }: { id: string; onRemove: (id: string) => voi
     const user = UserStore.getUser(id);
     if (!user) return null as any;
     return (
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 6px", background: "var(--background-secondary)", borderRadius: 6, marginRight: 6, marginBottom: 6 }}>
-            <img src={user.getAvatarURL?.(undefined, 16, false)} width={16} height={16} style={{ borderRadius: "50%" }} />
-            <span>{(user as any).globalName || user.username}</span>
-            <button aria-label="remove" onClick={() => onRemove(id)} style={{ background: "transparent", border: 0, cursor: "pointer", color: "var(--interactive-normal)" }}>×</button>
+        <div style={{ 
+            display: "inline-flex", 
+            alignItems: "center", 
+            gap: 8, 
+            padding: "6px 10px", 
+            background: "var(--background-modifier-hover)", 
+            borderRadius: 8, 
+            marginRight: 8, 
+            marginBottom: 8,
+            border: "1px solid var(--background-modifier-accent)",
+            transition: "all 0.2s ease"
+        }}>
+            <img src={user.getAvatarURL?.(undefined, 20, false)} width={20} height={20} style={{ borderRadius: "50%" }} />
+            <span style={{ color: "var(--text-normal)", fontWeight: 500 }}>{(user as any).globalName || user.username}</span>
+            <button 
+                aria-label="remove" 
+                onClick={() => onRemove(id)} 
+                style={{ 
+                    background: "transparent", 
+                    border: 0, 
+                    cursor: "pointer", 
+                    color: "var(--interactive-normal)",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    padding: "2px 4px",
+                    borderRadius: "4px",
+                    transition: "all 0.2s ease"
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "var(--background-modifier-accent)";
+                    e.currentTarget.style.color = "var(--text-danger)";
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = "var(--interactive-normal)";
+                }}
+            >×</button>
         </div>
     );
 }
 
 function SettingsRow({ label, right }: { label: string; right: React.ReactNode; }) {
     return (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0" }}>
-            <div style={{ opacity: .8 }}>{label}</div>
+        <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "space-between", 
+            padding: "12px 0",
+            borderBottom: "1px solid var(--background-modifier-accent)"
+        }}>
+            <div style={{ 
+                color: "var(--text-normal)", 
+                fontWeight: 500,
+                fontSize: "14px"
+            }}>{label}</div>
             <div>{right}</div>
         </div>
+    );
+}
+
+function ServerSelectionModal({ modalProps }: { modalProps: ModalProps; }) {
+    const [selectedGuilds, setSelectedGuilds] = React.useState<string[]>(parseCsv(settings.store.selectedGuilds));
+    const [selectedChannels, setSelectedChannels] = React.useState<string[]>(parseCsv(settings.store.selectedChannels));
+    const [currentGuild, setCurrentGuild] = React.useState<string | null>(null);
+
+    const guilds = Object.values(GuildStore.getGuilds?.() || {} as Record<string, any>);
+    const channels = currentGuild ? GuildChannelStore.getChannels?.(currentGuild)?.SELECTABLE || [] : [];
+
+    function saveServerSelection() {
+        settings.store.selectedGuilds = selectedGuilds.join(",");
+        settings.store.selectedChannels = selectedChannels.join(",");
+        modalProps.onClose();
+    }
+
+    function toggleGuild(guildId: string) {
+        setSelectedGuilds(prev => 
+            prev.includes(guildId) 
+                ? prev.filter(id => id !== guildId)
+                : [...prev, guildId]
+        );
+    }
+
+    function toggleChannel(channelId: string) {
+        setSelectedChannels(prev => 
+            prev.includes(channelId) 
+                ? prev.filter(id => id !== channelId)
+                : [...prev, channelId]
+        );
+    }
+
+    return (
+        <ModalRoot {...modalProps}>
+            <ModalHeader>
+                <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+                    <h2 style={{ margin: 0 }}>Sunucu ve Kanal Seçimi</h2>
+                    <div style={{ flex: 1 }} />
+                    <ModalCloseButton onClick={modalProps.onClose} />
+                </div>
+            </ModalHeader>
+            <ModalContent>
+                <div style={{ 
+                    marginBottom: 16, 
+                    color: "var(--text-normal)", 
+                    fontWeight: 600,
+                    fontSize: "16px"
+                }}>Hangi sunuculardaki mesajlarınızı işlemek istiyorsunuz?</div>
+                
+                <div style={{ 
+                    display: "grid", 
+                    gridTemplateColumns: "1fr 1fr", 
+                    gap: "16px",
+                    height: "400px"
+                }}>
+                    {/* Sunucu Listesi */}
+                    <div style={{ 
+                        background: "var(--background-secondary)",
+                        borderRadius: "8px",
+                        border: "1px solid var(--background-modifier-accent)",
+                        padding: "12px"
+                    }}>
+                        <div style={{ 
+                            marginBottom: 12, 
+                            color: "var(--text-normal)", 
+                            fontWeight: 600,
+                            fontSize: "14px"
+                        }}>Sunucular</div>
+                        <div style={{ 
+                            maxHeight: "320px", 
+                            overflow: "auto",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "8px"
+                        }}>
+                            {guilds.map((guild: any) => (
+                                <div 
+                                    key={guild.id}
+                                    style={{ 
+                                        display: "flex", 
+                                        alignItems: "center", 
+                                        padding: "8px 12px", 
+                                        borderRadius: 6, 
+                                        gap: 12,
+                                        background: selectedGuilds.includes(guild.id) ? "var(--brand-experiment)" : "var(--background-modifier-hover)",
+                                        color: selectedGuilds.includes(guild.id) ? "var(--white-500)" : "var(--text-normal)",
+                                        cursor: "pointer",
+                                        transition: "all 0.2s ease"
+                                    }}
+                                    onClick={() => {
+                                        toggleGuild(guild.id);
+                                        setCurrentGuild(guild.id);
+                                    }}
+                                >
+                                    <img 
+                                        src={guild.getIconURL?.({ size: 32 })} 
+                                        width={32} 
+                                        height={32} 
+                                        style={{ borderRadius: "50%" }} 
+                                    />
+                                    <div style={{ flex: 1, fontWeight: 500 }}>{guild.name}</div>
+                                    {selectedGuilds.includes(guild.id) && (
+                                        <div style={{ fontSize: "18px" }}>✓</div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Kanal Listesi */}
+                    <div style={{ 
+                        background: "var(--background-secondary)",
+                        borderRadius: "8px",
+                        border: "1px solid var(--background-modifier-accent)",
+                        padding: "12px"
+                    }}>
+                        <div style={{ 
+                            marginBottom: 12, 
+                            color: "var(--text-normal)", 
+                            fontWeight: 600,
+                            fontSize: "14px"
+                        }}>
+                            {currentGuild ? "Kanallar" : "Önce bir sunucu seçin"}
+                        </div>
+                        <div style={{ 
+                            maxHeight: "320px", 
+                            overflow: "auto",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "8px"
+                        }}>
+                            {currentGuild && channels.map(channel => {
+                                const ch = channel.channel || channel;
+                                return (
+                                    <div 
+                                        key={ch.id}
+                                        style={{ 
+                                            display: "flex", 
+                                            alignItems: "center", 
+                                            padding: "8px 12px", 
+                                            borderRadius: 6, 
+                                            gap: 12,
+                                            background: selectedChannels.includes(ch.id) ? "var(--brand-experiment)" : "var(--background-modifier-hover)",
+                                            color: selectedChannels.includes(ch.id) ? "var(--white-500)" : "var(--text-normal)",
+                                            cursor: "pointer",
+                                            transition: "all 0.2s ease"
+                                        }}
+                                        onClick={() => toggleChannel(ch.id)}
+                                    >
+                                        <div style={{ 
+                                            width: 32, 
+                                            height: 32, 
+                                            borderRadius: "50%", 
+                                            background: "var(--background-modifier-accent)",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            fontSize: "16px"
+                                        }}>#</div>
+                                        <div style={{ flex: 1, fontWeight: 500 }}>{ch.name}</div>
+                                        {selectedChannels.includes(ch.id) && (
+                                            <div style={{ fontSize: "18px" }}>✓</div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                            {!currentGuild && (
+                                <div style={{ 
+                                    padding: "20px",
+                                    textAlign: "center",
+                                    color: "var(--text-muted)", 
+                                    fontStyle: "italic"
+                                }}>Sunucu seçin</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div style={{ 
+                    marginTop: 16,
+                    padding: "12px",
+                    background: "var(--background-modifier-hover)",
+                    borderRadius: "8px",
+                    border: "1px solid var(--background-modifier-accent)"
+                }}>
+                    <div style={{ 
+                        color: "var(--text-normal)", 
+                        fontWeight: 500,
+                        fontSize: "14px",
+                        marginBottom: 8
+                    }}>ℹ️ Bilgi:</div>
+                    <div style={{ 
+                        color: "var(--text-muted)", 
+                        fontSize: "13px",
+                        lineHeight: "1.4"
+                    }}>
+                        Seçilen kanallardaki mesajlarınız korunacak, diğer kanallardaki mesajlarınız silinecektir.
+                    </div>
+                </div>
+            </ModalContent>
+            <ModalFooter>
+                <div style={{ 
+                    display: "flex", 
+                    justifyContent: "space-between", 
+                    width: "100%",
+                    gap: "12px"
+                }}>
+                    <Button 
+                        onClick={modalProps.onClose}
+                        style={{
+                            background: "var(--background-modifier-hover)",
+                            color: "var(--text-normal)",
+                            border: "1px solid var(--background-modifier-accent)"
+                        }}
+                    >İptal</Button>
+                    <Button 
+                        onClick={saveServerSelection}
+                        style={{
+                            background: "var(--brand-experiment)",
+                            color: "var(--white-500)"
+                        }}
+                    >Kaydet</Button>
+                </div>
+            </ModalFooter>
+        </ModalRoot>
     );
 }
 
@@ -187,14 +466,37 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
 
         const guildTextChannels: any[] = [];
         if (includeGuilds) {
-            const guilds = Object.values(GuildStore.getGuilds?.() || {} as Record<string, any>);
-            for (const g of guilds) {
-                const info: any = GuildChannelStore.getChannels?.(g.id);
-                const selectable = info?.SELECTABLE || [];
-                for (const item of selectable) {
-                    const ch = item.channel || item; // compat
-                    // 0 = GUILD_TEXT, 11/12 = threads, include threads too
-                    if ([0, 11, 12].includes(ch?.type)) guildTextChannels.push(ch);
+            const selectedGuildIds = parseCsv(settings.store.selectedGuilds);
+            const selectedChannelIds = parseCsv(settings.store.selectedChannels);
+            
+            if (selectedGuildIds.length > 0) {
+                // Sadece seçilen sunuculardaki kanalları işle
+                for (const guildId of selectedGuildIds) {
+                    const info: any = GuildChannelStore.getChannels?.(guildId);
+                    const selectable = info?.SELECTABLE || [];
+                    for (const item of selectable) {
+                        const ch = item.channel || item; // compat
+                        // 0 = GUILD_TEXT, 11/12 = threads, include threads too
+                        if ([0, 11, 12].includes(ch?.type)) {
+                            // Eğer kanal whitelist'te değilse silinecek kanallara ekle
+                            if (!selectedChannelIds.includes(ch.id)) {
+                                guildTextChannels.push(ch);
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Eski davranış: tüm sunuculardaki kanalları işle
+                const guilds = Object.values(GuildStore.getGuilds?.() || {} as Record<string, any>);
+                for (const g of guilds) {
+                    const guild = g as any;
+                    const info: any = GuildChannelStore.getChannels?.(guild.id);
+                    const selectable = info?.SELECTABLE || [];
+                    for (const item of selectable) {
+                        const ch = item.channel || item; // compat
+                        // 0 = GUILD_TEXT, 11/12 = threads, include threads too
+                        if ([0, 11, 12].includes(ch?.type)) guildTextChannels.push(ch);
+                    }
                 }
             }
         }
@@ -256,6 +558,8 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
             includeGuilds,
             includeGroupDMs,
             whitelist: wl,
+            selectedGuilds: parseCsv(settings.store.selectedGuilds),
+            selectedChannels: parseCsv(settings.store.selectedChannels),
             stats: { deleted: deletedCount, failed: failedCount, channels: targets.length },
             deleted
         };
@@ -299,41 +603,170 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
                 </div>
             </ModalHeader>
             <ModalContent>
-                <div style={{ marginBottom: 8 }}>Whitelist (kept users):</div>
-                <div style={{ display: "flex", flexWrap: "wrap" }}>
-                    {wl.map(id => <FriendTag key={id} id={id} onRemove={idToRemove => setWl(wl.filter(x => x !== idToRemove))} />)}
+                <div style={{ 
+                    marginBottom: 12, 
+                    color: "var(--text-normal)", 
+                    fontWeight: 600,
+                    fontSize: "14px"
+                }}>Whitelist (kept users):</div>
+                <div style={{ 
+                    display: "flex", 
+                    flexWrap: "wrap",
+                    minHeight: "40px",
+                    padding: "8px",
+                    background: "var(--background-secondary)",
+                    borderRadius: "8px",
+                    border: "1px solid var(--background-modifier-accent)"
+                }}>
+                    {wl.map(id => <FriendTag key={id} id={id} onRemove={(idToRemove: string) => setWl(wl.filter(x => x !== idToRemove))} />)}
+                    {wl.length === 0 && (
+                        <div style={{ 
+                            color: "var(--text-muted)", 
+                            fontStyle: "italic",
+                            alignSelf: "center"
+                        }}>No users in whitelist</div>
+                    )}
                 </div>
-                <div style={{ marginTop: 12, marginBottom: 6 }}>Add from your friends/DMs</div>
+                <div style={{ 
+                    marginTop: 16, 
+                    marginBottom: 8,
+                    color: "var(--text-normal)", 
+                    fontWeight: 600,
+                    fontSize: "14px"
+                }}>Add from your friends/DMs</div>
                 <input
                     placeholder="Search users by name"
                     value={query}
                     onChange={e => setQuery((e.target as HTMLInputElement).value)}
-                    style={{ width: "100%", padding: 8, borderRadius: 6, border: "1px solid var(--background-modifier-accent)" }}
+                    style={{ 
+                        width: "100%", 
+                        padding: "10px 12px", 
+                        borderRadius: 8, 
+                        border: "1px solid var(--background-modifier-accent)",
+                        background: "var(--input-background)",
+                        color: "var(--text-normal)",
+                        fontSize: "14px",
+                        outline: "none",
+                        transition: "border-color 0.2s ease"
+                    }}
+                    onFocus={(e) => {
+                        e.target.style.borderColor = "var(--brand-experiment)";
+                    }}
+                    onBlur={(e) => {
+                        e.target.style.borderColor = "var(--background-modifier-accent)";
+                    }}
                 />
-                <div style={{ marginTop: 8, maxHeight: 260, overflow: "auto" }}>
+                <div style={{ 
+                    marginTop: 12, 
+                    maxHeight: 200, 
+                    overflow: "auto",
+                    background: "var(--background-secondary)",
+                    borderRadius: "8px",
+                    border: "1px solid var(--background-modifier-accent)"
+                }}>
                     {candidateIds.map((id: string) => {
                         const u: any = id ? UserStore.getUser(id) : null;
                         const label = (u?.globalName || u?.username || id || "Unknown") as string;
-                        const avatar = u?.getAvatarURL?.(undefined, 24, false);
+                        const avatar = u?.getAvatarURL?.(undefined, 32, false);
                         return (
-                            <div key={id} style={{ display: "flex", alignItems: "center", padding: 6, borderRadius: 6, gap: 8 }}>
-                                {avatar && <img src={avatar} width={24} height={24} style={{ borderRadius: "50%" }} />}
-                                <div style={{ flex: 1 }}>{label}</div>
-                                <Button size={Button.Sizes.SMALL} onClick={() => setWl(uniq([...wl, id]))} disabled={!id}>Add</Button>
+                            <div key={id} style={{ 
+                                display: "flex", 
+                                alignItems: "center", 
+                                padding: "12px", 
+                                borderRadius: 6, 
+                                gap: 12,
+                                borderBottom: "1px solid var(--background-modifier-accent)",
+                                transition: "background-color 0.2s ease"
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = "var(--background-modifier-hover)";
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = "transparent";
+                            }}>
+                                {avatar && <img src={avatar} width={32} height={32} style={{ borderRadius: "50%" }} />}
+                                <div style={{ 
+                                    flex: 1, 
+                                    color: "var(--text-normal)",
+                                    fontWeight: 500,
+                                    fontSize: "14px"
+                                }}>{label}</div>
+                                <Button 
+                                    size={Button.Sizes.SMALL} 
+                                    onClick={() => setWl(uniq([...wl, id]))} 
+                                    disabled={!id}
+                                    style={{
+                                        background: "var(--brand-experiment)",
+                                        color: "var(--white-500)"
+                                    }}
+                                >Add</Button>
                             </div>
                         );
                     })}
-                    {candidateIds.length === 0 && <div style={{ opacity: 0.7 }}>No matches</div>}
+                    {candidateIds.length === 0 && (
+                        <div style={{ 
+                            padding: "20px",
+                            textAlign: "center",
+                            color: "var(--text-muted)", 
+                            fontStyle: "italic"
+                        }}>No matches found</div>
+                    )}
                 </div>
-                <div style={{ marginTop: 16 }}>
-                    <SettingsRow label="Include server channels" right={<Button size={Button.Sizes.SMALL} onClick={() => setIncludeGuilds(!includeGuilds)}>{includeGuilds ? "Enabled" : "Disabled"}</Button>} />
-                    <SettingsRow label="Include Group DMs" right={<Button size={Button.Sizes.SMALL} onClick={() => setIncludeGroupDMs(!includeGroupDMs)}>{includeGroupDMs ? "Enabled" : "Disabled"}</Button>} />
+                <div style={{ 
+                    marginTop: 20,
+                    background: "var(--background-secondary)",
+                    borderRadius: "8px",
+                    border: "1px solid var(--background-modifier-accent)",
+                    padding: "16px"
+                }}>
+                    <div style={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "space-between", 
+                        padding: "12px 0",
+                        borderBottom: "1px solid var(--background-modifier-accent)"
+                    }}>
+                        <div style={{ 
+                            color: "var(--text-normal)", 
+                            fontWeight: 500,
+                            fontSize: "14px"
+                        }}>Sunucu ve Kanal Seçimi</div>
+                        <Button 
+                            size={Button.Sizes.SMALL} 
+                            onClick={() => openModal(props => <ServerSelectionModal modalProps={props} />)}
+                            style={{
+                                background: "var(--brand-experiment)",
+                                color: "var(--white-500)"
+                            }}
+                        >Sunucu Seç</Button>
+                    </div>
+                    <SettingsRow label="Include server channels" right={<Button size={Button.Sizes.SMALL} onClick={() => setIncludeGuilds(!includeGuilds)} style={{ background: includeGuilds ? "var(--brand-experiment)" : "var(--background-modifier-hover)", color: includeGuilds ? "var(--white-500)" : "var(--text-normal)" }}>{includeGuilds ? "Enabled" : "Disabled"}</Button>} />
+                    <SettingsRow label="Include Group DMs" right={<Button size={Button.Sizes.SMALL} onClick={() => setIncludeGroupDMs(!includeGroupDMs)} style={{ background: includeGroupDMs ? "var(--brand-experiment)" : "var(--background-modifier-hover)", color: includeGroupDMs ? "var(--white-500)" : "var(--text-normal)" }}>{includeGroupDMs ? "Enabled" : "Disabled"}</Button>} />
                 </div>
             </ModalContent>
             <ModalFooter>
-                <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-                    <Button onClick={save}>Save</Button>
-                    <Button color={Button.Colors.RED} onClick={start}>Start</Button>
+                <div style={{ 
+                    display: "flex", 
+                    justifyContent: "space-between", 
+                    width: "100%",
+                    gap: "12px"
+                }}>
+                    <Button 
+                        onClick={save}
+                        style={{
+                            background: "var(--background-modifier-hover)",
+                            color: "var(--text-normal)",
+                            border: "1px solid var(--background-modifier-accent)"
+                        }}
+                    >Save</Button>
+                    <Button 
+                        color={Button.Colors.RED} 
+                        onClick={start}
+                        style={{
+                            background: "var(--button-danger-background)",
+                            color: "var(--white-500)"
+                        }}
+                    >Start</Button>
                 </div>
             </ModalFooter>
         </ModalRoot>

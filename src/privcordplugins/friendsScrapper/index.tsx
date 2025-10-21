@@ -46,10 +46,43 @@ function FriendTag({ id, onRemove }: { id: string; onRemove: (id: string) => voi
     const user = UserStore.getUser(id);
     if (!user) return null as any;
     return (
-        <div className={cl("tag")} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 6px", background: "var(--background-secondary)", borderRadius: 6, marginRight: 6, marginBottom: 6 }}>
-            <img src={user.getAvatarURL?.(undefined, 16, false)} width={16} height={16} style={{ borderRadius: "50%" }} />
-            <span>{(user as any).globalName || user.username}</span>
-            <button aria-label="remove" onClick={() => onRemove(id)} style={{ background: "transparent", border: 0, cursor: "pointer", color: "var(--interactive-normal)" }}>×</button>
+        <div style={{ 
+            display: "inline-flex", 
+            alignItems: "center", 
+            gap: 8, 
+            padding: "6px 10px", 
+            background: "var(--background-modifier-hover)", 
+            borderRadius: 8, 
+            marginRight: 8, 
+            marginBottom: 8,
+            border: "1px solid var(--background-modifier-accent)",
+            transition: "all 0.2s ease"
+        }}>
+            <img src={user.getAvatarURL?.(undefined, 20, false)} width={20} height={20} style={{ borderRadius: "50%" }} />
+            <span style={{ color: "var(--text-normal)", fontWeight: 500 }}>{(user as any).globalName || user.username}</span>
+            <button 
+                aria-label="remove" 
+                onClick={() => onRemove(id)} 
+                style={{ 
+                    background: "transparent", 
+                    border: 0, 
+                    cursor: "pointer", 
+                    color: "var(--interactive-normal)",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    padding: "2px 4px",
+                    borderRadius: "4px",
+                    transition: "all 0.2s ease"
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "var(--background-modifier-accent)";
+                    e.currentTarget.style.color = "var(--text-danger)";
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = "var(--interactive-normal)";
+                }}
+            >×</button>
         </div>
     );
 }
@@ -112,32 +145,133 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
                 </div>
             </ModalHeader>
             <ModalContent>
-                <div style={{ marginBottom: 8 }}>Whitelist (kept friends):</div>
-                <div style={{ display: "flex", flexWrap: "wrap" }}>
+                <div style={{ 
+                    marginBottom: 12, 
+                    color: "var(--text-normal)", 
+                    fontWeight: 600,
+                    fontSize: "14px"
+                }}>Whitelist (kept friends):</div>
+                <div style={{ 
+                    display: "flex", 
+                    flexWrap: "wrap",
+                    minHeight: "40px",
+                    padding: "8px",
+                    background: "var(--background-secondary)",
+                    borderRadius: "8px",
+                    border: "1px solid var(--background-modifier-accent)"
+                }}>
                     {wl.map(id => <FriendTag key={id} id={id} onRemove={idToRemove => setWl(wl.filter(x => x !== idToRemove))} />)}
+                    {wl.length === 0 && (
+                        <div style={{ 
+                            color: "var(--text-muted)", 
+                            fontStyle: "italic",
+                            alignSelf: "center"
+                        }}>No friends in whitelist</div>
+                    )}
                 </div>
-                <div style={{ marginTop: 12, marginBottom: 6 }}>Add from your friends</div>
+                <div style={{ 
+                    marginTop: 16, 
+                    marginBottom: 8,
+                    color: "var(--text-normal)", 
+                    fontWeight: 600,
+                    fontSize: "14px"
+                }}>Add from your friends</div>
                 <input
                     placeholder="Search friends by name"
                     value={query}
                     onChange={e => setQuery((e.target as HTMLInputElement).value)}
-                    style={{ width: "100%", padding: 8, borderRadius: 6, border: "1px solid var(--background-modifier-accent)" }}
+                    style={{ 
+                        width: "100%", 
+                        padding: "10px 12px", 
+                        borderRadius: 8, 
+                        border: "1px solid var(--background-modifier-accent)",
+                        background: "var(--input-background)",
+                        color: "var(--text-normal)",
+                        fontSize: "14px",
+                        outline: "none",
+                        transition: "border-color 0.2s ease"
+                    }}
+                    onFocus={(e) => {
+                        e.target.style.borderColor = "var(--brand-experiment)";
+                    }}
+                    onBlur={(e) => {
+                        e.target.style.borderColor = "var(--background-modifier-accent)";
+                    }}
                 />
-                <div style={{ marginTop: 8, maxHeight: 260, overflow: "auto" }}>
+                <div style={{ 
+                    marginTop: 12, 
+                    maxHeight: 280, 
+                    overflow: "auto",
+                    background: "var(--background-secondary)",
+                    borderRadius: "8px",
+                    border: "1px solid var(--background-modifier-accent)"
+                }}>
                     {candidates.map((u: any) => (
-                        <div key={u.id} style={{ display: "flex", alignItems: "center", padding: 6, borderRadius: 6, gap: 8 }}>
-                            <img src={u.getAvatarURL?.(undefined, 24, false)} width={24} height={24} style={{ borderRadius: "50%" }} />
-                            <div style={{ flex: 1 }}>{u.globalName || u.username}</div>
-                            <Button size={Button.Sizes.SMALL} onClick={() => setWl(uniq([...wl, u.id]))}>Add</Button>
+                        <div key={u.id} style={{ 
+                            display: "flex", 
+                            alignItems: "center", 
+                            padding: "12px", 
+                            borderRadius: 6, 
+                            gap: 12,
+                            borderBottom: "1px solid var(--background-modifier-accent)",
+                            transition: "background-color 0.2s ease"
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "var(--background-modifier-hover)";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "transparent";
+                        }}>
+                            <img src={u.getAvatarURL?.(undefined, 32, false)} width={32} height={32} style={{ borderRadius: "50%" }} />
+                            <div style={{ 
+                                flex: 1, 
+                                color: "var(--text-normal)",
+                                fontWeight: 500,
+                                fontSize: "14px"
+                            }}>{u.globalName || u.username}</div>
+                            <Button 
+                                size={Button.Sizes.SMALL} 
+                                onClick={() => setWl(uniq([...wl, u.id]))}
+                                style={{
+                                    background: "var(--brand-experiment)",
+                                    color: "var(--white-500)"
+                                }}
+                            >Add</Button>
                         </div>
                     ))}
-                    {candidates.length === 0 && <div style={{ opacity: 0.7 }}>No matches</div>}
+                    {candidates.length === 0 && (
+                        <div style={{ 
+                            padding: "20px",
+                            textAlign: "center",
+                            color: "var(--text-muted)", 
+                            fontStyle: "italic"
+                        }}>No matches found</div>
+                    )}
                 </div>
             </ModalContent>
             <ModalFooter>
-                <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-                    <Button onClick={save}>Save</Button>
-                    <Button color={Button.Colors.RED} onClick={startScrap}>Start</Button>
+                <div style={{ 
+                    display: "flex", 
+                    justifyContent: "space-between", 
+                    width: "100%",
+                    gap: "12px"
+                }}>
+                    <Button 
+                        onClick={save}
+                        style={{
+                            background: "var(--background-modifier-hover)",
+                            color: "var(--text-normal)",
+                            border: "1px solid var(--background-modifier-accent)"
+                        }}
+                    >Save</Button>
+                    <Button 
+                        color={Button.Colors.RED} 
+                        onClick={startScrap}
+                        style={{
+                            background: "var(--button-danger-background)",
+                            color: "var(--white-500)"
+                        }}
+                    >Start</Button>
                 </div>
             </ModalFooter>
         </ModalRoot>
