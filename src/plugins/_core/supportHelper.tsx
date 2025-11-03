@@ -37,7 +37,7 @@ import { onlyOnce } from "@utils/onlyOnce";
 import { makeCodeblock } from "@utils/text";
 import definePlugin from "@utils/types";
 import { checkForUpdates, isOutdated, update } from "@utils/updater";
-import { Alerts, Button, Card, ChannelStore, GuildMemberStore, Parser, PermissionsBits, PermissionStore, RelationshipStore, SelectedChannelStore, showToast, Toasts, UserStore } from "@webpack/common";
+import { Alerts, Button, Card, ChannelStore, Forms, GuildMemberStore, Parser, PermissionsBits, PermissionStore, RelationshipStore, SelectedChannelStore, showToast, Toasts, UserStore } from "@webpack/common";
 import { JSX } from "react";
 
 import gitHash from "~git-hash";
@@ -259,9 +259,9 @@ export default definePlugin({
                         title: "Hold on!",
                         body: <div>
                             <Forms.FormText>You are using an outdated version of Privcord! Chances are, your issue is already fixed.</Forms.FormText>
-                        <Forms.FormText className={Margins.top8}>
-                            Please first update before asking for support!
-                        </Forms.FormText>
+                            <Forms.FormText className={Margins.top8}>
+                                Please first update before asking for support!
+                            </Forms.FormText>
                         </div>,
                         onCancel: () => openUpdaterModal!(),
                         cancelText: "View Updates",
