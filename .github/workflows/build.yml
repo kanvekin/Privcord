@@ -51,7 +51,6 @@ jobs:
               run: |
                   cd dist
                   mkdir -p release
-
                   # Copy browser artifacts if present
                   { [ -d browser ] && compgen -G "browser/browser.*" > /dev/null && cp browser/browser.* release; } || true
                   # Copy userscript and its legal notice if present

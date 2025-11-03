@@ -4,43 +4,81 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Devs, IS_LINUX } from "@utils/constants";
+import { getUserSettingLazy } from "@api/UserSettings";
+import { HeadingSecondary } from "@components/Heading";
+import { Paragraph } from "@components/Paragraph";
+import { Devs, EquicordDevs } from "@utils/constants";
 import definePlugin from "@utils/types";
 import { VoiceState } from "@vencord/discord-types";
-import { findByCodeLazy } from "@webpack";
-import { ChannelStore, PermissionsBits, PermissionStore, SelectedChannelStore, UserStore } from "@webpack/common";
+import { findByCodeLazy, findStoreLazy } from "@webpack";
+import { ChannelStore, MediaEngineStore, PermissionsBits, PermissionStore, SelectedChannelStore, UserStore, VoiceActions } from "@webpack/common";
 
 import { getCurrentMedia, settings } from "./utils";
 
-const startStream = findByCodeLazy('type:"STREAM_START"');
-
 let hasStreamed;
+const startStream = findByCodeLazy('type:"STREAM_START"');
+const StreamPreviewSettings = getUserSettingLazy("voiceAndVideo", "disableStreamPreviews")!;
+const ApplicationStreamingSettingsStore = findStoreLazy("ApplicationStreamingSettingsStore");
 
 async function autoStartStream() {
     const selected = SelectedChannelStore.getVoiceChannelId();
     if (!selected) return;
-    const channel = ChannelStore.getChannel(selected);
 
-    if (channel.type === 13 || !PermissionStore.can(PermissionsBits.STREAM, channel)) return;
+    const channel = ChannelStore.getChannel(selected);
+    const isGuildChannel = !channel.isDM() && !channel.isGroupDM();
+
+    if (channel.type === 13 || isGuildChannel && !PermissionStore.can(PermissionsBits.STREAM, channel)) return;
+
+    if (settings.store.autoDeafen && !MediaEngineStore.isSelfDeaf()) {
+        VoiceActions.toggleSelfDeaf();
+    } else if (settings.store.autoMute && !MediaEngineStore.isSelfMute()) {
+        VoiceActions.toggleSelfMute();
+    }
 
     const streamMedia = await getCurrentMedia();
+    const preview = StreamPreviewSettings.getSetting();
+    const { soundshareEnabled } = ApplicationStreamingSettingsStore.getState();
+    let sourceId = streamMedia.id;
+    if (streamMedia.type === "video_device") sourceId = `camera:${streamMedia.id}`;
 
-    startStream(channel.guild_id, selected, {
+    startStream(channel.guild_id ?? null, selected, {
         "pid": null,
-        "sourceId": streamMedia.id,
+        "sourceId": sourceId,
         "sourceName": streamMedia.name,
-        "audioSourceId": null,
-        "sound": true,
-        "previewDisabled": false
+        "audioSourceId": streamMedia.name,
+        "sound": soundshareEnabled,
+        "previewDisabled": preview
     });
 }
 
 export default definePlugin({
     name: "InstantScreenshare",
-    description: "Instantly screenshare when joining a voice channel",
-    authors: [Devs.HAHALOSAH, Devs.thororen],
+    description: "Instantly screenshare when joining a voice channel with support for desktop sources, windows, and video input devices (cameras, capture cards)",
+    authors: [Devs.HAHALOSAH, Devs.thororen, EquicordDevs.mart],
+    getCurrentMedia,
     settings,
-    hidden: IS_LINUX,
+
+    settingsAboutComponent: () => (
+        <>
+            <HeadingSecondary>For Linux</HeadingSecondary>
+            <Paragraph>
+                For Wayland it only pops up the screenshare select
+                <br />
+                For X11 it may or may not work :shrug:
+            </Paragraph>
+            <br />
+            <HeadingSecondary>Video Devices</HeadingSecondary>
+            <Paragraph>
+                Supports cameras and capture cards (like Elgato HD60X) when enabled in settings
+            </Paragraph>
+            <br />
+            <HeadingSecondary>Regarding Sound & Preview Settings</HeadingSecondary>
+            <Paragraph>
+                We use the settings set and used by discord to decide if stream preview and sound should be enabled or not
+            </Paragraph>
+        </>
+    ),
+
     flux: {
         async VOICE_STATE_UPDATES({ voiceStates }: { voiceStates: VoiceState[]; }) {
             const myId = UserStore.getCurrentUser().id;
@@ -61,6 +99,4 @@ export default definePlugin({
             }
         }
     },
-    getCurrentMedia,
 });
-

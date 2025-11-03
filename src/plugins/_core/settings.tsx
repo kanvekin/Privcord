@@ -15,10 +15,10 @@ import {
     VencordTab,
 } from "@components/settings";
 import ThemesTab from "@components/ThemeSettings/ThemesTab";
+import { gitHashShort } from "@shared/vencordUserAgent";
 import { Devs } from "@utils/constants";
 import { getIntlMessage } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
-import { shortGitHash } from "@utils/updater";
 import { React } from "@webpack/common";
 
 type SectionType = "HEADER" | "DIVIDER" | "CUSTOM";
@@ -68,15 +68,6 @@ export default definePlugin({
                 },
             ],
         },
-        {
-            find: ".DEVELOPER_SECTION,",
-            replacement: [
-                {
-                    match: /\i\.\i\.isDeveloper/,
-                    replace: "true"
-                },
-            ]
-        },
         // Fix the settings cog context menu to work properly
         {
             find: "#{intl::USER_SETTINGS_ACTIONS_MENU_LABEL}",
@@ -84,6 +75,13 @@ export default definePlugin({
                 // Skip the check Discord performs to make sure the section being selected in the user settings context menu is valid
                 match: /(?<=function\((\i),(\i),\i\)\{)(?=let \i=Object.values\(\i\.\i\).+?(\(0,\i\.openUserSettings\))\()/,
                 replace: (_, settingsPanel, section, openUserSettings) => `${openUserSettings}(${settingsPanel},{section:${section}});return;`
+            }
+        },
+        {
+            find: "2025-09-user-settings-redesign-1",
+            replacement: {
+                match: /enabled:![01],showLegacyOpen:/g,
+                replace: "enabled:false,showLegacyOpen:"
             }
         }
     ],
@@ -286,8 +284,7 @@ export default definePlugin({
 
     getInfoRows() {
         const { electronVersion, chromiumVersion, getVersionInfo } = this;
-
-        const rows = [`Privcord ${shortGitHash()}${getVersionInfo()}`];
+        const rows = [`Privcord ${gitHashShort}${getVersionInfo()}`];
 
         if (electronVersion) rows.push(`Electron ${electronVersion}`);
         if (chromiumVersion) rows.push(`Chromium ${chromiumVersion}`);

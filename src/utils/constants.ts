@@ -1178,6 +1178,22 @@ export const EquicordDevs = Object.freeze({
         name: "mmeta",
         id: 297075664530440192n
     },
+    SSnowly: {
+        name: "Snowy",
+        id: 1183482753375809537n
+    },
+    ZcraftElite: {
+        name: "ZcraftElite",
+        id: 926788037785047050n
+    },
+    mart: {
+        name: "mja00",
+        id: 108698087769260032n
+    },
+    vei: {
+        name: "Vei",
+        id: 239414094799699968n
+    },
 } satisfies Record<string, Dev>);
 
 export const PrivcordDevs = Object.freeze({

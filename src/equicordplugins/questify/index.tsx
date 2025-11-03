@@ -6,6 +6,7 @@
 
 import "./styles.css";
 
+import { showNotification } from "@api/Notifications";
 import { addServerListElement, removeServerListElement, ServerListRenderPosition } from "@api/ServerList";
 import { ErrorBoundary, openPluginModal } from "@components/index";
 import { EquicordDevs } from "@utils/constants";
@@ -558,6 +559,15 @@ async function startVideoProgressTracking(quest: Quest, questDuration: number): 
 
         if (success) {
             QuestifyLogger.info(`[${getFormattedNow()}] Quest ${questName} completed.`);
+
+            if (settings.store.notifyOnQuestComplete) {
+                showNotification({
+                    title: "Quest Completed!",
+                    body: `The ${questName} Quest has completed.`,
+                    dismissOnClick: true,
+                    onClick: () => NavigationRouter.transitionTo(`${questPath}#${quest.id}`)
+                });
+            }
         } else {
             QuestifyLogger.error(`[${getFormattedNow()}] Failed to complete Quest ${questName}.`);
         }
@@ -642,6 +652,15 @@ async function startPlayGameProgressTracking(quest: Quest, questDuration: number
 
             if (success) {
                 QuestifyLogger.info(`[${getFormattedNow()}] Quest ${questName} completed.`);
+
+                if (settings.store.notifyOnQuestComplete) {
+                    showNotification({
+                        title: "Quest Completed!",
+                        body: `The ${questName} Quest has completed.`,
+                        dismissOnClick: true,
+                        onClick: () => NavigationRouter.transitionTo(`${questPath}#${quest.id}`),
+                    });
+                }
             } else {
                 QuestifyLogger.error(`[${getFormattedNow()}] Failed to complete Quest ${questName}.`);
             }
@@ -655,6 +674,15 @@ async function startPlayGameProgressTracking(quest: Quest, questDuration: number
 
                 if (success) {
                     QuestifyLogger.info(`[${getFormattedNow()}] Quest ${questName} completed.`);
+
+                    if (settings.store.notifyOnQuestComplete) {
+                        showNotification({
+                            title: "Quest Completed!",
+                            body: `The ${questName} Quest has completed.`,
+                            dismissOnClick: true,
+                            onClick: () => NavigationRouter.transitionTo(`${questPath}#${quest.id}`),
+                        });
+                    }
                 } else {
                     QuestifyLogger.error(`[${getFormattedNow()}] Failed to complete Quest ${questName}.`);
                 }
@@ -1116,14 +1144,6 @@ export default definePlugin({
             ]
         },
         {
-            // Prevent scrolling to a sponsored Quest.
-            find: "Id(\"quest-tile-\".concat",
-            replacement: {
-                match: /(?=document.getElementById)/,
-                replace: "null&&"
-            }
-        },
-        {
             // Whether preloading assets is enabled or not, the placeholders loading
             // before the assets causes a lot of element shifting, whereas if
             // the elements load immediately instead, it doesn't.
@@ -1211,7 +1231,7 @@ export default definePlugin({
                 },
                 {
                     // Does the above for resuming Play Activity Quests.
-                    match: /(?<=icon:.{0,15}?onClick:.{0,20}?,text:(\i),fullWidth:!0)/,
+                    match: /(?<=icon:.{0,35}?onClick:.{0,20}?,text:(\i),fullWidth:!0)/,
                     replace: ",...$self.getQuestAcceptedButtonProps(arguments[0].quest,$1)"
                 }
             ]
@@ -1251,6 +1271,11 @@ export default definePlugin({
         QUESTS_CLAIM_REWARD_SUCCESS(data) {
             QuestifyLogger.info(`[${getFormattedNow()}] [QUESTS_CLAIM_REWARD_SUCCESS]\n`, data);
             fetchAndDispatchQuests("Questify", QuestifyLogger);
+            validateAndOverwriteIgnoredQuests();
+        },
+
+        QUESTS_USER_STATUS_UPDATE(data) {
+            QuestifyLogger.info(`[${getFormattedNow()}] [QUESTS_USER_STATUS_UPDATE]\n`, data);
             validateAndOverwriteIgnoredQuests();
         },
 

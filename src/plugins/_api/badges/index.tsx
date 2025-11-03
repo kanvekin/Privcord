@@ -77,7 +77,6 @@ const PrivcordDonorBadge: ProfileBadge = {
     },
     onClick: () => PrivcordDonorModal()
 };
-
 let DonorBadges = {} as Record<string, Array<Record<"tooltip" | "badge", string>>>;
 let EquicordDonorBadges = {} as Record<string, Array<Record<"tooltip" | "badge", string>>>;
 let PrivcordDonorBadges = {} as Record<string, Array<Record<"tooltip" | "badge", string>>>;
