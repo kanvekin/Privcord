@@ -698,7 +698,10 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
     return (
         <ModalRoot {...modalProps} size={ModalSize.MEDIUM}>
             <ModalHeader>
-                <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center", width: "100%", gap: 12 }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" style={{ color: "var(--text-normal)" }}>
+                        <path fill="currentColor" d="M9 3h6a1 1 0 0 1 1 1v1h4v2H4V5h4V4a1 1 0 0 1 1-1Zm-3 6h12l-1 11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 9Z" />
+                    </svg>
                     <h2 style={{ margin: 0 }}>Messages Scrapper</h2>
                     <div style={{ flex: 1 }} />
                     <ModalCloseButton onClick={modalProps.onClose} />

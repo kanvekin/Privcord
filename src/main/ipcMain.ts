@@ -197,3 +197,65 @@ ipcMain.handle(IpcEvents.OPEN_MESSAGE_SCRAPPER_WINDOW, async () => {
         `);
     });
 });
+
+ipcMain.handle(IpcEvents.OPEN_USER_TOOLS_WINDOW, async () => {
+    const title = "UserTools - Active Users";
+    const existingWindow = BrowserWindow.getAllWindows().find(w => w.title === title);
+    if (existingWindow && !existingWindow.isDestroyed()) {
+        existingWindow.focus();
+        return;
+    }
+
+    // Find the main Discord window
+    const mainWindow = BrowserWindow.getAllWindows().find(w => {
+        const url = w.webContents.getURL();
+        return url && (url.includes("discord.com") || url.includes("discordapp.com"));
+    });
+
+    if (!mainWindow || mainWindow.isDestroyed()) {
+        throw new Error("Main Discord window not found");
+    }
+
+    const win = new BrowserWindow({
+        title,
+        width: 600,
+        height: 400,
+        minWidth: 400,
+        minHeight: 300,
+        autoHideMenuBar: true,
+        darkTheme: true,
+        webPreferences: {
+            preload: join(__dirname, "preload.js"),
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: false,
+            session: mainWindow.webContents.session // Share session with main window
+        },
+        backgroundColor: "#202225"
+    });
+
+    makeLinksOpenExternally(win);
+
+    // Load the same Discord URL as main window to have access to Discord's React/webpack
+    const mainUrl = mainWindow.webContents.getURL();
+    await win.loadURL(mainUrl || "https://discord.com/app");
+
+    // Wait for window to load, then inject script to open modal
+    win.webContents.once("did-finish-load", () => {
+        win.webContents.executeJavaScript(`
+            (function() {
+                // Wait for Vencord to be available
+                const checkVencord = setInterval(() => {
+                    if (window.Vencord && window.Vencord.Webpack) {
+                        clearInterval(checkVencord);
+                        // Trigger the modal to open via custom event
+                        window.dispatchEvent(new CustomEvent("vencord:openUserTools"));
+                    }
+                }, 100);
+                
+                // Timeout after 5 seconds
+                setTimeout(() => clearInterval(checkVencord), 5000);
+            })();
+        `);
+    });
+});

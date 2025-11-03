@@ -9,11 +9,13 @@ import { definePluginSettings, useSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import { classes } from "@utils/misc";
+import { closeModal, ModalCloseButton, ModalContent, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
 import type { Channel, User } from "@vencord/discord-types";
 import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
 import {
     Avatar,
+    Button,
     ChannelStore,
     GuildMemberStore,
     Menu,
@@ -21,11 +23,13 @@ import {
     PermissionStore,
     React,
     RestAPI,
+    Text,
     Toasts,
     UserStore,
     VoiceStateStore
 } from "@webpack/common";
 import type { PropsWithChildren, ReactNode, SVGProps } from "react";
+import { IpcEvents } from "@shared/IpcEvents";
 
 const HeaderBarIcon = findComponentByCodeLazy(".HEADER_BAR_BADGE_TOP:", '.iconBadge,"top"');
 
@@ -118,6 +122,9 @@ export const settings = definePluginSettings({
 
 const Auth: { getToken: () => string; } = findByPropsLazy("getToken");
 
+// Global state to track the modal
+let currentModalKey: string | null = null;
+
 function getUserActions(userId: string): UserActions {
     try {
         const actions = JSON.parse(settings.store.userActions || "{}");
@@ -189,10 +196,10 @@ async function deafenGuildMember(guildId: string, userId: string, deaf: boolean)
     }
 }
 
-function getGuildIdFromChannel(channelId: string): string | null {
+function getGuildIdFromChannel(channelId: string): string | undefined {
     const channel = ChannelStore.getChannel(channelId);
-    if (!channel) return null;
-    return (channel as any).guild_id ?? (channel as any).guildId ?? null;
+    if (!channel) return undefined;
+    return (channel as any).guild_id ?? (channel as any).guildId ?? undefined;
 }
 
 interface UserContextProps {
@@ -313,6 +320,120 @@ function ActiveUsersSubMenu({ guildId }: { guildId?: string; }) {
     );
 }
 
+function ActiveUsersModal({ modalProps }: { modalProps: ModalProps; }) {
+    const activeUsers = getActiveUsers();
+
+    return (
+        <ModalRoot {...modalProps} size={ModalSize.MEDIUM}>
+            <ModalHeader>
+                <Text variant="heading-lg/semibold" tag="h1">Active Users</Text>
+                <ModalCloseButton onClick={modalProps.onClose} />
+            </ModalHeader>
+            <ModalContent>
+                {activeUsers.length === 0 ? (
+                    <div style={{ 
+                        display: "flex", 
+                        justifyContent: "center", 
+                        alignItems: "center", 
+                        height: "100px",
+                        color: "var(--text-muted)"
+                    }}>
+                        No active users
+                    </div>
+                ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>
+                        {activeUsers.map(({ userId, actions }) => {
+                            const user = UserStore.getUser(userId);
+                            if (!user) return null;
+                            
+                            const displayName = (user as any).globalName || user.username;
+                            
+                            const actionLabels: string[] = [];
+                            if (actions.disconnect) actionLabels.push("Bağlantı kes");
+                            if (actions.mute) actionLabels.push("Sustur");
+                            if (actions.deafen) actionLabels.push("Sağırlaştır");
+                            
+                            return (
+                                <div
+                                    key={userId}
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "8px",
+                                        padding: "8px",
+                                        borderRadius: "4px",
+                                        backgroundColor: "var(--background-secondary)",
+                                    }}
+                                >
+                                    <Avatar
+                                        src={user.getAvatarURL(null, 40, false)}
+                                        size="SIZE_40"
+                                    />
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontWeight: 500 }}>
+                                            {displayName}
+                                        </div>
+                                        {actionLabels.length > 0 && (
+                                            <div style={{ 
+                                                fontSize: "12px", 
+                                                color: "var(--text-muted)"
+                                            }}>
+                                                {actionLabels.join(", ")}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <Button
+                                        size={Button.Sizes.SMALL}
+                                        color={Button.Colors.RED}
+                                        onClick={() => {
+                                            disableUserTools(userId);
+                                        }}
+                                    >
+                                        Disable
+                                    </Button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </ModalContent>
+        </ModalRoot>
+    );
+}
+
+async function openUserToolsModal() {
+    // If modal is already open, close it first
+    if (currentModalKey) {
+        closeModal(currentModalKey);
+        currentModalKey = null;
+    }
+
+    // If desktop, open in separate window instead of modal
+    if (IS_DISCORD_DESKTOP) {
+        try {
+            const { ipcRenderer } = await import("electron");
+            await ipcRenderer.invoke(IpcEvents.OPEN_USER_TOOLS_WINDOW);
+            return; // Don't open modal in main window
+        } catch (e) {
+            console.error("Failed to open user tools window:", e);
+            // Fall through to open modal as fallback
+        }
+    }
+
+    // Open new modal (web or fallback)
+    currentModalKey = openModal((props: ModalProps) => (
+        <ActiveUsersModal
+            modalProps={{
+                ...props,
+                onClose: () => {
+                    currentModalKey = null;
+                    props.onClose();
+                }
+            }}
+        />
+    ));
+}
+
 const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: UserContextProps) => {
     if (!user || user.id === UserStore.getCurrentUser().id) return;
     if (!guildId) return; // Only work in guilds
@@ -395,6 +516,10 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
     ));
 };
 
+const handleOpenUserTools = () => {
+    openUserToolsModal();
+};
+
 export default definePlugin({
     name: "UserTools",
     description: "Adds context menu options to continuously disconnect, mute, or deafen users in guilds",
@@ -414,6 +539,15 @@ export default definePlugin({
 
     contextMenus: {
         "user-context": UserContext
+    },
+
+    start() {
+        // Listen for custom event from separate window
+        window.addEventListener("vencord:openUserTools", handleOpenUserTools);
+    },
+
+    stop() {
+        window.removeEventListener("vencord:openUserTools", handleOpenUserTools);
     },
 
     flux: {
@@ -476,7 +610,7 @@ export default definePlugin({
                 <HeaderBarIcon
                     tooltip={tooltip}
                     icon={DisconnectIcon}
-                    onClick={() => { }}
+                    onClick={() => openUserToolsModal() }
                     onContextMenu={e => {
                         e.preventDefault();
                         settings.store.userActions = "{}";
