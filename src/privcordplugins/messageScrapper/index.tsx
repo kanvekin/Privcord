@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { ChatBarButton } from "@api/ChatButtons";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
+import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import { showItemInFolder } from "@utils/native";
-import { ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
 import { Message } from "@vencord/discord-types";
-import { Button, Card, ChannelStore, Constants, ContextMenuApi, GuildStore, Menu, MessageActions, NavigationRouter, React, RelationshipStore, RestAPI, Toasts, UserStore } from "@webpack/common";
-import { ChatBarButton } from "@api/ChatButtons";
+import { Button, Card, ChannelStore, Constants, ContextMenuApi, GuildStore, Menu, MessageActions, React, RelationshipStore, RestAPI, Toasts, UserStore } from "@webpack/common";
 
 type DeletedLogItem = {
     channelId: string;
@@ -25,6 +25,12 @@ type DeletedLogItem = {
 };
 
 type WhitelistMode = "dm" | "server" | null;
+
+// Global state to track the modal and process
+let currentModalKey: string | null = null;
+let isProcessRunning = false;
+let shouldStopProcess = false;
+let currentProgressRef: { current: any; } | null = null;
 
 const settings = definePluginSettings({
     whitelist: {
@@ -142,11 +148,11 @@ function FriendTag({ id, onRemove }: { id: string; onRemove: (id: string) => voi
                     borderRadius: "4px",
                     transition: "all 0.2s ease"
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={e => {
                     e.currentTarget.style.background = "var(--background-modifier-accent)";
                     e.currentTarget.style.color = "var(--text-danger)";
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={e => {
                     e.currentTarget.style.background = "transparent";
                     e.currentTarget.style.color = "var(--interactive-normal)";
                 }}
@@ -162,7 +168,7 @@ function formatTime(seconds: number): string {
     return `${mins}m ${secs}s`;
 }
 
-function ProgressModal({ modalProps, onClose, progressRef }: { modalProps: ModalProps; onClose: () => void; progressRef: { current: any; }; }) {
+function ProgressModal({ modalProps, onClose, progressRef, onStop }: { modalProps: ModalProps; onClose: () => void; progressRef: { current: any; }; onStop: () => void; }) {
     const [totalMessages, setTotalMessages] = React.useState(0);
     const [processedMessages, setProcessedMessages] = React.useState(0);
     const [deletedCount, setDeletedCount] = React.useState(0);
@@ -353,16 +359,29 @@ function ProgressModal({ modalProps, onClose, progressRef }: { modalProps: Modal
                 </div>
             </ModalContent>
             <ModalFooter>
-                <Button
-                    onClick={onClose}
-                    disabled={isRunning}
-                    style={{
-                        background: isRunning ? "var(--background-modifier-hover)" : "var(--brand-experiment)",
-                        color: isRunning ? "var(--text-muted)" : "var(--white-500)"
-                    }}
-                >
-                    {isRunning ? "Processing..." : "Close"}
-                </Button>
+                <div style={{ display: "flex", gap: 12, width: "100%", justifyContent: "space-between" }}>
+                    <Button
+                        onClick={onStop}
+                        disabled={!isRunning}
+                        color={Button.Colors.RED}
+                        style={{
+                            background: isRunning ? "var(--button-danger-background)" : "var(--background-modifier-hover)",
+                            color: isRunning ? "var(--white-500)" : "var(--text-muted)"
+                        }}
+                    >
+                        Stop
+                    </Button>
+                    <Button
+                        onClick={onClose}
+                        disabled={isRunning}
+                        style={{
+                            background: isRunning ? "var(--background-modifier-hover)" : "var(--brand-experiment)",
+                            color: isRunning ? "var(--text-muted)" : "var(--white-500)"
+                        }}
+                    >
+                        {isRunning ? "Processing..." : "Close"}
+                    </Button>
+                </div>
             </ModalFooter>
         </ModalRoot>
     );
@@ -370,10 +389,11 @@ function ProgressModal({ modalProps, onClose, progressRef }: { modalProps: Modal
 
 function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
     const [query, setQuery] = React.useState("");
-    const [wl, setWl] = React.useState<string[]>(getWhitelist());
-    const [mode, setMode] = React.useState<WhitelistMode>((settings.store.whitelistMode as WhitelistMode) || null);
-    const [selectedGuilds, setSelectedGuilds] = React.useState<string[]>(parseCsv(settings.store.selectedGuilds));
+    const [wl, setWl] = React.useState<string[]>([]);
+    const [mode, setMode] = React.useState<WhitelistMode>(null);
+    const [selectedGuilds, setSelectedGuilds] = React.useState<string[]>([]);
     const progressRef = React.useRef<any>(null);
+    const [isRunning, setIsRunning] = React.useState(false);
 
     const friendIds = RelationshipStore.getFriendIDs?.() ?? [];
     const dms = ChannelStore.getSortedPrivateChannels().filter(c => c.isDM?.());
@@ -392,6 +412,13 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
 
     const guilds = Object.values(GuildStore.getGuilds?.() || {} as Record<string, any>);
 
+    const stopProcess = React.useCallback(() => {
+        shouldStopProcess = true;
+        if (currentProgressRef?.current) {
+            currentProgressRef.current.addLog("⏹️ Stopping process...", "info");
+        }
+    }, []);
+
     function save() {
         setWhitelist(wl);
         settings.store.whitelistMode = mode || "";
@@ -400,6 +427,11 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
     }
 
     async function start() {
+        if (isProcessRunning) {
+            Toasts.show({ id: Toasts.genId(), type: Toasts.Type.FAILURE, message: "Process is already running" });
+            return;
+        }
+
         setWhitelist(wl);
         settings.store.whitelistMode = mode || "";
         settings.store.selectedGuilds = selectedGuilds.join(",");
@@ -416,15 +448,26 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
             return;
         }
 
-        // Open progress modal in a new Discord view
-        let progressModal: any = null;
+        // Reset stop flag
+        shouldStopProcess = false;
+        isProcessRunning = true;
+        setIsRunning(true);
+        currentProgressRef = progressRef;
 
         // Open progress modal
-        progressModal = openModal((props: ModalProps) => (
-            <ProgressModal modalProps={props} progressRef={progressRef} onClose={() => {
-                if (progressModal) progressModal.close?.();
-                modalProps.onClose();
-            }} />
+        const progressModalKey = openModal((props: ModalProps) => (
+            <ProgressModal
+                modalProps={props}
+                progressRef={progressRef}
+                onStop={stopProcess}
+                onClose={() => {
+                    if (!isProcessRunning) {
+                        if (progressModalKey) closeModal(progressModalKey);
+                        setIsRunning(false);
+                        modalProps.onClose();
+                    }
+                }}
+            />
         ));
 
         const progress = progressRef.current;
@@ -475,7 +518,7 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
 
         for (const ch of targets) {
             try {
-                const messages = await fetchAllMessages(ch.id, 250, (count) => {
+                const messages = await fetchAllMessages(ch.id, 250, count => {
                     // Update progress during counting
                 });
                 const toDelete = messages.filter((m: any) => m?.author?.id === myId);
@@ -499,15 +542,25 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
         let failedCount = 0;
 
         // Adaptive delay - starts conservative, increases on timeout
-        let baseDelayMs = 1000;
+        const baseDelayMs = 1000;
         let currentDelayMs = baseDelayMs;
 
         for (const ch of targets) {
+            if (shouldStopProcess) {
+                progress.addLog("⏹️ Process stopped by user", "info");
+                break;
+            }
+
             try {
                 const messages = await fetchAllMessages(ch.id, 250);
                 const toDelete = messages.filter((m: any) => m?.author?.id === myId);
 
                 for (const m of toDelete) {
+                    if (shouldStopProcess) {
+                        progress.addLog("⏹️ Process stopped by user", "info");
+                        break;
+                    }
+
                     try {
                         await MessageActions.deleteMessage(ch.id, m.id);
                         deletedCount++;
@@ -536,6 +589,8 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
                             currentDelayMs = Math.max(baseDelayMs, currentDelayMs - 50);
                         }
                     } catch (e: any) {
+                        if (shouldStopProcess) break;
+
                         failedCount++;
                         processedCount++;
                         progress.incrementFailed();
@@ -553,11 +608,18 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
                         }
                     }
                 }
+
+                if (shouldStopProcess) break;
                 await wait(500); // Light pause between channels
             } catch (e: any) {
+                if (shouldStopProcess) break;
                 progress.addLog(`❌ Failed to fetch messages from channel: ${e?.message || "Unknown error"}`, "error");
             }
         }
+
+        // Mark process as stopped
+        isProcessRunning = false;
+        setIsRunning(false);
 
         // Save log
         const runId = new Date().toISOString().replace(/[:.]/g, "-");
@@ -596,9 +658,13 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
             progress.addLog(`❌ Failed to save log: ${e}`, "error");
         }
 
-        progress.addLog(`✅ Completed! Deleted: ${deletedCount}, Failed: ${failedCount}`, "success");
+        if (shouldStopProcess) {
+            progress.addLog(`⏹️ Stopped! Deleted: ${deletedCount}, Failed: ${failedCount}`, "info");
+        } else {
+            progress.addLog(`✅ Completed! Deleted: ${deletedCount}, Failed: ${failedCount}`, "success");
+        }
         progress.finish();
-        modalProps.onClose();
+        shouldStopProcess = false;
     }
 
     return (
@@ -709,7 +775,7 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
                         border: "1px solid var(--background-modifier-accent)"
                     }}>
                         {wl.map(id => (
-                            <FriendTag key={id} id={id} onRemove={(idToRemove: string) => {
+                            <FriendTag key={id} id={id} onRemove={idToRemove => {
                                 setWl(wl.filter(x => x !== idToRemove));
                             }} />
                         ))}
@@ -741,10 +807,10 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
                             outline: "none",
                             transition: "border-color 0.2s ease"
                         }}
-                        onFocus={(e) => {
+                        onFocus={e => {
                             e.target.style.borderColor = "var(--brand-experiment)";
                         }}
-                        onBlur={(e) => {
+                        onBlur={e => {
                             e.target.style.borderColor = "var(--background-modifier-accent)";
                         }}
                     />
@@ -772,10 +838,10 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
                                         cursor: "pointer",
                                         transition: "background-color 0.2s ease"
                                     }}
-                                    onMouseEnter={(e) => {
+                                    onMouseEnter={e => {
                                         e.currentTarget.style.background = "var(--background-modifier-hover)";
                                     }}
-                                    onMouseLeave={(e) => {
+                                    onMouseLeave={e => {
                                         e.currentTarget.style.background = "transparent";
                                     }}
                                     onClick={() => setWl(uniq([...wl, id]))}
@@ -810,18 +876,59 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
                     <Button
                         color={Button.Colors.RED}
                         onClick={start}
-                        disabled={!mode || (mode === "server" && selectedGuilds.length === 0)}
+                        disabled={isRunning || !mode || (mode === "server" && selectedGuilds.length === 0)}
                         style={{
-                            background: "var(--button-danger-background)",
-                            color: "var(--white-500)"
+                            background: isRunning ? "var(--background-modifier-hover)" : "var(--button-danger-background)",
+                            color: isRunning ? "var(--text-muted)" : "var(--white-500)"
                         }}
                     >
-                        Start
+                        {isRunning ? "Running..." : "Start"}
                     </Button>
                 </div>
             </ModalFooter>
         </ModalRoot>
     );
+}
+
+function openMessageScrapperModal() {
+    // If modal is already open, close it first
+    if (currentModalKey) {
+        closeModal(currentModalKey);
+        currentModalKey = null;
+    }
+
+    // Reset process state
+    isProcessRunning = false;
+    shouldStopProcess = false;
+    currentProgressRef = null;
+
+    // Open new modal
+    currentModalKey = openModal((props: ModalProps) => (
+        <WhitelistModal
+            modalProps={{
+                ...props,
+                onClose: () => {
+                    // Reset on close
+                    if (!isProcessRunning) {
+                        isProcessRunning = false;
+                        shouldStopProcess = false;
+                        currentProgressRef = null;
+                        currentModalKey = null;
+                    }
+                    props.onClose();
+                }
+            }}
+        />
+    ));
+}
+
+function stopMessageScrapper() {
+    if (isProcessRunning) {
+        shouldStopProcess = true;
+        Toasts.show({ id: Toasts.genId(), type: Toasts.Type.MESSAGE, message: "Stopping Message Scrapper..." });
+    } else {
+        Toasts.show({ id: Toasts.genId(), type: Toasts.Type.FAILURE, message: "No process running" });
+    }
 }
 
 export default definePlugin({
@@ -834,11 +941,17 @@ export default definePlugin({
         return (
             <ChatBarButton
                 tooltip="Messages Scrapper"
-                onClick={() => openModal(props => <WhitelistModal modalProps={props} />)}
+                onClick={openMessageScrapperModal}
                 onContextMenu={e =>
                     ContextMenuApi.openContextMenu(e, () => (
                         <Menu.Menu navId="pc-messages-scrapper-menu" onClose={ContextMenuApi.closeContextMenu} aria-label="Messages Scrapper">
-                            <Menu.MenuItem id="pc-messages-scrapper-open" label="Open Messages Scrapper" action={() => openModal(props => <WhitelistModal modalProps={props} />)} />
+                            <Menu.MenuItem id="pc-messages-scrapper-open" label="Open Messages Scrapper" action={openMessageScrapperModal} />
+                            <Menu.MenuItem
+                                id="pc-messages-scrapper-stop"
+                                label="Stop"
+                                action={stopMessageScrapper}
+                                disabled={!isProcessRunning}
+                            />
                         </Menu.Menu>
                     ))
                 }

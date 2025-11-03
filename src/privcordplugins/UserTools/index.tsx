@@ -214,9 +214,10 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
                 label="UserTools"
                 disabled={true}
             />
-            <Menu.MenuItem
+            <Menu.MenuCheckboxItem
                 id="user-tools-disconnect"
                 label="Bağlantı kes"
+                checked={actions.disconnect}
                 action={() => {
                     const newActions = { ...actions, disconnect: !actions.disconnect };
                     setUserActions(user.id, newActions);
@@ -228,12 +229,11 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
                         }
                     }
                 }}
-                checked={actions.disconnect}
-                showCheckbox={true}
             />
-            <Menu.MenuItem
+            <Menu.MenuCheckboxItem
                 id="user-tools-mute"
                 label="Sunucuda Sustur"
+                checked={actions.mute}
                 action={() => {
                     const newActions = { ...actions, mute: !actions.mute };
                     setUserActions(user.id, newActions);
@@ -247,12 +247,11 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
                         void muteGuildMember(guildId, user.id, false);
                     }
                 }}
-                checked={actions.mute}
-                showCheckbox={true}
             />
-            <Menu.MenuItem
+            <Menu.MenuCheckboxItem
                 id="user-tools-deafen"
                 label="Sunucuda Sağırlaştır"
+                checked={actions.deafen}
                 action={() => {
                     const newActions = { ...actions, deafen: !actions.deafen };
                     setUserActions(user.id, newActions);
@@ -266,8 +265,6 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
                         void deafenGuildMember(guildId, user.id, false);
                     }
                 }}
-                checked={actions.deafen}
-                showCheckbox={true}
             />
         </Menu.MenuGroup>
     ));
