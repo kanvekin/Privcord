@@ -12,6 +12,7 @@ import { showItemInFolder } from "@utils/native";
 import definePlugin, { OptionType } from "@utils/types";
 import { Message } from "@vencord/discord-types";
 import { Button, Card, ChannelStore, Constants, ContextMenuApi, GuildStore, Menu, MessageActions, React, RelationshipStore, RestAPI, Toasts, UserStore } from "@webpack/common";
+import { IpcEvents } from "@shared/IpcEvents";
 
 type DeletedLogItem = {
     channelId: string;
@@ -179,7 +180,7 @@ function ProgressModal({ modalProps, onClose, progressRef, onStop }: { modalProp
     const [timeoutCount, setTimeoutCount] = React.useState(0);
     const [lastTimeoutTime, setLastTimeoutTime] = React.useState<number | null>(null);
     const startTimeRef = React.useRef<number>(Date.now());
-    const deletedPerSecondRef = React.useRef<number>(0);
+    const deletedTimesRef = React.useRef<number[]>([]); // Track deletion times for better averaging
     const lastUpdateTimeRef = React.useRef<number>(Date.now());
 
     const addLog = (message: string, type: "success" | "error" | "info" | "timeout" = "info") => {
@@ -200,11 +201,34 @@ function ProgressModal({ modalProps, onClose, progressRef, onStop }: { modalProp
 
     const calculateEstimatedTime = React.useCallback(() => {
         const remaining = totalMessages - processedMessages;
-        if (deletedPerSecondRef.current > 0 && remaining > 0) {
-            const estimated = remaining / deletedPerSecondRef.current;
-            setEstimatedTime(estimated);
+        if (remaining <= 0) {
+            setEstimatedTime(0);
+            return;
         }
-    }, [totalMessages, processedMessages]);
+        
+        // Calculate average deletions per second from recent history (last 30 deletions)
+        const now = Date.now();
+        const recentTimes = deletedTimesRef.current.filter(t => now - t < 30000); // Last 30 seconds
+        if (recentTimes.length >= 2) {
+            const timeSpan = (recentTimes[recentTimes.length - 1] - recentTimes[0]) / 1000; // in seconds
+            const deletions = recentTimes.length;
+            if (timeSpan > 0) {
+                const deletionsPerSecond = deletions / timeSpan;
+                const estimated = remaining / deletionsPerSecond;
+                setEstimatedTime(estimated);
+                return;
+            }
+        }
+        
+        // Fallback: use overall rate if we have enough data
+        const totalElapsed = (now - startTimeRef.current) / 1000;
+        if (totalElapsed > 0 && deletedCount > 0) {
+            const overallRate = deletedCount / totalElapsed;
+            if (overallRate > 0) {
+                setEstimatedTime(remaining / overallRate);
+            }
+        }
+    }, [totalMessages, processedMessages, deletedCount]);
 
     React.useEffect(() => {
         calculateEstimatedTime();
@@ -217,11 +241,12 @@ function ProgressModal({ modalProps, onClose, progressRef, onStop }: { modalProp
         incrementDeleted: () => {
             setDeletedCount(d => d + 1);
             const now = Date.now();
-            const timeDiff = (now - lastUpdateTimeRef.current) / 1000;
-            if (timeDiff > 0) {
-                deletedPerSecondRef.current = 1 / timeDiff;
-                lastUpdateTimeRef.current = now;
+            deletedTimesRef.current.push(now);
+            // Keep only last 100 deletion times to avoid memory issues
+            if (deletedTimesRef.current.length > 100) {
+                deletedTimesRef.current = deletedTimesRef.current.slice(-100);
             }
+            lastUpdateTimeRef.current = now;
         },
         incrementFailed: () => setFailedCount(f => f + 1),
         addLog,
@@ -562,7 +587,10 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
                     }
 
                     try {
-                        await MessageActions.deleteMessage(ch.id, m.id);
+                        // Use RestAPI.del for reliable message deletion
+                        await RestAPI.del({
+                            url: `${Constants.Endpoints.MESSAGES(ch.id)}/${m.id}`
+                        });
                         deletedCount++;
                         processedCount++;
                         progress.incrementDeleted();
@@ -890,7 +918,7 @@ function WhitelistModal({ modalProps }: { modalProps: ModalProps; }) {
     );
 }
 
-function openMessageScrapperModal() {
+async function openMessageScrapperModal() {
     // If modal is already open, close it first
     if (currentModalKey) {
         closeModal(currentModalKey);
@@ -902,7 +930,19 @@ function openMessageScrapperModal() {
     shouldStopProcess = false;
     currentProgressRef = null;
 
-    // Open new modal
+    // If desktop, open in separate window instead of modal
+    if (IS_DISCORD_DESKTOP) {
+        try {
+            const { ipcRenderer } = await import("electron");
+            await ipcRenderer.invoke(IpcEvents.OPEN_MESSAGE_SCRAPPER_WINDOW);
+            return; // Don't open modal in main window
+        } catch (e) {
+            console.error("Failed to open message scrapper window:", e);
+            // Fall through to open modal as fallback
+        }
+    }
+
+    // Open new modal (web or fallback)
     currentModalKey = openModal((props: ModalProps) => (
         <WhitelistModal
             modalProps={{
@@ -931,11 +971,22 @@ function stopMessageScrapper() {
     }
 }
 
+const handleOpenMessageScrapper = () => {
+    openMessageScrapperModal();
+};
+
 export default definePlugin({
     name: "MessagesScrapper",
     description: "Delete your own messages in DMs or servers with a beautiful progress interface. Logs each run to JSON.",
     authors: [Devs.feelslove],
     settings,
+    start() {
+        // Listen for custom event from separate window
+        window.addEventListener("vencord:openMessageScrapper", handleOpenMessageScrapper);
+    },
+    stop() {
+        window.removeEventListener("vencord:openMessageScrapper", handleOpenMessageScrapper);
+    },
     renderChatBarButton: ({ isMainChat }) => {
         if (!isMainChat) return null;
         return (

@@ -13,6 +13,7 @@ import definePlugin, { OptionType } from "@utils/types";
 import type { Channel, User } from "@vencord/discord-types";
 import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
 import {
+    Avatar,
     ChannelStore,
     GuildMemberStore,
     Menu,
@@ -200,12 +201,125 @@ interface UserContextProps {
     user: User;
 }
 
+function getActiveUsers(): Array<{ userId: string; actions: UserActions; }> {
+    try {
+        const allActions = JSON.parse(settings.store.userActions || "{}");
+        return Object.entries(allActions)
+            .filter(([_, actions]) => {
+                const a = actions as UserActions;
+                return a && (a.disconnect || a.mute || a.deafen);
+            })
+            .map(([userId, actions]) => ({
+                userId,
+                actions: actions as UserActions
+            }));
+    } catch {
+        return [];
+    }
+}
+
+function disableUserTools(userId: string, currentGuildId?: string) {
+    const actions = getUserActions(userId);
+    
+    // Find guildId from voice state if not provided
+    let guildId = currentGuildId;
+    if (!guildId) {
+        const voiceState = VoiceStateStore.getVoiceStateForUser(userId);
+        if (voiceState?.channelId) {
+            guildId = getGuildIdFromChannel(voiceState.channelId);
+        }
+    }
+    
+    // Reverse any active actions before disabling
+    if (guildId) {
+        if (actions.mute) {
+            void muteGuildMember(guildId, userId, false);
+        }
+        if (actions.deafen) {
+            void deafenGuildMember(guildId, userId, false);
+        }
+    }
+    
+    // Disable all actions
+    setUserActions(userId, { disconnect: false, mute: false, deafen: false });
+    
+    const user = UserStore.getUser(userId);
+    const userName = user ? ((user as any).globalName || user.username) : userId;
+    
+    Toasts.show({
+        message: `UserTools disabled for ${userName}`,
+        id: Toasts.genId(),
+        type: Toasts.Type.SUCCESS
+    });
+}
+
+function ActiveUsersSubMenu({ guildId }: { guildId?: string; }) {
+    const activeUsers = getActiveUsers();
+    
+    if (activeUsers.length === 0) {
+        return (
+            <Menu.MenuItem
+                id="user-tools-no-active"
+                label="No active users"
+                disabled={true}
+            />
+        );
+    }
+    
+    return (
+        <>
+            {activeUsers.map(({ userId, actions }) => {
+                const user = UserStore.getUser(userId);
+                if (!user) return null;
+                
+                const displayName = guildId 
+                    ? (GuildMemberStore.getNick(guildId, userId) || (user as any).globalName || user.username)
+                    : ((user as any).globalName || user.username);
+                
+                const actionLabels: string[] = [];
+                if (actions.disconnect) actionLabels.push("Bağlantı kes");
+                if (actions.mute) actionLabels.push("Sustur");
+                if (actions.deafen) actionLabels.push("Sağırlaştır");
+                
+                return (
+                    <Menu.MenuItem
+                        key={`active-user-${userId}`}
+                        id={`user-tools-active-${userId}`}
+                        label={
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                <Avatar
+                                    src={user.getAvatarURL(guildId || null, 20, false)}
+                                    size="SIZE_20"
+                                />
+                                <span>{displayName}</span>
+                                {actionLabels.length > 0 && (
+                                    <span style={{ 
+                                        fontSize: "11px", 
+                                        color: "var(--text-muted)",
+                                        marginLeft: "4px"
+                                    }}>
+                                        ({actionLabels.join(", ")})
+                                    </span>
+                                )}
+                            </div>
+                        }
+                        action={() => {
+                            disableUserTools(userId, guildId);
+                        }}
+                    />
+                );
+            })}
+        </>
+    );
+}
+
 const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: UserContextProps) => {
     if (!user || user.id === UserStore.getCurrentUser().id) return;
     if (!guildId) return; // Only work in guilds
 
     const actions = getUserActions(user.id);
     const hasAnyAction = actions.disconnect || actions.mute || actions.deafen;
+    const activeUsers = getActiveUsers();
 
     children.splice(-1, 0, (
         <Menu.MenuGroup key="user-tools-group">
@@ -266,6 +380,17 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
                     }
                 }}
             />
+            {activeUsers.length > 0 && (
+                <Menu.MenuItem
+                    id="user-tools-active-users"
+                    label="Aktif Kullanıcılar"
+                    renderSubmenu={() => (
+                        <Menu.Menu navId="user-tools-active-users-menu" onClose={() => {}}>
+                            <ActiveUsersSubMenu guildId={guildId} />
+                        </Menu.Menu>
+                    )}
+                />
+            )}
         </Menu.MenuGroup>
     ));
 };
