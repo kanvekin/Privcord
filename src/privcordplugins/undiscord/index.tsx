@@ -21,8 +21,9 @@ const settings = definePluginSettings({
 
 async function loadUndiscordFrom(url: string) {
     try {
-        // Ensure token is available for the userscript to use
+        // Ensure token is available and auth headers will be injected
         await injectToken();
+        patchNetworkAuth();
 
         const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -64,6 +65,70 @@ async function injectToken() {
         } catch {}
     } catch {
         // ignore, fallback to userscript's own token discovery
+    }
+}
+
+// Force auth onto Discord API requests even if the userscript cannot obtain the token itself
+function patchNetworkAuth() {
+    try {
+        const Auth: { getToken?: () => string } = findByPropsLazy("getToken");
+        const token = Auth?.getToken?.();
+        if (!token) return;
+
+        const isDiscordApi = (input: RequestInfo | URL): boolean => {
+            try {
+                const u = typeof input === "string" ? new URL(input, location.origin) : new URL((input as Request).url ?? String(input), location.origin);
+                if (u.origin === location.origin && u.pathname.startsWith("/api")) return true;
+                const host = u.hostname;
+                return (
+                    /(^|\.)discord\.com$/.test(host) ||
+                    /(^|\.)discordapp\.com$/.test(host)
+                ) && u.pathname.startsWith("/api");
+            } catch {
+                return false;
+            }
+        };
+
+        // Patch fetch
+        const origFetch = window.fetch;
+        if (!(origFetch as any).__undiscord_patched) {
+            const patchedFetch: typeof fetch = async (input, init = {}) => {
+                if (isDiscordApi(input)) {
+                    const headers = new Headers((init as any)?.headers || (input instanceof Request ? input.headers : undefined));
+                    if (!headers.has("Authorization")) headers.set("Authorization", token);
+                    init = { ...init, headers };
+                }
+                return origFetch(input as any, init);
+            };
+            (patchedFetch as any).__undiscord_patched = true;
+            window.fetch = patchedFetch;
+        }
+
+        // Patch XMLHttpRequest
+        const XHR = window.XMLHttpRequest;
+        if (XHR && !(XHR as any).__undiscord_patched) {
+            const Open = XHR.prototype.open;
+            const Send = XHR.prototype.send;
+            XHR.prototype.open = function(this: XMLHttpRequest, method: string, url: string | URL, ...rest: any[]) {
+                (this as any).__und_url = url;
+                return Reflect.apply(Open, this, [method, url as any, ...rest]);
+            } as typeof XHR.prototype.open;
+            XHR.prototype.send = function(this: XMLHttpRequest, body?: Document | XMLHttpRequestBodyInit | null) {
+                try {
+                    const url = (this as any).__und_url;
+                    if (url && isDiscordApi(url)) {
+                        if (!(this as any).__und_auth_set) {
+                            this.setRequestHeader("Authorization", token);
+                            (this as any).__und_auth_set = true;
+                        }
+                    }
+                } catch {}
+                return Reflect.apply(Send, this, [body as any]);
+            } as typeof XHR.prototype.send;
+            (XHR as any).__undiscord_patched = true;
+        }
+    } catch {
+        // ignore, best-effort
     }
 }
 
