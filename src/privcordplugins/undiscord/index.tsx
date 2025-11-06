@@ -115,7 +115,25 @@ function patchNetworkAuth() {
                 if (isDiscordApi(input)) {
                     const existingHeaders = (init as any)?.headers || (input instanceof Request ? input.headers : undefined);
                     const headers = new Headers(existingHeaders);
-                    if (!headers.has("Authorization")) headers.set("Authorization", token);
+
+                    // Determine full URL to decide if we must force auth
+                    let urlStr = "";
+                    try {
+                        const u = typeof input === "string" ? new URL(input, location.origin) : new URL((input as Request).url ?? String(input), location.origin);
+                        urlStr = u.pathname;
+                    } catch {}
+
+                    const hasAuth = headers.has("Authorization");
+                    const authVal = hasAuth ? String(headers.get("Authorization") || "") : "";
+                    const invalidAuth = !authVal || authVal === "undefined" || authVal === "null" || authVal.length < 10;
+
+                    // Force for messages/search; otherwise set if missing/invalid
+                    if (urlStr.includes("/messages/search")) {
+                        headers.set("Authorization", token);
+                    } else if (!hasAuth || invalidAuth) {
+                        headers.set("Authorization", token);
+                    }
+
                     if (input instanceof Request) {
                         const req = new Request(input, {
                             method: input.method,
