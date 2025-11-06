@@ -1,29 +1,14 @@
-# Contributing to Equicord
+# Contributing to Privcord
 
-Equicord is a community project and welcomes any kind of contribution from anyone!
+Privcord is a community project and welcomes any kind of contribution from anyone!
 
-We have development documentation for new contributors, which can be found at <https://docs.equicord.org>.
+We have development documentation for new contributors, which can be found at https://wwww.discord.gg/.
 
 All contributions should be made in accordance with our [Code of Conduct](./CODE_OF_CONDUCT.md).
 
 ## How to contribute
 
-Contributions can be sent via pull requests. If you're new to Git, check [this guide](https://opensource.com/article/19/7/create-pull-request-github).
-
-Pull requests can be made either to the `main` or the `dev` branch. However, unless you're an advanced user, I recommend sticking to `main`. This is because the dev branch might contain unstable changes and be force pushed frequently, which could cause conflicts in your pull request.
-
-## Write a plugin
-
-Writing a plugin is the primary way to contribute.
-
-Before starting your plugin:
-
-- Be in our discord
-- Check existing pull requests to see if someone is already working on a similar plugin
-- Check our [plugin requests tracker](https://discord.com/channels/1173279886065029291/1419347113745059961) to see if there is an existing request, or if the same idea has been rejected
-- If there isn't an existing request, [open one](https://discord.com/channels/1173279886065029291/1419347113745059961) yourself.
-  and include that you'd like to work on this yourself. Then wait for feedback to see if the idea even has any chance of being accepted. Or maybe others have some ideas to improve it!
-- Familarise yourself with our plugin rules below to ensure your plugin is not banned
+Contributions can be sent via discord requests.
 
 ### Plugin Rules
 
@@ -39,13 +24,13 @@ Before starting your plugin:
 - No plugins that require the user to enter their own API key
 - Do not introduce new dependencies unless absolutely necessary and warranted
 
-## Improve Equicord itself
+## Improve Privcord itself
 
-If you have any ideas on how to improve Equicord itself, or want to propose a new plugin API, feel free to open a feature request so we can discuss.
+If you have any ideas on how to improve Privcord itself, or want to propose a new plugin API, feel free to open a feature request so we can discuss.
 
 Or if you notice any bugs or typos, feel free to fix them!
 
 ## Help out users in our Discord community
 
-We have an open support channel in our [Discord community](https://equicord.org/discord).
+We have an open support channel in our [Discord community](https://discord.gg/).
 Helping out users there is always appreciated! The more, the merrier.
