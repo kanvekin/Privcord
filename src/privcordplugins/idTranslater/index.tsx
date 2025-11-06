@@ -110,7 +110,7 @@ function isIdInContext(content: string, id: string, index: number): boolean {
   }
 
   // Ignore if ID is part of a URL
-  if (before.match(/[:\/\.]/) || after.match(/[:\/\.]/)) {
+  if (before.match(/[:/.]/) || after.match(/[:/.]/)) {
     return true;
   }
 

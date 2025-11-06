@@ -5,8 +5,7 @@
  */
 
 //
-import { addProfileBadge, ProfileBadge } from "@api/Badges";
-import { BadgePosition } from "@api/Badges";
+import { addProfileBadge, ProfileBadge, BadgePosition } from "@api/Badges";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
@@ -14,7 +13,7 @@ import { Forms, Toasts, UserStore } from "@webpack/common";
 
 function isCurrentUser(userId: string) {
     const u = UserStore.getCurrentUser().id;
-    return u == userId;
+    return u === userId;
 }
 
 export default definePlugin({

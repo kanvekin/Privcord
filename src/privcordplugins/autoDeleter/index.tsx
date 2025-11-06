@@ -1490,7 +1490,7 @@ export default definePlugin({
       const importedSettings = JSON.parse(settingsData);
       // Validate and apply imported settings
       Object.keys(importedSettings).forEach((key) => {
-        if (settings.store.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(settings.store, key)) {
           settings.store[key] = importedSettings[key];
         }
       });
