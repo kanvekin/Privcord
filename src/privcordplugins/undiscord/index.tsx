@@ -113,14 +113,27 @@ function patchNetworkAuth() {
         if (!(origFetch as any).__undiscord_patched) {
             const patchedFetch: typeof fetch = async (input, init = {}) => {
                 if (isDiscordApi(input)) {
-                    const headers = new Headers((init as any)?.headers || (input instanceof Request ? input.headers : undefined));
-                    // Always enforce our Authorization
-                    headers.set("Authorization", token);
+                    const existingHeaders = (init as any)?.headers || (input instanceof Request ? input.headers : undefined);
+                    const headers = new Headers(existingHeaders);
+                    if (!headers.has("Authorization")) headers.set("Authorization", token);
                     if (input instanceof Request) {
-                        const req = new Request(input, { headers });
+                        const req = new Request(input, {
+                            method: input.method,
+                            headers,
+                            body: (input as any)._bodyInit ?? undefined,
+                            mode: input.mode,
+                            credentials: input.credentials,
+                            cache: input.cache,
+                            redirect: input.redirect,
+                            referrer: input.referrer,
+                            referrerPolicy: input.referrerPolicy,
+                            integrity: input.integrity,
+                            keepalive: (input as any).keepalive,
+                            signal: input.signal,
+                        });
                         return origFetch(req);
                     }
-                    init = { ...init, headers } as RequestInit;
+                    init = { ...(init as RequestInit), headers };
                 }
                 return origFetch(input as any, init);
             };
@@ -136,26 +149,25 @@ function patchNetworkAuth() {
             const SetHeader = XHR.prototype.setRequestHeader;
             XHR.prototype.open = function(this: XMLHttpRequest, method: string, url: string | URL, ...rest: any[]) {
                 (this as any).__und_url = url;
+                (this as any).__und_is_api = isDiscordApi(url);
+                (this as any).__und_has_auth = false;
                 return Reflect.apply(Open, this, [method, url as any, ...rest]);
             } as typeof XHR.prototype.open;
             XHR.prototype.send = function(this: XMLHttpRequest, body?: Document | XMLHttpRequestBodyInit | null) {
                 try {
-                    const url = (this as any).__und_url;
-                    if (url && isDiscordApi(url)) {
-                        // Enforce after any prior header manipulations
-                        this.setRequestHeader("Authorization", token);
-                        (this as any).__und_auth_set = true;
+                    if ((this as any).__und_is_api) {
+                        if (!(this as any).__und_has_auth) {
+                            this.setRequestHeader("Authorization", token);
+                            (this as any).__und_auth_set = true;
+                        }
                     }
                 } catch {}
                 return Reflect.apply(Send, this, [body as any]);
             } as typeof XHR.prototype.send;
-            // Ensure any attempts to set Authorization use our token
+            // Track if Authorization was already set
             XHR.prototype.setRequestHeader = function(this: XMLHttpRequest, name: string, value: string) {
                 try {
-                    const url = (this as any).__und_url;
-                    if (url && isDiscordApi(url) && name.toLowerCase() === "authorization") {
-                        return Reflect.apply(SetHeader, this, [name, token]);
-                    }
+                    if (name.toLowerCase() === "authorization") (this as any).__und_has_auth = true;
                 } catch {}
                 return Reflect.apply(SetHeader, this, [name, value]);
             } as typeof XHR.prototype.setRequestHeader;
