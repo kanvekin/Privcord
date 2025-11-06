@@ -30,6 +30,7 @@ function MakeContextCallback(type: "settings" | "other"): NavContextMenuPatchCal
         );
     } : (children, contextMenuApiArguments) => {
         const guildid = SelectedGuildStore.getGuildId();
+        if (!contextMenuApiArguments.id) return;
         const role = GuildRoleStore.getRole(guildid, contextMenuApiArguments.id);
         if (!role) return;
         children.splice(-1, 0,

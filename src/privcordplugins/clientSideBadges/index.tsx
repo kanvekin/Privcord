@@ -140,56 +140,56 @@ export default definePlugin({
                 description: "Discord Staff",
                 image: "https://cdn.discordapp.com/badge-icons/5e74e9b61934fc1f67c65515d1f7e60d.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.discordStaff,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.discordStaff),
                 link: "https://discord.com/company"
             },
             {
                 description: "Partnered Server Owner",
                 image: "https://cdn.discordapp.com/badge-icons/3f9748e53446a137a052f3454e2de41e.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.partneredServerOwner,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.partneredServerOwner),
                 link: "https://discord.com/partners"
             },
             {
                 description: "Early Supporter",
                 image: "https://cdn.discordapp.com/badge-icons/7060786766c9c840eb3019e725d2b358.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.earlySupporter,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.earlySupporter),
                 link: "https://discord.com/settings/premium"
             },
             {
                 description: "Active Developer",
                 image: "https://cdn.discordapp.com/badge-icons/6bdc42827a38498929a4920da12695d9.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.activeDeveloper,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.activeDeveloper),
                 link: "https://support-dev.discord.com/hc/en-us/articles/10113997751447"
             },
             {
                 description: "Early Verified Bot Developer",
                 image: "https://cdn.discordapp.com/badge-icons/6df5892e0f35b051f8b61eace34f4967.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.earlyVerifiedBotDeveloper,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.earlyVerifiedBotDeveloper),
                 link: "https://discord.com/settings/premium"
             },
             {
                 description: "Moderator Programs Alumni",
                 image: "https://cdn.discordapp.com/badge-icons/fee1624003e2fee35cb398e125dc479b.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.moderatorProgramsAlumni,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.moderatorProgramsAlumni),
                 link: "https://discord.com/settings/premium"
             },
             {
                 description: "Discord Bug Hunter",
                 image: "https://cdn.discordapp.com/badge-icons/2717692c7dca7289b35297368a940dd0.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.bugHunter,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.bugHunter),
                 link: "https://discord.com/settings/premium"
             },
             {
                 description: "Discord Bug Hunter",
                 image: "https://cdn.discordapp.com/badge-icons/848f79194d4be5ff5f81505cbd0ce1e6.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.goldenBugHunter,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.goldenBugHunter),
                 link: "https://discord.com/settings/premium"
             },
 
@@ -199,56 +199,56 @@ export default definePlugin({
                 description: "HypeSquad Events",
                 image: "https://cdn.discordapp.com/badge-icons/bf01d1073931f921909045f3a39fd264.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.hypesquadEvents,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.hypesquadEvents),
                 link: "https://support.discord.com/hc/en-us/articles/360035962891-Profile-Badges-101#h_01GM67K5EJ16ZHYZQ5MPRW3JT3"
             },
             {
                 description: "HypeSquad Bravery",
                 image: "https://cdn.discordapp.com/badge-icons/8a88d63823d8a71cd5e390baa45efa02.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.houseOfBravery,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.houseOfBravery),
                 link: "https://discord.com/settings/hypesquad-online"
             },
             {
                 description: "HypeSquad Briliance",
                 image: "https://cdn.discordapp.com/badge-icons/011940fd013da3f7fb926e4a1cd2e618.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.houseOfBrilliance,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.houseOfBrilliance),
                 link: "https://discord.com/settings/hypesquad-online"
             },
             {
                 description: "HypeSquad Balance",
                 image: "https://cdn.discordapp.com/badge-icons/3aa41de486fa12454c3761e8e223442e.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.houseOfBalance,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.houseOfBalance),
                 link: "https://discord.com/settings/hypesquad-online"
             },
             {
                 description: "Discord Quests",
                 image: "https://cdn.discordapp.com/badge-icons/7d9ae358c8c5e118768335dbe68b4fb8.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.discordQuests,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.discordQuests),
                 link: "https://discord.com/discovery/quests"
             },
             {
                 description: "Discord Nitro",
                 image: "https://cdn.discordapp.com/badge-icons/2ba85e8026a8614b640c2837bcdfe21b.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.nitro,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.nitro),
                 link: "https://discord.com/settings/premium"
             },
             {
                 description: "Server Booster",
                 image: "https://cdn.discordapp.com/badge-icons/ec92202290b48d0879b7413d2dde3bab.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.serverBooster,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.serverBooster),
                 link: "https://discord.com/settings/premium"
             },
             {
                 description: "Supports Commands",
                 image: "https://cdn.discordapp.com/badge-icons/6f9e37f9029ff57aef81db857890005e.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.supportsCommands,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.supportsCommands),
                 link: "https://discord.com/blog/welcome-to-the-new-era-of-discord-apps?ref=badge"
             },
 
@@ -257,21 +257,21 @@ export default definePlugin({
                 description: "Premium App",
                 image: "https://cdn.discordapp.com/badge-icons/d2010c413a8da2208b7e4f35bd8cd4ac.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.premiumApp,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.premiumApp),
                 link: ""
             },
             {
                 description: "Uses Automod",
                 image: "https://cdn.discordapp.com/badge-icons/f2459b691ac7453ed6039bbcfaccbfcd.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.usesAutomod,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.usesAutomod),
                 link: ""
             },
             {
                 description: "Legacy Username",
                 image: "https://cdn.discordapp.com/badge-icons/6de6d34650760ba5551a79732e98ed60.png",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.legacyUsername,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.legacyUsername),
                 link: ""
             },
 
@@ -280,7 +280,7 @@ export default definePlugin({
                 description: "A clown, for a limited time",
                 image: "https://discord.com/assets/971cfe4aa5c0582000ea.svg",
                 position: BadgePosition.END,
-                shouldShow: ({ userId }) => isCurrentUser(userId) && this.settings.store.aClownForATime,
+                shouldShow: ({ userId }) => !!(isCurrentUser(userId) && this.settings.store.aClownForATime),
                 link: "https://youtu.be/cc2-4ci4G84"
             },
         ];
