@@ -118,6 +118,7 @@ function patchNetworkAuth() {
 
                     // Determine full URL to decide if we must force auth
                     let urlStr = "";
+                    let methodStr = (init as RequestInit)?.method || (input instanceof Request ? input.method : "GET");
                     try {
                         const u = typeof input === "string" ? new URL(input, location.origin) : new URL((input as Request).url ?? String(input), location.origin);
                         urlStr = u.pathname;
@@ -127,8 +128,9 @@ function patchNetworkAuth() {
                     const authVal = hasAuth ? String(headers.get("Authorization") || "") : "";
                     const invalidAuth = !authVal || authVal === "undefined" || authVal === "null" || authVal.length < 10;
 
-                    // Force for messages/search; otherwise set if missing/invalid
-                    if (urlStr.includes("/messages/search")) {
+                    // Force for messages/search and message DELETE endpoints; otherwise set if missing/invalid
+                    const isDeleteMessage = methodStr.toUpperCase() === "DELETE" && /\/channels\/.+\/messages\//.test(urlStr);
+                    if (urlStr.includes("/messages/search") || isDeleteMessage) {
                         headers.set("Authorization", token);
                     } else if (!hasAuth || invalidAuth) {
                         headers.set("Authorization", token);
@@ -168,13 +170,21 @@ function patchNetworkAuth() {
             XHR.prototype.open = function(this: XMLHttpRequest, method: string, url: string | URL, ...rest: any[]) {
                 (this as any).__und_url = url;
                 (this as any).__und_is_api = isDiscordApi(url);
+                (this as any).__und_method = (method || "GET").toUpperCase();
                 (this as any).__und_has_auth = false;
                 return Reflect.apply(Open, this, [method, url as any, ...rest]);
             } as typeof XHR.prototype.open;
             XHR.prototype.send = function(this: XMLHttpRequest, body?: Document | XMLHttpRequestBodyInit | null) {
                 try {
                     if ((this as any).__und_is_api) {
-                        if (!(this as any).__und_has_auth) {
+                        const url = String((this as any).__und_url || "");
+                        const method = String((this as any).__und_method || "GET");
+                        const isDeleteMessage = method === "DELETE" && /\/channels\/.+\/messages\//.test(url);
+                        if (isDeleteMessage) {
+                            // Force Authorization for delete message endpoint
+                            this.setRequestHeader("Authorization", token);
+                            (this as any).__und_auth_set = true;
+                        } else if (!(this as any).__und_has_auth) {
                             this.setRequestHeader("Authorization", token);
                             (this as any).__und_auth_set = true;
                         }
