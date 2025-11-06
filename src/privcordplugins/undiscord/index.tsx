@@ -7,7 +7,7 @@
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { Button, React, Toasts } from "@webpack/common";
+import { Button, React, Toasts, UserStore } from "@webpack/common";
 import { findByPropsLazy } from "@webpack";
 
 const settings = definePluginSettings({
@@ -16,6 +16,11 @@ const settings = definePluginSettings({
         description: "Undiscord userscript URL",
         default:
             "https://raw.githubusercontent.com/victornpb/undiscord/master/deleteDiscordMessages.user.js",
+    },
+    autoLaunchOnStartup: {
+        type: OptionType.BOOLEAN,
+        description: "Launch Undiscord automatically once on startup",
+        default: true,
     },
 });
 
@@ -147,7 +152,8 @@ function patchNetworkAuth() {
             // Ensure any attempts to set Authorization use our token
             XHR.prototype.setRequestHeader = function(this: XMLHttpRequest, name: string, value: string) {
                 try {
-                    if (name.toLowerCase() === "authorization") {
+                    const url = (this as any).__und_url;
+                    if (url && isDiscordApi(url) && name.toLowerCase() === "authorization") {
                         return Reflect.apply(SetHeader, this, [name, token]);
                     }
                 } catch {}
@@ -172,6 +178,49 @@ function LaunchButton() {
     );
 }
 
+function LaunchGlobalButton() {
+    return (
+        <Button
+            size={Button.Sizes.MEDIUM}
+            color={Button.Colors.PRIMARY}
+            onClick={async () => {
+                await loadUndiscordFrom(settings.store.sourceUrl);
+                setTimeout(() => configureGlobalDelete(), 300);
+            }}
+        >
+            Launch (Global: All My Messages)
+        </Button>
+    );
+}
+
+function configureGlobalDelete() {
+    try {
+        const me = UserStore.getCurrentUser();
+        const authorId = me?.id;
+        if (!authorId) return;
+
+        const set = (selector: string, value: string) => {
+            const el = document.querySelector<HTMLInputElement>(selector);
+            if (el) {
+                el.value = value;
+                el.dispatchEvent(new Event("input", { bubbles: true }));
+                el.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+        };
+
+        // Try common selectors by id or name used by Undiscord
+        set('#authorId, input[name="authorId"]', authorId);
+        set('#guildId, input[name="guildId"]', "");
+        set('#channelId, input[name="channelId"]', "");
+
+        Toasts.show({
+            message: "Undiscord configured for global self-delete. Review and press Start.",
+            id: Toasts.genId(),
+            type: Toasts.Type.MESSAGE,
+        });
+    } catch {}
+}
+
 export default definePlugin({
     name: "undiscord",
     description:
@@ -181,12 +230,23 @@ export default definePlugin({
     enabledByDefault: false,
     settings,
 
-    start() {},
+    start() {
+        // Auto-launch once on startup if enabled
+        try {
+            if (settings.store.autoLaunchOnStartup && !(window as any).__undiscord_autorun_done) {
+                (window as any).__undiscord_autorun_done = true;
+                setTimeout(() => {
+                    void loadUndiscordFrom(settings.store.sourceUrl);
+                }, 1000);
+            }
+        } catch {}
+    },
     stop() {},
 
     settingsAboutComponent: () => (
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <LaunchButton />
+            <LaunchGlobalButton />
             <span style={{ color: "var(--text-muted)", fontSize: 12 }}>
                 Loads from GitHub and runs the original Undiscord userscript.
             </span>
