@@ -187,7 +187,7 @@ function Updater() {
             <Forms.FormTitle tag="h5">Updater Settings</Forms.FormTitle>
             <FormSwitch
                 title="Automatically update"
-                description="Automatically update Equicord without confirmation prompt"
+                description="Automatically update Privcord without confirmation prompt"
                 value={settings.autoUpdate}
                 onChange={(v: boolean) => settings.autoUpdate = v}
             />
@@ -195,7 +195,7 @@ function Updater() {
                 value={settings.autoUpdateNotification}
                 onChange={(v: boolean) => settings.autoUpdateNotification = v}
                 title="Get notified when an automatic update completes"
-                description="Shows a notification when Equicord automatically updates"
+                description="Shows a notification when Privcord automatically updates"
                 disabled={!settings.autoUpdate}
             />
 
