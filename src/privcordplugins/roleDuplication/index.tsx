@@ -10,8 +10,8 @@ import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { getUserSettingLazy } from "@api/UserSettings";
 import definePlugin from "@utils/types";
 import { Devs } from "@utils/constants";
-import { GuildStore, Menu, SelectedGuildStore } from "@webpack/common";
-import { Guild, Role } from "discord-types/general";
+import { GuildRoleStore, GuildStore, Menu, SelectedGuildStore } from "@webpack/common";
+import { Guild, Role } from "@vencord/discord-types";
 
 import { createRole } from "./api";
 import { openModal } from "./modal";
@@ -30,7 +30,7 @@ function MakeContextCallback(type: "settings" | "other"): NavContextMenuPatchCal
         );
     } : (children, contextMenuApiArguments) => {
         const guildid = SelectedGuildStore.getGuildId();
-        const role = GuildStore.getRole(guildid, contextMenuApiArguments.id);
+        const role = GuildRoleStore.getRole(guildid, contextMenuApiArguments.id);
         if (!role) return;
         children.splice(-1, 0,
             <Menu.MenuItem

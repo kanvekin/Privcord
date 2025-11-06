@@ -8,6 +8,7 @@ import { localStorage } from "@utils/localStorage";
 import { ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize } from "@utils/modal";
 import { findByProps } from "@webpack";
 import { Button, FluxDispatcher, Forms, React, showToast, Text, TextInput, Toasts, useState } from "@webpack/common";
+import { Divider } from "@components/Divider";
 
 
 interface AppIcon {
@@ -59,8 +60,9 @@ function AppIconModal(props: ModalProps) {
         </ModalHeader>
         <ModalContent>
             <br />
-            <Forms.FormSection title="Name">
-                <Forms.FormText type="description">
+            <section>
+                <Forms.FormTitle tag="h4">Name</Forms.FormTitle>
+                <Forms.FormText>
                     This name will be shown in the App Icons list.
                 </Forms.FormText>
                 <TextInput
@@ -68,10 +70,11 @@ function AppIconModal(props: ModalProps) {
                     value={name}
                     onChange={setName}
                 />
-            </Forms.FormSection>
+            </section>
             <br />
-            <Forms.FormSection title="Image URL">
-                <Forms.FormText type="description">
+            <section>
+                <Forms.FormTitle tag="h4">Image URL</Forms.FormTitle>
+                <Forms.FormText>
                     Paste here your image URL to upload your icon (.webp, .jpg, .jpeg, .png, .gif, .ico and Discord Icons, Emojis, PFPs, etc.).
                 </Forms.FormText>
                 <TextInput
@@ -79,7 +82,7 @@ function AppIconModal(props: ModalProps) {
                     value={imageUrl}
                     onChange={setimageUrl}
                 />
-            </Forms.FormSection>
+            </section>
         </ModalContent>
         <ModalFooter>
             <Button

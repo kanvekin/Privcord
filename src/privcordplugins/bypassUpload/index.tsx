@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { ApplicationCommandInputType, ApplicationCommandOptionType, Argument, CommandContext, sendBotMessage } from "@api/Commands";
+import { ApplicationCommandInputType, ApplicationCommandOptionType, sendBotMessage } from "@api/Commands";
+import { CommandArgument, CommandContext } from "@vencord/discord-types";
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
 import { Flex } from "@components/Flex";
@@ -15,6 +16,7 @@ import { Margins } from "@utils/margins";
 import definePlugin, { OptionType, PluginNative } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
 import { Button, DraftType, Forms, Menu, PermissionsBits, PermissionStore, React, Select, SelectedChannelStore, showToast, TextInput, UploadManager, useEffect, useState } from "@webpack/common";
+import { Divider } from "@components/Divider";
 
 const Native = VencordNative.pluginHelpers.BigFileUpload as PluginNative<typeof import("./native")>;
 
@@ -237,7 +239,8 @@ function SettingsComponent(props: { setValue(v: any): void; }) {
     return (
         <Flex flexDirection="column">
             {/* File Uploader Selection */}
-            <Forms.FormSection title="Select the file uploader service">
+            <section>
+                <Forms.FormTitle tag="h4">Select the file uploader service</Forms.FormTitle>
                 <Select
                     options={[
                         { label: "Custom Uploader", value: "Custom" },
@@ -251,10 +254,11 @@ function SettingsComponent(props: { setValue(v: any): void; }) {
                     isSelected={v => v === fileUploader}
                     serialize={v => v}
                 />
-            </Forms.FormSection>
+            </section>
 
             {/* Auto-Send Settings */}
-            <Forms.FormSection title="Auto-Send Link In Chat">
+            <section>
+                <Forms.FormTitle tag="h4">Auto-Send Link In Chat</Forms.FormTitle>
                 <Select
                     options={[
                         { label: "Yes", value: "Yes" },
@@ -266,14 +270,15 @@ function SettingsComponent(props: { setValue(v: any): void; }) {
                     isSelected={v => v === settings.store.autoSend}
                     serialize={v => v}
                 />
-            </Forms.FormSection>
+            </section>
 
             {/* GoFile Settings */}
             {fileUploader === "GoFile" && (
                 <>
-                    <Forms.FormDivider />
+                    <Divider />
                     <Forms.FormTitle>GoFile Settings</Forms.FormTitle>
-                    <Forms.FormSection title="GoFile Token (optional)">
+                    <section>
+                        <Forms.FormTitle tag="h4">GoFile Token (optional)</Forms.FormTitle>
                         <TextInput
                             type="text"
                             value={settings.store.gofileToken || ""}
@@ -281,16 +286,17 @@ function SettingsComponent(props: { setValue(v: any): void; }) {
                             onChange={newValue => updateSetting("gofileToken", newValue)}
                             className={Margins.bottom16}
                         />
-                    </Forms.FormSection>
+                    </section>
                 </>
             )}
 
             {/* Catbox Settings */}
             {fileUploader === "Catbox" && (
                 <>
-                    <Forms.FormDivider />
+                    <Divider />
                     <Forms.FormTitle>Catbox Settings</Forms.FormTitle>
-                    <Forms.FormSection title="Catbox User hash (optional)">
+                    <section>
+                        <Forms.FormTitle tag="h4">Catbox User hash (optional)</Forms.FormTitle>
                         <TextInput
                             type="text"
                             value={settings.store.catboxUserHash || ""}
@@ -298,16 +304,17 @@ function SettingsComponent(props: { setValue(v: any): void; }) {
                             onChange={newValue => updateSetting("catboxUserHash", newValue)}
                             className={Margins.bottom16}
                         />
-                    </Forms.FormSection>
+                    </section>
                 </>
             )}
 
             {/* Litterbox Settings */}
             {fileUploader === "Litterbox" && (
                 <>
-                    <Forms.FormDivider />
+                    <Divider />
                     <Forms.FormTitle>Litterbox Settings</Forms.FormTitle>
-                    <Forms.FormSection title="Select the file expiration time">
+                    <section>
+                        <Forms.FormTitle tag="h4">Select the file expiration time</Forms.FormTitle>
                         <Select
                             options={[
                                 { label: "1 hour", value: "1h" },
@@ -321,14 +328,15 @@ function SettingsComponent(props: { setValue(v: any): void; }) {
                             isSelected={v => v === settings.store.litterboxTime}
                             serialize={v => v}
                         />
-                    </Forms.FormSection>
+                    </section>
                 </>
             )}
 
             {/* Custom Uploader Settings */}
             {fileUploader === "Custom" && (
                 <>
-                    <Forms.FormSection title="Name of the custom uploader">
+                    <section>
+                        <Forms.FormTitle tag="h4">Name of the custom uploader</Forms.FormTitle>
                         <TextInput
                             type="text"
                             value={customUploaderStore.get().name}
@@ -336,9 +344,10 @@ function SettingsComponent(props: { setValue(v: any): void; }) {
                             onChange={(newValue: string) => customUploaderStore.set({ name: newValue })}
                             className={Margins.bottom16}
                         />
-                    </Forms.FormSection>
+                    </section>
 
-                    <Forms.FormSection title="Request URL for the custom uploader">
+                    <section>
+                        <Forms.FormTitle tag="h4">Request URL for the custom uploader</Forms.FormTitle>
                         <TextInput
                             type="text"
                             value={customUploaderStore.get().requestURL}
@@ -346,9 +355,10 @@ function SettingsComponent(props: { setValue(v: any): void; }) {
                             onChange={(newValue: string) => customUploaderStore.set({ requestURL: newValue })}
                             className={Margins.bottom16}
                         />
-                    </Forms.FormSection>
+                    </section>
 
-                    <Forms.FormSection title="File form name for the custom uploader">
+                    <section>
+                        <Forms.FormTitle tag="h4">File form name for the custom uploader</Forms.FormTitle>
                         <TextInput
                             type="text"
                             value={customUploaderStore.get().fileFormName}
@@ -356,9 +366,10 @@ function SettingsComponent(props: { setValue(v: any): void; }) {
                             onChange={(newValue: string) => customUploaderStore.set({ fileFormName: newValue })}
                             className={Margins.bottom16}
                         />
-                    </Forms.FormSection>
+                    </section>
 
-                    <Forms.FormSection title="Response type for the custom uploader">
+                    <section>
+                        <Forms.FormTitle tag="h4">Response type for the custom uploader</Forms.FormTitle>
                         <Select
                             options={[
                                 { label: "Text", value: "Text" },
@@ -370,9 +381,10 @@ function SettingsComponent(props: { setValue(v: any): void; }) {
                             isSelected={(v: string) => v === customUploaderStore.get().responseType}
                             serialize={(v: string) => v}
                         />
-                    </Forms.FormSection>
+                    </section>
 
-                    <Forms.FormSection title="URL (JSON path) for the custom uploader">
+                    <section>
+                        <Forms.FormTitle tag="h4">URL (JSON path) for the custom uploader</Forms.FormTitle>
                         <TextInput
                             type="text"
                             value={customUploaderStore.get().url}
@@ -380,9 +392,10 @@ function SettingsComponent(props: { setValue(v: any): void; }) {
                             onChange={(newValue: string) => customUploaderStore.set({ url: newValue })}
                             className={Margins.bottom16}
                         />
-                    </Forms.FormSection>
+                    </section>
 
-                    <Forms.FormSection title="Thumbnail URL (JSON path) for the custom uploader">
+                    <section>
+                        <Forms.FormTitle tag="h4">Thumbnail URL (JSON path) for the custom uploader</Forms.FormTitle>
                         <TextInput
                             type="text"
                             value={customUploaderStore.get().thumbnailURL}
@@ -390,9 +403,9 @@ function SettingsComponent(props: { setValue(v: any): void; }) {
                             onChange={(newValue: string) => customUploaderStore.set({ thumbnailURL: newValue })}
                             className={Margins.bottom16}
                         />
-                    </Forms.FormSection>
+                    </section>
 
-                    <Forms.FormDivider />
+                    <Divider />
                     <Forms.FormTitle>Custom Uploader Arguments</Forms.FormTitle>
                     {Object.entries(customUploaderStore.get().args).map(([key, value], index) => (
                         <div key={index}>
@@ -413,7 +426,7 @@ function SettingsComponent(props: { setValue(v: any): void; }) {
                         </div>
                     ))}
 
-                    <Forms.FormDivider />
+                    <Divider />
                     <Forms.FormTitle>Headers</Forms.FormTitle>
                     {Object.entries(customUploaderStore.get().headers).map(([key, value], index) => (
                         <div key={index}>
@@ -434,7 +447,7 @@ function SettingsComponent(props: { setValue(v: any): void; }) {
                         </div>
                     ))}
 
-                    <Forms.FormDivider />
+                    <Divider />
                     <Forms.FormTitle>Import ShareX Config</Forms.FormTitle>
                     <Button
                         onClick={triggerFileUpload}
@@ -572,7 +585,7 @@ function sendTextToChat(text: string) {
     }
 }
 
-async function resolveFile(options: Argument[], ctx: CommandContext): Promise<File | null> {
+async function resolveFile(options: CommandArgument[], ctx: CommandContext): Promise<File | null> {
     for (const opt of options) {
         if (opt.name === "file") {
             const upload = UploadStore.getUpload(ctx.channel.id, opt.name, DraftType.SlashCommand);

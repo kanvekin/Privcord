@@ -7,8 +7,9 @@
 import { CheckedTextInput } from "@components/CheckedTextInput";
 import { Margins } from "@utils/margins";
 import { ModalContent, ModalHeader, ModalRoot, openModalLazy } from "@utils/modal";
-import { Forms, GuildStore, PermissionsBits, PermissionStore, React, Tooltip, UserStore } from "@webpack/common";
-import { Role } from "discord-types/general";
+import { Forms, GuildStore, IconUtils, PermissionsBits, PermissionStore, React, Tooltip, UserStore } from "@webpack/common";
+import { Role } from "@vencord/discord-types";
+import { getGuildAcronym } from "@utils/discord";
 
 import { createRole } from "./api";
 
@@ -101,13 +102,18 @@ function CloneModal({ role, icon }: { role: Role; icon?: string | null; }) {
                                             width: "100%",
                                             height: "100%",
                                         }}
-                                        src={g.getIconURL(512, true)}
+                                        src={IconUtils.getGuildIconURL({
+                                            id: g.id,
+                                            icon: g.icon,
+                                            canAnimate: true,
+                                            size: 512
+                                        })}
                                         alt={g.name}
                                     />
                                 ) : (
                                     <Forms.FormText
                                         style={{
-                                            fontSize: getFontSize(g.acronym),
+                                            fontSize: getFontSize(getGuildAcronym(g)),
                                             width: "100%",
                                             overflow: "hidden",
                                             whiteSpace: "nowrap",
@@ -115,7 +121,7 @@ function CloneModal({ role, icon }: { role: Role; icon?: string | null; }) {
                                             cursor: isCloning ? "not-allowed" : "pointer",
                                         }}
                                     >
-                                        {g.acronym}
+                                        {getGuildAcronym(g)}
                                     </Forms.FormText>
                                 )}
                             </div>

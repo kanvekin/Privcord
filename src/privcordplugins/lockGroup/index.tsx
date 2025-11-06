@@ -13,7 +13,7 @@ import { showNotification } from "@api/Notifications";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { ChannelStore, Menu, RestAPI, UserStore } from "@webpack/common";
-import { Channel } from "discord-types/general";
+import { Channel } from "@vencord/discord-types";
 
 // State of locked groups
 const lockedGroups = new Set<string>();
