@@ -19,26 +19,28 @@ import { ModalContent, ModalRoot, openModal } from "@utils/modal";
 import { User } from "@vencord/discord-types";
 import { showToast, useEffect, useMemo, UserProfileStore, useStateFromStores } from "@webpack/common";
 
-import Plugins from "~plugins";
+import Plugins, { PluginMeta } from "~plugins";
 
 import { GithubButton, WebsiteButton } from "./LinkIconButton";
 import { PluginCard } from "./PluginCard";
 
 const cl = classNameFactory("vc-author-modal-");
 
-export function openContributorModal(user: User) {
+type PluginFilter = "all" | "equicord" | "vencord" | "modified" | "user";
+
+export function openContributorModal(user: User, filter: PluginFilter = "all") {
     openModal(modalProps =>
         <ModalRoot {...modalProps}>
             <ErrorBoundary>
                 <ModalContent className={cl("root")}>
-                    <ContributorModal user={user} />
+                    <ContributorModal user={user} filter={filter} />
                 </ModalContent>
             </ErrorBoundary>
         </ModalRoot>
     );
 }
 
-function ContributorModal({ user }: { user: User; }) {
+function ContributorModal({ user, filter }: { user: User; filter: PluginFilter; }) {
     useSettings();
 
     const profile = useStateFromStores([UserProfileStore], () => UserProfileStore.getUserProfile(user.id));
@@ -53,7 +55,6 @@ function ContributorModal({ user }: { user: User; }) {
 
     const plugins = useMemo(() => {
         const allPlugins = Object.values(Plugins);
-
         const authorInfo =
             VencordDevsById[user.id] ||
             EquicordDevsById[user.id] ||
@@ -70,6 +71,25 @@ function ContributorModal({ user }: { user: User; }) {
 
 
     const ContributedHyperLink = <Link href="https://github.com/kanvekin/Privcord">contributed</Link>;
+
+    const filteredPlugins = useMemo(() => {
+        return plugins.filter(p => {
+            const pluginMeta = PluginMeta[p.name];
+            switch (filter) {
+                case "vencord":
+                    return pluginMeta.folderName.startsWith("src/plugins/") ?? false;
+                case "equicord":
+                    return pluginMeta.folderName.startsWith("src/equicordplugins/") ?? false;
+                case "user":
+                    return pluginMeta?.userPlugin ?? false;
+                case "modified":
+                    return p.isModified ?? false;
+                case "all":
+                default:
+                    return () => true;
+            }
+        });
+    }, [plugins]);
 
     return (
         <>
@@ -97,9 +117,9 @@ function ContributorModal({ user }: { user: User; }) {
                 </div>
             </div>
 
-            {plugins.length ? (
+            {filteredPlugins.length ? (
                 <Paragraph>
-                    {user.username} has {ContributedHyperLink} to {pluralise(plugins.length, "plugin")}!
+                    {user.username} has {ContributedHyperLink} to {pluralise(filteredPlugins.length, "plugin")}!
                 </Paragraph>
             ) : (
                 <Paragraph>
@@ -107,9 +127,9 @@ function ContributorModal({ user }: { user: User; }) {
                 </Paragraph>
             )}
 
-            {!!plugins.length && (
+            {!!filteredPlugins.length && (
                 <div className={cl("plugins")}>
-                    {plugins.map(p =>
+                    {filteredPlugins.map(p =>
                         <PluginCard
                             key={p.name}
                             plugin={p}

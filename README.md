@@ -5,7 +5,6 @@
 [![Discord](https://img.shields.io/discord/1173279886065029291.svg?color=768AD4&label=Discord&logo=discord&logoColor=white)](https://discord.gg/privcord)
 
 Privcord is a fork of [Equicord](https://github.com/Equicord/Equicord), with over 100+ plugins.
-
 You can join our [Discord server](https://discord.gg/privcord) for commits, changes, chatting, or even support.
 
 ### Dependencies

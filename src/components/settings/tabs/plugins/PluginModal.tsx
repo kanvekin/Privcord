@@ -194,7 +194,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                                 renderUser={(user: User) => (
                                     <Clickable
                                         className={AvatarStyles.clickableAvatar}
-                                        onClick={() => openContributorModal(user)}
+                                        onClick={() => isEquicordPlugin ? openContributorModal(user, "equicord") : openContributorModal(user, "vencord")}
                                     >
                                         <img
                                             className={AvatarStyles.avatar}

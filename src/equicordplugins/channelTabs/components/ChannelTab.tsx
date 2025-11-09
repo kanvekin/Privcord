@@ -15,7 +15,7 @@ import { Avatar, ChannelStore, ContextMenuApi, GuildStore, PresenceStore, ReadSt
 import { JSX } from "react";
 
 import { ChannelTabsProps, closeTab, isTabSelected, moveDraggedTabs, moveToTab, openedTabs, settings } from "../util";
-import { CircleQuestionIcon, DiscoveryIcon, EnvelopeIcon, FriendsIcon, NitroIcon, QuestIcon, ShopIcon } from "../util/icons";
+import { ActivityIcon, CircleQuestionIcon, DiscoveryIcon, EnvelopeIcon, FriendsIcon, ICYMIIcon, NitroIcon, QuestIcon, ShopIcon } from "../util/icons";
 import { TabContextMenu } from "./ContextMenus";
 
 const ThreeDots = findComponentByCodeLazy(".dots,", "dotRadius:");
@@ -97,6 +97,32 @@ export const NotificationDot = ({ channelIds }: { channelIds: string[]; }) => {
         >
             {mentionCount || unreadCount}
         </div> : null;
+};
+
+interface TabNumberBadgeProps {
+    number: number;
+    position: "left" | "right";
+    isSelected: boolean;
+    isCompact: boolean;
+    isHovered: boolean;
+}
+
+export const TabNumberBadge = ({ number, position, isSelected, isCompact, isHovered }: TabNumberBadgeProps) => {
+    // hide badge if:
+    // 1. tab is currently selected
+    // 2. tab is compact AND not hovered
+    const shouldHide = isSelected || (isCompact && !isHovered);
+
+    if (shouldHide) return null;
+
+    return (
+        <div
+            className={cl("tab-number-badge", `position-${position}`)}
+            data-position={position}
+        >
+            {number}
+        </div>
+    );
 };
 
 function ChannelTabContent(props: ChannelTabsProps & {
@@ -204,7 +230,9 @@ function ChannelTabContent(props: ChannelTabsProps & {
             "__shop__": { label: "Shop", Icon: ShopIcon },
             "__library__": { label: "Library", Icon: () => LibraryIcon(20, 20) },
             "__discovery__": { label: "Discovery", Icon: DiscoveryIcon },
-            "__nitro__": { label: "Nitro", Icon: NitroIcon }
+            "__nitro__": { label: "Nitro", Icon: NitroIcon },
+            "__icymi__": { label: "ICYMI", Icon: ICYMIIcon },
+            "__activity__": { label: "Activity", Icon: ActivityIcon },
         };
 
         const pageConfig = specialPagesConfig[channelId];
@@ -245,6 +273,9 @@ export default function ChannelTab(props: ChannelTabsProps & { index: number; })
     const [isClosing, setIsClosing] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [isDropTarget, setIsDropTarget] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+
+    const { showTabNumbers, tabNumberPosition } = settings.use(["showTabNumbers", "tabNumberPosition"]);
 
     useEffect(() => {
         if (isEntering) {
@@ -271,6 +302,7 @@ export default function ChannelTab(props: ChannelTabsProps & { index: number; })
         const startX = e.clientX;
         const startWidth = ref.current?.getBoundingClientRect().width || 0;
         const baseWidth = 192; // 12rem in pixels (assuming 16px base font)
+        let pendingScale = settings.store.tabWidthScale;
 
         document.body.style.cursor = "ew-resize";
         document.body.style.userSelect = "none";
@@ -282,7 +314,12 @@ export default function ChannelTab(props: ChannelTabsProps & { index: number; })
 
             // 50% and 200% scale
             const clampedScale = Math.max(0.5, Math.min(2, newScale));
-            settings.store.tabWidthScale = Math.round(clampedScale * 100);
+            pendingScale = Math.round(clampedScale * 100);
+
+            // update CSS variable immediately for visual feedback
+            if (ref.current) {
+                ref.current.style.setProperty("--tab-width-scale", String(pendingScale / 100));
+            }
         };
 
         const handleMouseUp = () => {
@@ -290,6 +327,12 @@ export default function ChannelTab(props: ChannelTabsProps & { index: number; })
             document.removeEventListener("mouseup", handleMouseUp);
             document.body.style.cursor = "";
             document.body.style.userSelect = "";
+
+            settings.store.tabWidthScale = pendingScale;
+
+            if (ref.current) {
+                ref.current.style.removeProperty("--tab-width-scale");
+            }
         };
 
         document.addEventListener("mousemove", handleMouseMove);
@@ -396,6 +439,8 @@ export default function ChannelTab(props: ChannelTabsProps & { index: number; })
         })}
         key={index}
         ref={ref}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         onAuxClick={e => {
             if (e.button === 1 /* middle click */)
                 closeTab(id);
@@ -410,7 +455,29 @@ export default function ChannelTab(props: ChannelTabsProps & { index: number; })
                 className={cl("tab-inner")}
                 data-compact={compact}
             >
+                {/* left position badge */}
+                {showTabNumbers && tabNumberPosition === "left" && (
+                    <TabNumberBadge
+                        number={index + 1}
+                        position="left"
+                        isSelected={isTabSelected(id)}
+                        isCompact={compact}
+                        isHovered={isHovered}
+                    />
+                )}
+
                 <ChannelTabContent {...props} guild={guild} channel={channel} />
+
+                {/* right position badge */}
+                {showTabNumbers && tabNumberPosition === "right" && (
+                    <TabNumberBadge
+                        number={index + 1}
+                        position="right"
+                        isSelected={isTabSelected(id)}
+                        isCompact={compact}
+                        isHovered={isHovered}
+                    />
+                )}
             </div>
         </button>
 
