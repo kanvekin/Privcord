@@ -190,7 +190,7 @@ export default function PluginSettings() {
         const enabled = Vencord.Plugins.isPluginEnabled(plugin.name);
         const pluginMeta = PluginMeta[plugin.name];
         const isEquicordPlugin = pluginMeta.folderName.startsWith("src/equicordplugins/") ?? false;
-        const isKernixcordPlugin = pluginMeta.folderName.startsWith("src/Kernixcordplugins/") ?? false;
+        const isKernixcordPlugin = pluginMeta.folderName.startsWith("src/kernixcordplugins/") ?? false;
         const isUserplugin = pluginMeta.userPlugin ?? false;
 
         if (enabled && status === SearchStatus.DISABLED) return false;
