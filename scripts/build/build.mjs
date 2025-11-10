@@ -225,7 +225,7 @@ await Promise.all([
         name: "equicord",
         main: "patcher.js"
     })),
-    writeFile("dist/kernixcordrivcord/package.json", JSON.stringify({
+    writeFile("dist/kernixcord/package.json", JSON.stringify({
         name: "equicord",
         main: "main.js"
     }))
