@@ -12,7 +12,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { HeadingPrimary } from "@components/Heading";
 import { Link } from "@components/Link";
 import { Paragraph } from "@components/Paragraph";
-import { EquicordDevsById, PrivcordDevsById,VencordDevsById } from "@utils/constants";
+import { EquicordDevsById, KernixcordDevsById, VencordDevsById } from "@utils/constants";
 import { fetchUserProfile } from "@utils/discord";
 import { classes, pluralise } from "@utils/misc";
 import { ModalContent, ModalRoot, openModal } from "@utils/modal";
@@ -58,7 +58,7 @@ function ContributorModal({ user, filter }: { user: User; filter: PluginFilter; 
         const authorInfo =
             VencordDevsById[user.id] ||
             EquicordDevsById[user.id] ||
-            PrivcordDevsById[user.id];
+            KernixcordDevsById[user.id];
 
         const pluginsByAuthor = authorInfo
             ? allPlugins.filter(p => p.authors.includes(authorInfo))
@@ -70,7 +70,7 @@ function ContributorModal({ user, filter }: { user: User; filter: PluginFilter; 
     }, [user.id, user.username]);
 
 
-    const ContributedHyperLink = <Link href="https://github.com/kanvekin/Privcord">contributed</Link>;
+    const ContributedHyperLink = <Link href="https://github.com/kanvekin/Kernixcord">contributed</Link>;
 
     const filteredPlugins = useMemo(() => {
         return plugins.filter(p => {

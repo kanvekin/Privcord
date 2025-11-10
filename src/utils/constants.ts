@@ -39,15 +39,15 @@ export const VC_KNOWN_ISSUES_CHANNEL_ID = "1222936386626129920";
 export const VESKTOP_SUPPORT_CHANNEL_ID = "1345457031426871417";
 export const VC_SUPPORT_CHANNEL_IDS = [VC_SUPPORT_CHANNEL_ID, VESKTOP_SUPPORT_CHANNEL_ID];
 
-export const PRIVCORD_GUILD_ID = "1418334900616167516";
-export const PRIVCORD_DONOR_ROLE_ID = "1424778827535618120";
-export const PRIVCORD_CONTRIB_ROLE_ID = "1424778855583060121";
-export const PRIVBOT_USER_ID = "1422108411780141216";
+export const KERNIXCORD_GUILD_ID = "1418334900616167516";
+export const KERNIXCORD_DONOR_ROLE_ID = "1424778827535618120";
+export const KERNIXCORD_CONTRIB_ROLE_ID = "1424778855583060121";
+export const KERNIXBOT_USER_ID = "1422108411780141216";
 
-export const GUILD_IDS = [GUILD_ID, VC_GUILD_ID, PRIVCORD_GUILD_ID];
+export const GUILD_IDS = [GUILD_ID, VC_GUILD_ID, KERNIXCORD_GUILD_ID];
 export const SUPPORT_CHANNEL_IDS = [SUPPORT_CHANNEL_ID, VC_SUPPORT_CHANNEL_ID];
-export const DONOR_ROLE_IDS = [DONOR_ROLE_ID, VC_DONOR_ROLE_ID, PRIVCORD_DONOR_ROLE_ID];
-export const CONTRIB_ROLE_IDS = [CONTRIB_ROLE_ID, EQUIBOP_CONTRIB_ROLE_ID, VENCORD_CONTRIB_ROLE_ID, VC_CONTRIB_ROLE_ID, PRIVCORD_CONTRIB_ROLE_ID];
+export const DONOR_ROLE_IDS = [DONOR_ROLE_ID, VC_DONOR_ROLE_ID, KERNIXCORD_DONOR_ROLE_ID];
+export const CONTRIB_ROLE_IDS = [CONTRIB_ROLE_ID, EQUIBOP_CONTRIB_ROLE_ID, VENCORD_CONTRIB_ROLE_ID, VC_CONTRIB_ROLE_ID, KERNIXCORD_CONTRIB_ROLE_ID];
 
 const platform = navigator.platform.toLowerCase();
 export const IS_WINDOWS = platform.startsWith("win");
@@ -1204,7 +1204,7 @@ export const EquicordDevs = Object.freeze({
     }
 } satisfies Record<string, Dev>);
 
-export const PrivcordDevs = Object.freeze({
+export const KernixcordDevs = Object.freeze({
     feelslove: {
         name: "Emrepanda12",
         id: 249620332925812736n
@@ -1236,9 +1236,9 @@ export const EquicordDevsById = /* #__PURE__*/ (() =>
     ))
 )() as Record<string, Dev>;
 
-export const PrivcordDevsById = /* #__PURE__*/ (() =>
+export const KernixcordDevsById = /* #__PURE__*/ (() =>
     Object.freeze(Object.fromEntries(
-        Object.entries(PrivcordDevs)
+        Object.entries(KernixcordDevs)
             .filter(d => d[1].id !== 0n)
             .map(([_, v]) => [v.id, v] as const)
     ))

@@ -24,8 +24,8 @@ const suffix = IS_DEV ? "dev" : "";
 
 export const DATA_DIR = process.env.EQUICORD_USER_DATA_DIR ?? (
     process.env.DISCORD_USER_DATA_DIR
-        ? join(process.env.DISCORD_USER_DATA_DIR, "..", "PrivcordData", suffix)
-        : join(app.getPath("userData"), "..", "Privcord", suffix)
+        ? join(process.env.DISCORD_USER_DATA_DIR, "..", "KernixcordData", suffix)
+        : join(app.getPath("userData"), "..", "Kernixcord", suffix)
 );
 
 export const SETTINGS_DIR = join(DATA_DIR, "settings");
@@ -66,7 +66,7 @@ if (IS_DEV) {
                 app.relaunch();
                 app.exit(0);
             } catch (err) {
-                console.error("[Privcord] Failed to copy prod data:", err);
+                console.error("[Kernixcord] Failed to copy prod data:", err);
             }
         }, 5000);
     }

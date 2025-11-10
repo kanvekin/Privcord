@@ -40,7 +40,7 @@ import Plugins from "~plugins";
 
 import { traceFunction } from "../debug/Tracer";
 
-const logger = new Logger("Privcord PluginManager", "#a6d189");
+const logger = new Logger("Kernixcord PluginManager", "#a6d189");
 
 export const PMLogger = logger;
 export const plugins = Plugins;

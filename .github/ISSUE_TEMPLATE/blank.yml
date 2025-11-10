@@ -7,7 +7,7 @@ body:
           value: |
               ![Are you a developer? No? This form is not for you!](https://github.com/Equicord/Equicord/blob/main/.github/ISSUE_TEMPLATE/developer-banner.png?raw=true)
 
-              GitHub Issues are for development, not support! Please use our [support server](https://discord.gg/privcord) unless you are a Vencord Developer.
+              GitHub Issues are for development, not support! Please use our [support server](https://discord.gg/kernix) unless you are a Vencord Developer.
 
     - type: textarea
       id: content

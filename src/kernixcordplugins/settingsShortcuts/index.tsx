@@ -42,11 +42,11 @@ export default definePlugin({
         ).customSections;
 
         const sectionFactory = () => ({
-            section: "privcord.settings-shortcuts",
-            label: "Privcord Shortcuts",
-            searchableTitles: ["Privcord Shortcuts", "Better Microphone", "Better Screenshare"],
+            section: "kernixcord.settings-shortcuts",
+            label: "Kernixcord Shortcuts",
+            searchableTitles: ["Kernixcord Shortcuts", "Better Microphone", "Better Screenshare"],
             element: SettingsShortcutsElement,
-            id: "PrivcordSettingsShortcuts",
+            id: "KernixcordSettingsShortcuts",
         });
 
         customSettingsSections.push(sectionFactory);
@@ -59,7 +59,7 @@ export default definePlugin({
         ).customSections;
 
         const i = customSettingsSections.findIndex(
-            section => section({}).id === "PrivcordSettingsShortcuts"
+            section => section({}).id === "KernixcordSettingsShortcuts"
         );
         if (i !== -1) customSettingsSections.splice(i, 1);
     },

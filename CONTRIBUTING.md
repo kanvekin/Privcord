@@ -1,6 +1,6 @@
-# Contributing to Privcord
+# Contributing to Kernixcord
 
-Privcord is a community project and welcomes any kind of contribution from anyone!
+Kernixcord is a community project and welcomes any kind of contribution from anyone!
 
 We have development documentation for new contributors, which can be found at https://wwww.discord.gg/.
 
@@ -24,9 +24,9 @@ Contributions can be sent via discord requests.
 - No plugins that require the user to enter their own API key
 - Do not introduce new dependencies unless absolutely necessary and warranted
 
-## Improve Privcord itself
+## Improve Kernixcord itself
 
-If you have any ideas on how to improve Privcord itself, or want to propose a new plugin API, feel free to open a feature request so we can discuss.
+If you have any ideas on how to improve Kernixcord itself, or want to propose a new plugin API, feel free to open a feature request so we can discuss.
 
 Or if you notice any bugs or typos, feel free to fix them!
 

@@ -1,11 +1,11 @@
-# [<img src="./browser/icon.png" width="40" align="left" alt="Privcord">](https://github.com/kanvekin/Privcord) Privcord
+# [<img src="./browser/icon.png" width="40" align="left" alt="Kernixcord">](https://github.com/kanvekin/Kernixcord) Kernixcord
 
 [![Privbop]](https://github.com/kanvekin/Privbop)
-[![Tests](https://github.com/kanvekin/Privcord/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/kanvekin/Privcord/actions/workflows/test.yml)
-[![Discord](https://img.shields.io/discord/1173279886065029291.svg?color=768AD4&label=Discord&logo=discord&logoColor=white)](https://discord.gg/privcord)
+[![Tests](https://github.com/kanvekin/Kernixcord/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/kanvekin/Kernixcord/actions/workflows/test.yml)
+[![Discord](https://img.shields.io/discord/1173279886065029291.svg?color=768AD4&label=Discord&logo=discord&logoColor=white)](https://discord.gg/Kernixcord)
 
-Privcord is a fork of [Equicord](https://github.com/Equicord/Equicord), with over 100+ plugins.
-You can join our [Discord server](https://discord.gg/privcord) for commits, changes, chatting, or even support.
+Kernixcord is a fork of [Equicord](https://github.com/Equicord/Equicord), with over 100+ plugins.
+You can join our [Discord server](https://discord.gg/Kernixcord) for commits, changes, chatting, or even support.
 
 ### Dependencies
 
@@ -19,13 +19,13 @@ Install `pnpm`:
 npm i -g pnpm
 ```
 
-> :exclamation: **IMPORTANT** Make sure you aren't using an admin/root terminal from here onwards. It **will** mess up your Discord/Privcord instance and you **will** most likely have to reinstall.
+> :exclamation: **IMPORTANT** Make sure you aren't using an admin/root terminal from here onwards. It **will** mess up your Discord/Kernixcord instance and you **will** most likely have to reinstall.
 
-Clone Privcord:
+Clone Kernixcord:
 
 ```shell
-git clone https://github.com/kanvekin/Privcord
-cd Privcord
+git clone https://github.com/kanvekin/Kernixcord
+cd Kernixcord
 ```
 
 Install dependencies:
@@ -34,13 +34,13 @@ Install dependencies:
 pnpm install --frozen-lockfile
 ```
 
-Build Privcord:
+Build Kernixcord:
 
 ```shell
 pnpm build
 ```
 
-Inject Privcord into your client:
+Inject Kernixcord into your client:
 
 ```shell
 pnpm inject
@@ -54,17 +54,17 @@ Vendicated & Vencord & Equicord
 
 Discord is trademark of Discord Inc., and solely mentioned for the sake of descriptivity.
 Mentioning it does not imply any affiliation with or endorsement by Discord Inc.
-Vencord is not connected to Privcord and as such, all donation links go to Vendicated's donation link.
+Vencord is not connected to Kernixcord and as such, all donation links go to Vendicated's donation link.
 
 <details>
-<summary>Using Privcord violates Discord's terms of service</summary>
+<summary>Using Kernixcord violates Discord's terms of service</summary>
 
 Client modifications are against Discord’s Terms of Service.
 
 However, Discord is pretty indifferent about them and there are no known cases of users getting banned for using client mods! So you should generally be fine if you don’t use plugins that implement abusive behaviour. But no worries, all inbuilt plugins are safe to use!
 
-Regardless, if your account is essential to you and getting disabled would be a disaster for you, you should probably not use any client mods (not exclusive to Privcord), just to be safe.
+Regardless, if your account is essential to you and getting disabled would be a disaster for you, you should probably not use any client mods (not exclusive to Kernixcord), just to be safe.
 
-Additionally, make sure not to post screenshots with Privcord in a server where you might get banned for it.
+Additionally, make sure not to post screenshots with Kernixcord in a server where you might get banned for it.
 
 </details>

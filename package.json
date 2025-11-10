@@ -1,18 +1,18 @@
 {
-    "name": "privcord",
+    "name": "Kernixcord",
     "private": "true",
     "version": "1.13.5",
     "description": "The other cutest Discord client mod",
-    "homepage": "https://github.com/kanvekin/Privcord#readme",
+    "homepage": "https://github.com/kanvekin/Kernixcord#readme",
     "bugs": {
-        "url": "https://github.com/kanvekin/Privcord/issues"
+        "url": "https://github.com/kanvekin/Kernixcord/issues"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/kanvekin/Privcord.git"
+        "url": "git+https://github.com/kanvekin/Kernixcord.git"
     },
     "license": "GPL-3.0-or-later",
-    "author": "Privcord",
+    "author": "Kernixcord",
     "scripts": {
         "build": "node --require=./scripts/suppressExperimentalWarnings.js scripts/build/build.mjs",
         "buildStandalone": "pnpm build --standalone",
@@ -25,16 +25,16 @@
         "watchWeb": "pnpm buildWeb --watch",
         "generateDevsList": "tsx scripts/generateDevsList.ts",
         "generatePluginJson": "tsx scripts/generatePluginList.ts",
-        "build:remote-priv": "node scripts/remote/buildRemotePrivcordPlugins.mjs",
+        "build:remote-priv": "node scripts/remote/buildRemotekernixcordPlugins.mjs",
         "generateEquicordPluginJson": "tsx scripts/generateEquicordPluginList.ts",
-        "generatePrivcordPluginJson": "tsx scripts/generatePrivcordPluginList.ts",
+        "generateKernixcordPluginJson": "tsx scripts/generateKernixcordPluginList.ts",
         "generateVencordPluginJson": "tsx scripts/generateVencordPluginList.ts",
         "generateTypes": "tspc --emitDeclarationOnly --declaration --outDir packages/vencord-types --allowJs false",
         "inject": "node scripts/runInstaller.mjs -- --install",
         "uninject": "node scripts/runInstaller.mjs -- --uninstall",
         "repair": "node scripts/runInstaller.mjs -- --repair",
         "lint": "eslint",
-        "lint-styles": "stylelint \"src/**/*.css\" --ignore-pattern src/userplugins --ignore-pattern src/privcordplugins",
+        "lint-styles": "stylelint \"src/**/*.css\" --ignore-pattern src/userplugins --ignore-pattern src/kernixcordplugins",
         "lint:fix": "pnpm lint --fix",
         "test": "pnpm buildStandalone && pnpm testTsc && pnpm lint:fix && pnpm lint-styles && pnpm generatePluginJson",
         "testWeb": "pnpm lint && pnpm buildWeb && pnpm testTsc",

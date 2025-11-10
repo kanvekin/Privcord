@@ -478,7 +478,7 @@ function ChangelogContent() {
     return (
         <>
             <Forms.FormText className={Margins.bottom16}>
-                View the most recent changes to Privcord. This fetches commits
+                View the most recent changes to Kernixcord. This fetches commits
                 directly from the repository to show you what's new.
             </Forms.FormText>
 

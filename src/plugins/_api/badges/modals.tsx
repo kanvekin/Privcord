@@ -84,7 +84,7 @@ export function EquicordDonorModal() {
                     >
                         <Flex style={{ justifyContent: "center", alignItems: "center", gap: "0.5em" }}>
                             <Heart />
-                            Privcord Donor
+                            Kernixcord Donor
                         </Flex>
                     </HeadingPrimary>
                 </ModalHeader>
@@ -105,10 +105,10 @@ export function EquicordDonorModal() {
                     </Flex>
                     <div style={{ padding: "1em" }}>
                         <Forms.FormText>
-                            This badge is a special perk for Privcord donors.
+                            This badge is a special perk for Kernixcord donors.
                         </Forms.FormText>
                         <Forms.FormText className={Margins.top20}>
-                            Please consider supporting the development of Privcord by becoming a donor. It would mean a lot! :3
+                            Please consider supporting the development of Kernixcord by becoming a donor. It would mean a lot! :3
                         </Forms.FormText>
                     </div>
                 </ModalContent>
@@ -122,7 +122,7 @@ export function EquicordDonorModal() {
     ));
 }
 
-export function PrivcordDonorModal() {
+export function KernixcordDonorModal() {
     const modalKey = openModal(props => (
         <ErrorBoundary noop onError={() => {
             closeModal(modalKey);
@@ -141,7 +141,7 @@ export function PrivcordDonorModal() {
                             }}
                         >
                             <Heart />
-                            Privcord Donor
+                            Kernixcord Donor
                         </Forms.FormTitle>
                     </Flex>
                 </ModalHeader>
@@ -162,10 +162,10 @@ export function PrivcordDonorModal() {
                     </Flex>
                     <div style={{ padding: "1em" }}>
                         <Forms.FormText>
-                            This badge is a special perk for Privcord donors.
+                            This badge is a special perk for Kernixcord donors.
                         </Forms.FormText>
                         <Forms.FormText className={Margins.top20}>
-                            Please consider supporting the development of Privcord by becoming a donor. It would mean a lot! :3
+                            Please consider supporting the development of Kernixcord by becoming a donor. It would mean a lot! :3
                         </Forms.FormText>
                     </div>
                 </ModalContent>

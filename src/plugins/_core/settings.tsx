@@ -92,12 +92,12 @@ export default definePlugin({
         return [
             {
                 section: SectionTypes.HEADER,
-                label: "Privcord",
+                label: "Kernixcord",
                 className: "vc-settings-header",
             },
             {
                 section: "EquicordSettings",
-                label: "Privcord",
+                label: "Kernixcord",
                 element: VencordTab,
                 className: "vc-settings",
             },
@@ -284,7 +284,7 @@ export default definePlugin({
 
     getInfoRows() {
         const { electronVersion, chromiumVersion, getVersionInfo } = this;
-        const rows = [`Privcord ${gitHashShort}${getVersionInfo()}`];
+        const rows = [`Kernixcord ${gitHashShort}${getVersionInfo()}`];
 
         if (electronVersion) rows.push(`Electron ${electronVersion}`);
         if (chromiumVersion) rows.push(`Chromium ${chromiumVersion}`);

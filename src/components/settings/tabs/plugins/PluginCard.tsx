@@ -38,7 +38,7 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
     const settings = Settings.plugins[plugin.name];
     const pluginMeta = PluginMeta[plugin.name];
     const isEquicordPlugin = pluginMeta.folderName.startsWith("src/equicordplugins/") ?? false;
-    const isPrivcordPlugin = pluginMeta.folderName.startsWith("src/privcordplugins/") ?? false;
+    const isKernixcordPlugin = pluginMeta.folderName.startsWith("src/kernixcordplugins/") ?? false;
     const isUserplugin = pluginMeta.userPlugin ?? false;
 
     const isEnabled = () => isPluginEnabled(plugin.name);
@@ -93,7 +93,7 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
         settings.enabled = !wasEnabled;
     }
     const isModifiedPlugin = pluginMeta.folderName.includes("modified");
-    const isVencordPlugin = !isEquicordPlugin && !isPrivcordPlugin && !isUserplugin;
+    const isVencordPlugin = !isEquicordPlugin && !isKernixcordPlugin && !isUserplugin;
     const isUserPlugin = isUserplugin;
     const pluginInfo = [
         {
@@ -130,11 +130,11 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
             alt={pluginDetails.alt}
             className={cl("source")}
         />
-    ) : isPrivcordPlugin ? (
+    ) : isKernixcordPlugin ? (
         <img
             src="https://raw.githubusercontent.com/UygunUmitcan/depo/refs/heads/main/privcord_icon.png"
-            alt="Privcord"
-            title="Privcord Plugin"
+            alt="Kernixcord"
+            title="Kernixcord Plugin"
             style={{
                 width: "20px",
                 height: "20px",

@@ -71,7 +71,7 @@ export async function installExt(id: string) {
 
         const buf = await fetchBuffer(url, {
             headers: {
-                "User-Agent": `Electron ${process.versions.electron} ~ Privcord (https://github.com/kanvekin/Privcord)`
+                "User-Agent": `Electron ${process.versions.electron} ~ Kernixcord (https://github.com/kanvekin/Kernixcord)`
             }
         });
 

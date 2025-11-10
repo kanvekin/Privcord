@@ -183,11 +183,11 @@ function Updater() {
     };
 
     return (
-        <SettingsTab title="Privcord Updater">
+        <SettingsTab title="Kernixcord Updater">
             <Forms.FormTitle tag="h5">Updater Settings</Forms.FormTitle>
             <FormSwitch
                 title="Automatically update"
-                description="Automatically update Privcord without confirmation prompt"
+                description="Automatically update Kernixcord without confirmation prompt"
                 value={settings.autoUpdate}
                 onChange={(v: boolean) => settings.autoUpdate = v}
             />
@@ -195,7 +195,7 @@ function Updater() {
                 value={settings.autoUpdateNotification}
                 onChange={(v: boolean) => settings.autoUpdateNotification = v}
                 title="Get notified when an automatic update completes"
-                description="Shows a notification when Privcord automatically updates"
+                description="Shows a notification when Kernixcord automatically updates"
                 disabled={!settings.autoUpdate}
             />
 

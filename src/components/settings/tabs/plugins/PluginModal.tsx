@@ -154,7 +154,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
 
     const pluginMeta = PluginMeta[plugin.name];
     const isEquicordPlugin = pluginMeta.folderName.startsWith("src/equicordplugins/") ?? false;
-    const isPrivcordPlugin = pluginMeta.folderName.startsWith("src/privcordplugins/") ?? false;
+    const isKernixcordPlugin = pluginMeta.folderName.startsWith("src/kernixcordplugins/") ?? false;
 
     return (
         <ModalRoot transitionState={transitionState} size={ModalSize.MEDIUM}>
@@ -169,7 +169,7 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                         <Paragraph className={cl("description")}>{plugin.description}</Paragraph>
                         {!pluginMeta.userPlugin && (
                             <div className="vc-settings-modal-links">
-                                {!isPrivcordPlugin && (
+                                {!isKernixcordPlugin && (
                                     <WebsiteButton
                                         text="View more info"
                                         href={isEquicordPlugin ? `https://equicord.org/plugins/${plugin.name}` : `https://vencord.dev/plugins/${plugin.name}`}

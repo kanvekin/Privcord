@@ -9,20 +9,20 @@ import "./fixDiscordBadgePadding.css";
 import { _getBadges, BadgePosition, BadgeUserArgs, ProfileBadge } from "@api/Badges";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { openContributorModal } from "@components/settings/tabs";
-import { isEquicordDonor, isPrivcordDonor } from "@components/settings/tabs/vencord";
+import { isEquicordDonor, isKernixcordDonor } from "@components/settings/tabs/vencord";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
-import { copyWithToast, shouldShowContributorBadge, shouldShowEquicordContributorBadge, shouldShowPrivcordContributorBadge } from "@utils/misc";
+import { copyWithToast, shouldShowContributorBadge, shouldShowEquicordContributorBadge, shouldShowKernixcordContributorBadge } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { User } from "@vencord/discord-types";
 import { ContextMenuApi, Menu, Toasts, UserStore } from "@webpack/common";
-import { EquicordDonorModal, PrivcordDonorModal, VencordDonorModal } from "./modals";
+import { EquicordDonorModal, KernixcordDonorModal, VencordDonorModal } from "./modals";
 
 const CONTRIBUTOR_BADGE = "https://cdn.discordapp.com/emojis/1092089799109775453.png?size=64";
 const EQUICORD_CONTRIBUTOR_BADGE = "https://equicord.org/assets/favicon.png";
-const PRIVCORD_CONTRIBUTOR_BADGE = "https://cdn.discordapp.com/emojis/1349141323705352222.webp?size=64";
+const KERNIXCORD_CONTRIBUTOR_BADGE = "https://cdn.discordapp.com/emojis/1349141323705352222.webp?size=64";
 const EQUICORD_DONOR_BADGE = "https://images.equicord.org/api/v1/files/raw/0199e71a-5555-7000-aafb-a07a355d9b28";
-const PRIVCORD_DONOR_BADGE = "https://cdn.discordapp.com/emojis/1422406660281995264.webp?size=64";
+const KERNIXCORD_DONOR_BADGE = "https://cdn.discordapp.com/emojis/1422406660281995264.webp?size=64";
 const ContributorBadge: ProfileBadge = {
     description: "Vencord Contributor",
     image: CONTRIBUTOR_BADGE,
@@ -45,11 +45,11 @@ const EquicordContributorBadge: ProfileBadge = {
     },
 };
 
-const PrivcordContributorBadge: ProfileBadge = {
-    description: "Privcord Contributor",
-    image: PRIVCORD_CONTRIBUTOR_BADGE,
+const KernixcordContributorBadge: ProfileBadge = {
+    description: "Kernixcord Contributor",
+    image: KERNIXCORD_CONTRIBUTOR_BADGE,
     position: BadgePosition.START,
-    shouldShow: ({ userId }) => shouldShowPrivcordContributorBadge(userId),
+    shouldShow: ({ userId }) => shouldShowKernixcordContributorBadge(userId),
     onClick: (_, { userId }) => openContributorModal(UserStore.getUser(userId))
 };
 
@@ -65,20 +65,20 @@ const EquicordDonorBadge: ProfileBadge = {
     onClick: () => EquicordDonorModal()
 };
 
-const PrivcordDonorBadge: ProfileBadge = {
-    description: "Privcord Donor",
-    image: PRIVCORD_DONOR_BADGE,
+const KernixcordDonorBadge: ProfileBadge = {
+    description: "Kernixcord Donor",
+    image: KERNIXCORD_DONOR_BADGE,
     position: BadgePosition.START,
     shouldShow: ({ userId }) => {
-        const donorBadges = PrivcordDonorBadges[userId]?.map(badge => badge.badge);
-        const hasDonorBadge = donorBadges?.includes(PRIVCORD_DONOR_BADGE);
-        return isPrivcordDonor(userId) && !hasDonorBadge;
+        const donorBadges = KernixcordDonorBadges[userId]?.map(badge => badge.badge);
+        const hasDonorBadge = donorBadges?.includes(KERNIXCORD_DONOR_BADGE);
+        return isKernixcordDonor(userId) && !hasDonorBadge;
     },
-    onClick: () => PrivcordDonorModal()
+    onClick: () => KernixcordDonorModal()
 };
 let DonorBadges = {} as Record<string, Array<Record<"tooltip" | "badge", string>>>;
 let EquicordDonorBadges = {} as Record<string, Array<Record<"tooltip" | "badge", string>>>;
-let PrivcordDonorBadges = {} as Record<string, Array<Record<"tooltip" | "badge", string>>>;
+let KernixcordDonorBadges = {} as Record<string, Array<Record<"tooltip" | "badge", string>>>;
 
 async function loadBadges(url: string, noCache = false) {
     const init = {} as RequestInit;
@@ -100,11 +100,11 @@ async function loadBadges(url: string, noCache = false) {
 async function loadAllBadges(noCache = false) {
     const vencordBadges = await loadBadges("https://badges.vencord.dev/badges.json", noCache);
     const equicordBadges = await loadBadges("https://equicord.org/badges.json", noCache);
-    const privcordBadges = await loadBadges("https://raw.githubusercontent.com/kanvekin/Donors/main/badges.json", noCache);
+    const kernixcordBadges = await loadBadges("https://raw.githubusercontent.com/kanvekin/Donors/main/badges.json", noCache);
 
     DonorBadges = vencordBadges || {};
     EquicordDonorBadges = equicordBadges || {};
-    PrivcordDonorBadges = privcordBadges || {};
+    KernixcordDonorBadges = kernixcordBadges || {};
 }
 
 let intervalId: any;
@@ -167,8 +167,8 @@ export default definePlugin({
     get EquicordDonorBadges() {
         return EquicordDonorBadges;
     },
-    get PrivcordDonorBadges() {
-        return PrivcordDonorBadges;
+    get KernixcordDonorBadges() {
+        return KernixcordDonorBadges;
     },
 
     toolboxActions: {
@@ -181,7 +181,7 @@ export default definePlugin({
             });
         }
     },
-    userProfileBadges: [ContributorBadge, EquicordContributorBadge, PrivcordContributorBadge, EquicordDonorBadge, PrivcordDonorBadge],
+    userProfileBadges: [ContributorBadge, EquicordContributorBadge, KernixcordContributorBadge, EquicordDonorBadge, KernixcordDonorBadge],
 
     async start() {
         await loadAllBadges();
@@ -246,8 +246,8 @@ export default definePlugin({
         } satisfies ProfileBadge));
     },
 
-    getPrivcordDonorBadges(userId: string) {
-        return PrivcordDonorBadges[userId]?.map(badge => ({
+    getKernixcordDonorBadges(userId: string) {
+        return KernixcordDonorBadges[userId]?.map(badge => ({
             image: badge.badge,
             description: badge.tooltip,
             position: BadgePosition.START,
@@ -255,7 +255,7 @@ export default definePlugin({
             onContextMenu(event, badge) {
                 ContextMenuApi.openContextMenu(event, () => <BadgeContextMenu badge={badge} />);
             },
-            onClick: () => PrivcordDonorModal()
+            onClick: () => KernixcordDonorModal()
         } satisfies ProfileBadge));
     }
 });

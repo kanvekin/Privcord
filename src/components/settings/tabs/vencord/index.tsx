@@ -18,7 +18,7 @@ import { DonateButton, InviteButton } from "@components/settings/DonateButton";
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
 import { SpecialCard } from "@components/settings/SpecialCard";
 import { gitRemote } from "@shared/vencordUserAgent";
-import { DONOR_ROLE_ID, GUILD_ID, PRIVCORD_DONOR_ROLE_ID,PRIVCORD_GUILD_ID, VC_DONOR_ROLE_ID, VC_GUILD_ID } from "@utils/constants";
+import { DONOR_ROLE_ID, GUILD_ID, KERNIXCORD_DONOR_ROLE_ID, KERNIXCORD_GUILD_ID, VC_DONOR_ROLE_ID, VC_GUILD_ID } from "@utils/constants";
 import { Margins } from "@utils/margins";
 import { identity, isAnyPluginDev } from "@utils/misc";
 import { relaunch } from "@utils/native";
@@ -40,7 +40,7 @@ type KeysOfType<Object, Type> = {
     [K in keyof Object]: Object[K] extends Type ? K : never;
 }[keyof Object];
 
-function PrivcordSettings() {
+function KernixcordSettings() {
     const settings = useSettings();
 
     const donateImage = React.useMemo(
@@ -116,17 +116,17 @@ function PrivcordSettings() {
         ];
 
     return (
-        <SettingsTab title="Privcord Settings">
-            {(isEquicordDonor(user?.id) || isVencordDonor(user?.id) || isPrivcordDonor(user?.id)) ? (
+        <SettingsTab title="Kernixcord Settings">
+            {(isEquicordDonor(user?.id) || isVencordDonor(user?.id) || isKernixcordDonor(user?.id)) ? (
                 <SpecialCard
                     title="Donations"
                     subtitle="Thank you for donating!"
                     description={
-                        isEquicordDonor(user?.id) && isVencordDonor(user?.id) && isPrivcordDonor(user?.id)
-                            ? "All Vencord users can see your Vencord donor badge, and Privcord users can see your Privcord donor badge. To change your Vencord donor badge, contact @feelslove. For your Privcord donor badge, make a ticket in Privcord's server."
+                        isEquicordDonor(user?.id) && isVencordDonor(user?.id) && isKernixcordDonor(user?.id)
+                            ? "All Vencord users can see your Vencord donor badge, and Kernixcord users can see your Kernixcord donor badge. To change your Vencord donor badge, contact @feelslove. For your Kernixcord donor badge, make a ticket in Kernixcord's server."
                             : isVencordDonor(user?.id)
                                 ? "All Vencord users can see your badge! You can manage your perks by messaging @feelslove"
-                                : "All Privcord users can see your badge! You can manage your perks by making a ticket in Privcord's server."
+                                : "All Kernixcord users can see your badge! You can manage your perks by making a ticket in Kernixcord's server."
                     }
                     cardImage={VENNIE_DONATOR_IMAGE}
                     backgroundImage={DONOR_BACKGROUND_IMAGE}
@@ -137,7 +137,7 @@ function PrivcordSettings() {
             ) : (
                 <SpecialCard
                     title="Support the Project"
-                    description="Please consider supporting the development of Privcord by donating!"
+                    description="Please consider supporting the development of Kernixcord by donating!"
                     cardImage={donateImage}
                     backgroundImage={DONOR_BACKGROUND_IMAGE}
                     backgroundColor="#c3a3ce"
@@ -149,7 +149,7 @@ function PrivcordSettings() {
                 <SpecialCard
                     title="Contributions"
                     subtitle="Thank you for contributing!"
-                    description="Since you've contributed to Privcord you now have a cool new badge!"
+                    description="Since you've contributed to Kernixcord you now have a cool new badge!"
                     cardImage={COZY_CONTRIB_IMAGE}
                     backgroundImage={CONTRIB_BACKGROUND_IMAGE}
                     backgroundColor="#EDCC87"
@@ -311,7 +311,7 @@ function PrivcordSettings() {
 
             <section
                 className={Margins.top16}
-                title="Privcord Notifications"
+                title="Kernixcord Notifications"
             >
                 <Flex>
                     <Button onClick={openNotificationSettingsModal}>
@@ -341,7 +341,7 @@ function DonateButtonComponent() {
     );
 }
 
-export default wrapTab(PrivcordSettings, "Privcord Settings");
+export default wrapTab(KernixcordSettings, "Kernixcord Settings");
 
 export function isEquicordDonor(userId: string): boolean {
     const donorBadges = BadgeAPI.getEquicordDonorBadges(userId);
@@ -353,8 +353,8 @@ export function isVencordDonor(userId: string): boolean {
     return GuildMemberStore.getMember(VC_GUILD_ID, userId)?.roles.includes(VC_DONOR_ROLE_ID) || !!donorBadges;
 }
 
-export function isPrivcordDonor(userId: string): boolean {
-    const donorBadges = BadgeAPI.getPrivcordDonorBadges(userId);
-    return GuildMemberStore.getMember(PRIVCORD_GUILD_ID, userId)?.roles.includes(PRIVCORD_DONOR_ROLE_ID) || !!donorBadges?.length;
+export function isKernixcordDonor(userId: string): boolean {
+    const donorBadges = BadgeAPI.getKernixcordDonorBadges(userId);
+    return GuildMemberStore.getMember(KERNIXCORD_GUILD_ID, userId)?.roles.includes(KERNIXCORD_DONOR_ROLE_ID) || !!donorBadges?.length;
 }
 

@@ -22,18 +22,18 @@ type Manifest = {
     }>;
 };
 
-const logger = new Logger("PrivcordRemoteLoader");
+const logger = new Logger("KernixcordRemoteLoader");
 
 declare global {
     interface Window {
-        PrivcordRemote?: {
+        KernixcordRemote?: {
             register(p: Plugin): void;
         };
     }
 }
 
 function getDefaultManifestUrl(): string {
-    const remote = gitRemote || "kanvekin/Privcord";
+    const remote = gitRemote || "kanvekin/Kernixcord";
     // Expected path in repo: remote-plugins/manifest.json
     return `https://raw.githubusercontent.com/${remote}/main/remote-plugins/manifest.json`;
 }
@@ -45,8 +45,8 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 function ensureRemoteBridge(onRegister: (p: Plugin) => void) {
-    if (!window.PrivcordRemote) {
-        window.PrivcordRemote = {
+    if (!window.KernixcordRemote) {
+        window.KernixcordRemote = {
             register(p: Plugin) {
                 try {
                     onRegister(p);
@@ -70,8 +70,8 @@ async function loadRemoteScript(url: string): Promise<void> {
 }
 
 export default definePlugin({
-    name: "PrivcordRemoteLoader",
-    description: "Loads remote Privcord plugins at runtime from a manifest URL.",
+    name: "KernixcordRemoteLoader",
+    description: "Loads remote Kernixcord plugins at runtime from a manifest URL.",
     authors: [],
     hidden: true,
     required: true,
@@ -91,7 +91,7 @@ export default definePlugin({
 
     async start() {
         const { startPlugin, startDependenciesRecursive } = PluginsModule();
-        const settings = SettingsApi.plugins.PrivcordRemoteLoader as unknown as {
+        const settings = SettingsApi.plugins.KernixcordRemoteLoader as unknown as {
             manifestUrl: string; autoStart: boolean;
         };
 

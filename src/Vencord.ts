@@ -132,7 +132,7 @@ async function runUpdateCheck() {
             await update();
             if (Settings.autoUpdateNotification) {
                 notify({
-                    title: "Privcord has been updated!",
+                    title: "Kernixcord has been updated!",
                     body: "Click here to restart",
                     onClick: relaunch
                 });
@@ -141,7 +141,7 @@ async function runUpdateCheck() {
         }
 
         notify({
-            title: "A Privcord update is available!",
+            title: "A Kernixcord update is available!",
             body: "Click here to view the update",
             onClick: openUpdaterModal!
         });
@@ -172,7 +172,7 @@ async function init() {
                 "Webpack has finished initialising, but some patches haven't been applied yet.",
                 "This might be expected since some Modules are lazy loaded, but please verify",
                 "that all plugins are working as intended.",
-                "You are seeing this warning because this is a Development build of Privcord.",
+                "You are seeing this warning because this is a Development build of Kernixcord.",
                 "\nThe following patches have not been applied:",
                 "\n\n" + pendingPatches.map(p => `${p.plugin}: ${p.find}`).join("\n")
             );

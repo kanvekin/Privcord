@@ -95,8 +95,8 @@ async function generateDebugInfoMessage() {
     })();
 
     const info = {
-        Privcord:
-            `v${VERSION} • [${gitHashShort}](<https://github.com/kanvekin/Privcord/commit/${gitHash}>)` +
+        Kernixcord:
+            `v${VERSION} • [${gitHashShort}](<https://github.com/kanvekin/Kernixcord/commit/${gitHash}>)` +
             `${SettingsPlugin.getVersionInfo()} - ${Intl.DateTimeFormat("en-GB", { dateStyle: "medium" }).format(BUILD_TIMESTAMP)}`,
         Client: `${RELEASE_CHANNEL} ~ ${client}`,
         Platform: platformName()
@@ -118,7 +118,7 @@ async function generateDebugInfoMessage() {
     const commonIssues = {
         "Activity Sharing Disabled": tryOrElse(() => !ShowCurrentGame.getSetting(), false),
         "Link Embeds Disabled": tryOrElse(() => !ShowEmbeds.getSetting(), false),
-        "Privcord DevBuild": !IS_STANDALONE,
+        "Kernixcord DevBuild": !IS_STANDALONE,
         "Has UserPlugins": Object.values(PluginMeta).some(m => m.userPlugin),
         ">2 Weeks Outdated": BUILD_TIMESTAMP < Date.now() - 12096e5,
         [`Potentially Problematic Plugins: ${potentiallyProblematicPlugins.join(", ")}`]: potentiallyProblematicPlugins.length
@@ -237,12 +237,12 @@ export default definePlugin({
                         </div>
                         <Forms.FormText>Before you ask for help,</Forms.FormText>
                         <Forms.FormText>Check for updates and if this</Forms.FormText>
-                        <Forms.FormText>issue could be caused by Privcord!</Forms.FormText>
+                        <Forms.FormText>issue could be caused by Kernixcord!</Forms.FormText>
                     </div>,
-                    confirmText: "Go to Privcord Support",
+                    confirmText: "Go to Kernixcord Support",
                     onConfirm() {
                         clicked = true;
-                        VencordNative.native.openExternal("https://equicord.org/discord");
+                        VencordNative.native.openExternal("https://discord.gg/kernix");
                     },
                     cancelText: "Okay continue",
                     onCancel() {
@@ -258,7 +258,7 @@ export default definePlugin({
                     return Alerts.show({
                         title: "Hold on!",
                         body: <div>
-                            <Forms.FormText>You are using an outdated version of Privcord! Chances are, your issue is already fixed.</Forms.FormText>
+                            <Forms.FormText>You are using an outdated version of Kernixcord! Chances are, your issue is already fixed.</Forms.FormText>
                             <Forms.FormText className={Margins.top8}>
                                 Please first update before asking for support!
                             </Forms.FormText>
@@ -279,10 +279,10 @@ export default definePlugin({
                 return Alerts.show({
                     title: "Hold on!",
                     body: <div>
-                        <Forms.FormText>You are using an externally updated Privcord version, the ability to help you here may be limited.</Forms.FormText>
+                        <Forms.FormText>You are using an externally updated Kernixcord version, the ability to help you here may be limited.</Forms.FormText>
                         <Forms.FormText className={Margins.top8}>
-                            Please join the <Link href="https://discord.gg/9E9tXjecqy">Privcord Server</Link> for support,
-                            or if this issue persists on Vencord, continue on.
+                            Please join the <Link href="https://discord.gg/9E9tXjecqy">Kernixcord Server</Link> for support,
+                            or if this issue persists on Kernixcord, continue on.
                         </Forms.FormText>
                     </div>
                 });
@@ -292,11 +292,11 @@ export default definePlugin({
                 return Alerts.show({
                     title: "Hold on!",
                     body: <div>
-                        <Forms.FormText>You are using a custom build of Privcord, which we do not provide support for!</Forms.FormText>
+                        <Forms.FormText>You are using a custom build of Kernixcord, which we do not provide support for!</Forms.FormText>
 
                         <Forms.FormText className={Margins.top8}>
-                            We only provide support for <Link href="https://github.com/kanvekin/Privcord">official builds</Link>.
-                            Either <Link href="https://github.com/kanvekin/Privxe">switch to an official build</Link> or figure your issue out yourself.
+                            We only provide support for <Link href="https://github.com/kanvekin/Kernixcord">official builds</Link>.
+                            Either <Link href="https://github.com/kanvekin/Kernixcord">switch to an official build</Link> or figure your issue out yourself.
                         </Forms.FormText>
 
                         <BaseText size="md" weight="bold" className={Margins.top8}>You will be banned from receiving support if you ignore this rule.</BaseText>

@@ -135,7 +135,7 @@ function CloudTab() {
     }
 
     return (
-        <SettingsTab title="Privcord Cloud">
+        <SettingsTab title="Kernixcord Cloud">
             <section className={Margins.top16}>
                 <Heading>Cloud Settings</Heading>
 

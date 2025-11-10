@@ -16,7 +16,7 @@ permissions:
 
 jobs:
     Build:
-        name: Build Privcord
+        name: Build Kernixcord
         runs-on: ubuntu-latest
 
         steps:
@@ -43,7 +43,7 @@ jobs:
               run: |
                 pnpm generatePluginJson dist/plugins.json
                 pnpm generateEquicordPluginJson dist/equicordplugins.json
-                pnpm generatePrivcordPluginJson dist/privcordplugins.json
+                pnpm generateKernixcordPluginJson dist/kernixcordplugins.json
                 pnpm generateVencordPluginJson dist/vencordplugins.json
                 pnpm generateDevsList dist/devs.json
 
@@ -62,7 +62,7 @@ jobs:
 
                   # Legacy un-asared files
                   { [ -d desktop ] && compgen -G "desktop/*" > /dev/null && cp desktop/* release; } || true
-                  { [ -d privcord ] && compgen -G "privcord/*" > /dev/null && cp privcord/* release; } || true
+                  { [ -d kernixcord ] && compgen -G "kernixcord/*" > /dev/null && cp kernixcord/* release; } || true
                   { [ -d equibop ] && compgen -G "equibop/*" > /dev/null && for file in equibop/*; do
                     filename=$(basename "$file")
                     cp "$file" "release/equibop${filename^}"
@@ -72,7 +72,7 @@ jobs:
                   rm -f release/package.json
                   rm -f release/*.map
 
-            - name: Upload Privcord Stable
+            - name: Upload Kernixcord Stable
               run: |
                   gh release upload latest --clobber dist/release/*
 

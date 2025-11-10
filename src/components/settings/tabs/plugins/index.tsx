@@ -100,7 +100,7 @@ const enum SearchStatus {
     DISABLED,
     EQUICORD,
     VENCORD,
-    PRIVCORD,
+    KERNIXCORD,
     CUSTOM,
     NEW,
 }
@@ -190,15 +190,15 @@ export default function PluginSettings() {
         const enabled = Vencord.Plugins.isPluginEnabled(plugin.name);
         const pluginMeta = PluginMeta[plugin.name];
         const isEquicordPlugin = pluginMeta.folderName.startsWith("src/equicordplugins/") ?? false;
-        const isPrivcordPlugin = pluginMeta.folderName.startsWith("src/privcordplugins/") ?? false;
+        const isKernixcordPlugin = pluginMeta.folderName.startsWith("src/Kernixcordplugins/") ?? false;
         const isUserplugin = pluginMeta.userPlugin ?? false;
 
         if (enabled && status === SearchStatus.DISABLED) return false;
         if (!enabled && status === SearchStatus.ENABLED) return false;
         if (status === SearchStatus.NEW && !newPlugins?.includes(plugin.name)) return false;
         if (status === SearchStatus.EQUICORD && !isEquicordPlugin) return false;
-        if (status === SearchStatus.VENCORD && (isEquicordPlugin || isPrivcordPlugin)) return false;
-        if (status === SearchStatus.PRIVCORD && !isPrivcordPlugin) return false;
+        if (status === SearchStatus.VENCORD && (isEquicordPlugin || isKernixcordPlugin)) return false;
+        if (status === SearchStatus.KERNIXCORD && !isKernixcordPlugin) return false;
         if (status === SearchStatus.CUSTOM && !isUserplugin) return false;
         if (!search.length) return true;
 
@@ -376,7 +376,7 @@ export default function PluginSettings() {
                             { label: "Show Disabled", value: SearchStatus.DISABLED },
                             { label: "Show Equicord", value: SearchStatus.EQUICORD },
                             { label: "Show Vencord", value: SearchStatus.VENCORD },
-                            { label: "Show Privcord", value: SearchStatus.PRIVCORD },
+                            { label: "Show Kernixcord", value: SearchStatus.KERNIXCORD },
                             ...(totalUserPlugins > 0 ? [{ label: "Show Custom", value: SearchStatus.CUSTOM }] : []),
                             { label: "Show New", value: SearchStatus.NEW },
                         ]}

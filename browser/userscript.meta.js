@@ -3,8 +3,8 @@
 // @description     A Discord client mod - Web version
 // @version         %version%
 // @author          Equicord (https://github.com/Equicord)
-// @namespace       https://github.com/kanvekin/Privcord
-// @supportURL      https://github.com/kanvekin/Privcord
+// @namespace       https://github.com/kanvekin/Kernixcord
+// @supportURL      https://github.com/kanvekin/Kernixcord
 // @icon            https://raw.githubusercontent.com/Equicord/Equicord/refs/heads/main/browser/icon.png
 // @license         GPL-3.0
 // @match           *://*.discord.com/*

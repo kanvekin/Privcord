@@ -154,7 +154,7 @@ export const globPlugins = kind => ({
                 "userplugins",
                 "equicordplugins",
                 "equicordplugins/_api",
-                "privcordplugins"
+                "kernixcordplugins"
             ];
             let code = "";
             let pluginsCode = "\n";

@@ -242,7 +242,7 @@ async function parseFile(fileName: string) {
             .split(sep)
             .join(posixSep)
             .replace(/\/index\.([jt]sx?)$/, "")
-            .replace(/^src\/privcordplugins\//, "");
+            .replace(/^src\/kernixcordplugins\//, "");
 
         return [data] as const;
     }
@@ -276,7 +276,7 @@ function isPluginFile({ name }: { name: string; }) {
 
     const plugins = [] as PluginData[];
 
-    await Promise.all(["src/privcordplugins"].flatMap(dir =>
+    await Promise.all(["src/kernixcordplugins"].flatMap(dir =>
         readdirSync(dir, { withFileTypes: true })
             .filter(isPluginFile)
             .map(async dirent => {

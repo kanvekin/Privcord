@@ -77,7 +77,7 @@ const globNativesPlugin = {
         });
 
         build.onLoad({ filter, namespace: "import-natives" }, async () => {
-            const pluginDirs = ["plugins", "userplugins", "equicordplugins", "privcordplugins"];
+            const pluginDirs = ["plugins", "userplugins", "equicordplugins", "kernixcordplugins"];
             let code = "";
             let natives = "\n";
             let i = 0;
@@ -165,11 +165,11 @@ const buildConfigs = ([
         }
     },
 
-    // Privcord Desktop main & renderer & preload (previously Equibop)
+    // Kernixcord Desktop main & renderer & preload (previously Equibop)
     {
         ...nodeCommonOpts,
         entryPoints: [join(dirname(fileURLToPath(import.meta.url)), "../../src/main/index.ts")],
-        outfile: "dist/privcord/main.js",
+        outfile: "dist/kernixcord/main.js",
         footer: { js: "//# sourceURL=file:///VencordDesktopMain\n" + sourceMapFooter("main") },
         sourcemap,
         plugins: [
@@ -186,7 +186,7 @@ const buildConfigs = ([
     {
         ...commonOpts,
         entryPoints: [join(dirname(fileURLToPath(import.meta.url)), "../../src/Vencord.ts")],
-        outfile: "dist/privcord/renderer.js",
+        outfile: "dist/kernixcord/renderer.js",
         format: "iife",
         target: ["esnext"],
         footer: { js: "//# sourceURL=file:///VencordDesktopRenderer\n" + sourceMapFooter("renderer") },
@@ -206,7 +206,7 @@ const buildConfigs = ([
     {
         ...nodeCommonOpts,
         entryPoints: [join(dirname(fileURLToPath(import.meta.url)), "../../src/preload.ts")],
-        outfile: "dist/privcord/preload.js",
+        outfile: "dist/kernixcord/preload.js",
         footer: { js: "//# sourceURL=file:///VencordPreload\n" + sourceMapFooter("preload") },
         sourcemap,
         define: {
@@ -225,7 +225,7 @@ await Promise.all([
         name: "equicord",
         main: "patcher.js"
     })),
-    writeFile("dist/privcord/package.json", JSON.stringify({
+    writeFile("dist/kernixcordrivcord/package.json", JSON.stringify({
         name: "equicord",
         main: "main.js"
     }))
@@ -233,5 +233,5 @@ await Promise.all([
 
 await Promise.all([
     createPackage("dist/desktop", "dist/desktop.asar"),
-    createPackage("dist/privcord", "dist/privcord.asar"),
+    createPackage("dist/kernixcord", "dist/kernixcord.asar"),
 ]);
