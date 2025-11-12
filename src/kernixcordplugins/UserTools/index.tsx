@@ -225,6 +225,25 @@ function getActiveUsers(): Array<{ userId: string; actions: UserActions; }> {
     }
 }
 
+// Reactive hook to re-compute active users when settings change
+function useActiveUsers(): Array<{ userId: string; actions: UserActions; }> {
+    const s = useSettings(settings);
+    try {
+        const allActions = JSON.parse(s.userActions || "{}");
+        return Object.entries(allActions)
+            .filter(([_, actions]) => {
+                const a = actions as UserActions;
+                return a && (a.disconnect || a.mute || a.deafen);
+            })
+            .map(([userId, actions]) => ({
+                userId,
+                actions: actions as UserActions
+            }));
+    } catch {
+        return [];
+    }
+}
+
 function disableUserTools(userId: string, currentGuildId?: string) {
     const actions = getUserActions(userId);
     
@@ -261,7 +280,7 @@ function disableUserTools(userId: string, currentGuildId?: string) {
 }
 
 function ActiveUsersSubMenu({ guildId }: { guildId?: string; }) {
-    const activeUsers = getActiveUsers();
+    const activeUsers = useActiveUsers();
     
     if (activeUsers.length === 0) {
         return (
@@ -321,7 +340,7 @@ function ActiveUsersSubMenu({ guildId }: { guildId?: string; }) {
 }
 
 function ActiveUsersModal({ modalProps }: { modalProps: ModalProps; }) {
-    const activeUsers = getActiveUsers();
+    const activeUsers = useActiveUsers();
 
     return (
         <ModalRoot {...modalProps} size={ModalSize.MEDIUM}>
@@ -593,7 +612,8 @@ export default definePlugin({
 
     UserToolsIndicator() {
         try {
-            const allActions = JSON.parse(settings.store.userActions || "{}");
+            const s = useSettings(settings);
+            const allActions = JSON.parse(s.userActions || "{}");
             const activeUsers = Object.keys(allActions).filter(userId => {
                 const actions = allActions[userId] as UserActions;
                 return actions && (actions.disconnect || actions.mute || actions.deafen);
