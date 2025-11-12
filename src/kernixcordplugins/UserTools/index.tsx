@@ -5,7 +5,7 @@
  */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { definePluginSettings, useSettings } from "@api/Settings";
+import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import { classes } from "@utils/misc";
@@ -227,7 +227,7 @@ function getActiveUsers(): Array<{ userId: string; actions: UserActions; }> {
 
 // Reactive hook to re-compute active users when settings change
 function useActiveUsers(): Array<{ userId: string; actions: UserActions; }> {
-    const s = useSettings(settings);
+    const s = settings.use(["userActions"]);
     try {
         const allActions = JSON.parse(s.userActions || "{}");
         return Object.entries(allActions)
@@ -246,7 +246,7 @@ function useActiveUsers(): Array<{ userId: string; actions: UserActions; }> {
 
 function disableUserTools(userId: string, currentGuildId?: string) {
     const actions = getUserActions(userId);
-    
+
     // Find guildId from voice state if not provided
     let guildId = currentGuildId;
     if (!guildId) {
@@ -255,7 +255,7 @@ function disableUserTools(userId: string, currentGuildId?: string) {
             guildId = getGuildIdFromChannel(voiceState.channelId);
         }
     }
-    
+
     // Reverse any active actions before disabling
     if (guildId) {
         if (actions.mute) {
@@ -265,13 +265,13 @@ function disableUserTools(userId: string, currentGuildId?: string) {
             void deafenGuildMember(guildId, userId, false);
         }
     }
-    
+
     // Disable all actions
     setUserActions(userId, { disconnect: false, mute: false, deafen: false });
-    
+
     const user = UserStore.getUser(userId);
     const userName = user ? ((user as any).globalName || user.username) : userId;
-    
+
     Toasts.show({
         message: `UserTools disabled for ${userName}`,
         id: Toasts.genId(),
@@ -281,7 +281,7 @@ function disableUserTools(userId: string, currentGuildId?: string) {
 
 function ActiveUsersSubMenu({ guildId }: { guildId?: string; }) {
     const activeUsers = useActiveUsers();
-    
+
     if (activeUsers.length === 0) {
         return (
             <Menu.MenuItem
@@ -291,22 +291,22 @@ function ActiveUsersSubMenu({ guildId }: { guildId?: string; }) {
             />
         );
     }
-    
+
     return (
         <>
             {activeUsers.map(({ userId, actions }) => {
                 const user = UserStore.getUser(userId);
                 if (!user) return null;
-                
-                const displayName = guildId 
+
+                const displayName = guildId
                     ? (GuildMemberStore.getNick(guildId, userId) || (user as any).globalName || user.username)
                     : ((user as any).globalName || user.username);
-                
+
                 const actionLabels: string[] = [];
                 if (actions.disconnect) actionLabels.push("Bağlantı kes");
                 if (actions.mute) actionLabels.push("Sustur");
                 if (actions.deafen) actionLabels.push("Sağırlaştır");
-                
+
                 return (
                     <Menu.MenuItem
                         key={`active-user-${userId}`}
@@ -319,8 +319,8 @@ function ActiveUsersSubMenu({ guildId }: { guildId?: string; }) {
                                 />
                                 <span>{displayName}</span>
                                 {actionLabels.length > 0 && (
-                                    <span style={{ 
-                                        fontSize: "11px", 
+                                    <span style={{
+                                        fontSize: "11px",
                                         color: "var(--text-muted)",
                                         marginLeft: "4px"
                                     }}>
@@ -350,10 +350,10 @@ function ActiveUsersModal({ modalProps }: { modalProps: ModalProps; }) {
             </ModalHeader>
             <ModalContent>
                 {activeUsers.length === 0 ? (
-                    <div style={{ 
-                        display: "flex", 
-                        justifyContent: "center", 
-                        alignItems: "center", 
+                    <div style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
                         height: "100px",
                         color: "var(--text-muted)"
                     }}>
@@ -364,14 +364,14 @@ function ActiveUsersModal({ modalProps }: { modalProps: ModalProps; }) {
                         {activeUsers.map(({ userId, actions }) => {
                             const user = UserStore.getUser(userId);
                             if (!user) return null;
-                            
+
                             const displayName = (user as any).globalName || user.username;
-                            
+
                             const actionLabels: string[] = [];
                             if (actions.disconnect) actionLabels.push("Bağlantı kes");
                             if (actions.mute) actionLabels.push("Sustur");
                             if (actions.deafen) actionLabels.push("Sağırlaştır");
-                            
+
                             return (
                                 <div
                                     key={userId}
@@ -393,8 +393,8 @@ function ActiveUsersModal({ modalProps }: { modalProps: ModalProps; }) {
                                             {displayName}
                                         </div>
                                         {actionLabels.length > 0 && (
-                                            <div style={{ 
-                                                fontSize: "12px", 
+                                            <div style={{
+                                                fontSize: "12px",
                                                 color: "var(--text-muted)"
                                             }}>
                                                 {actionLabels.join(", ")}
@@ -525,7 +525,7 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
                     id="user-tools-active-users"
                     label="Aktif Kullanıcılar"
                     renderSubmenu={() => (
-                        <Menu.Menu navId="user-tools-active-users-menu" onClose={() => {}}>
+                        <Menu.Menu navId="user-tools-active-users-menu" onClose={() => { }}>
                             <ActiveUsersSubMenu guildId={guildId} />
                         </Menu.Menu>
                     )}
@@ -612,7 +612,7 @@ export default definePlugin({
 
     UserToolsIndicator() {
         try {
-            const s = useSettings(settings);
+            const s = settings.use(["userActions"]);
             const allActions = JSON.parse(s.userActions || "{}");
             const activeUsers = Object.keys(allActions).filter(userId => {
                 const actions = allActions[userId] as UserActions;
@@ -630,7 +630,7 @@ export default definePlugin({
                 <HeaderBarIcon
                     tooltip={tooltip}
                     icon={DisconnectIcon}
-                    onClick={() => openUserToolsModal() }
+                    onClick={() => openUserToolsModal()}
                     onContextMenu={e => {
                         e.preventDefault();
                         settings.store.userActions = "{}";
