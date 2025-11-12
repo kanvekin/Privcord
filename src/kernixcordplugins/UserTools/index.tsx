@@ -303,9 +303,9 @@ function ActiveUsersSubMenu({ guildId }: { guildId?: string; }) {
                     : ((user as any).globalName || user.username);
 
                 const actionLabels: string[] = [];
-                if (actions.disconnect) actionLabels.push("Bağlantı kes");
-                if (actions.mute) actionLabels.push("Sustur");
-                if (actions.deafen) actionLabels.push("Sağırlaştır");
+                if (actions.disconnect) actionLabels.push("Disconnect");
+                if (actions.mute) actionLabels.push("Server Mute");
+                if (actions.deafen) actionLabels.push("Server Deafen");
 
                 return (
                     <Menu.MenuItem
@@ -368,9 +368,9 @@ function ActiveUsersModal({ modalProps }: { modalProps: ModalProps; }) {
                             const displayName = (user as any).globalName || user.username;
 
                             const actionLabels: string[] = [];
-                            if (actions.disconnect) actionLabels.push("Bağlantı kes");
-                            if (actions.mute) actionLabels.push("Sustur");
-                            if (actions.deafen) actionLabels.push("Sağırlaştır");
+                            if (actions.disconnect) actionLabels.push("Disconnect");
+                            if (actions.mute) actionLabels.push("Server Mute");
+                            if (actions.deafen) actionLabels.push("Server Deafen");
 
                             return (
                                 <div
@@ -390,16 +390,16 @@ function ActiveUsersModal({ modalProps }: { modalProps: ModalProps; }) {
                                     />
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontWeight: 500 }}>
-                                            {displayName}
+                                            {userId} / {displayName} {actionLabels.length > 0 && (
+                                                <span style={{
+                                                    fontSize: "12px",
+                                                    color: "var(--text-muted)",
+                                                    marginLeft: 6
+                                                }}>
+                                                    / {actionLabels.join(", ")}
+                                                </span>
+                                            )}
                                         </div>
-                                        {actionLabels.length > 0 && (
-                                            <div style={{
-                                                fontSize: "12px",
-                                                color: "var(--text-muted)"
-                                            }}>
-                                                {actionLabels.join(", ")}
-                                            </div>
-                                        )}
                                     </div>
                                     <Button
                                         size={Button.Sizes.SMALL}
@@ -408,7 +408,7 @@ function ActiveUsersModal({ modalProps }: { modalProps: ModalProps; }) {
                                             disableUserTools(userId);
                                         }}
                                     >
-                                        Disable
+                                        Remove
                                     </Button>
                                 </div>
                             );
@@ -470,7 +470,7 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
             />
             <Menu.MenuCheckboxItem
                 id="user-tools-disconnect"
-                label="Bağlantı kes"
+                label="Disconnect"
                 checked={actions.disconnect}
                 action={() => {
                     const newActions = { ...actions, disconnect: !actions.disconnect };
@@ -486,7 +486,7 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
             />
             <Menu.MenuCheckboxItem
                 id="user-tools-mute"
-                label="Sunucuda Sustur"
+                label="Server Mute"
                 checked={actions.mute}
                 action={() => {
                     const newActions = { ...actions, mute: !actions.mute };
@@ -504,7 +504,7 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
             />
             <Menu.MenuCheckboxItem
                 id="user-tools-deafen"
-                label="Sunucuda Sağırlaştır"
+                label="Server Deafen"
                 checked={actions.deafen}
                 action={() => {
                     const newActions = { ...actions, deafen: !actions.deafen };
@@ -523,12 +523,10 @@ const UserContext: NavContextMenuPatchCallback = (children, { user, guildId }: U
             {activeUsers.length > 0 && (
                 <Menu.MenuItem
                     id="user-tools-active-users"
-                    label="Aktif Kullanıcılar"
-                    renderSubmenu={() => (
-                        <Menu.Menu navId="user-tools-active-users-menu" onClose={() => { }}>
-                            <ActiveUsersSubMenu guildId={guildId} />
-                        </Menu.Menu>
-                    )}
+                    label="Active Users"
+                    action={() => {
+                        openUserToolsModal();
+                    }}
                 />
             )}
         </Menu.MenuGroup>
@@ -559,6 +557,8 @@ export default definePlugin({
     contextMenus: {
         "user-context": UserContext
     },
+
+    
 
     start() {
         // Listen for custom event from separate window
