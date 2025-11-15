@@ -25,18 +25,18 @@ const EQUICORD_DONOR_BADGE = "https://images.equicord.org/api/v1/files/raw/0199e
 const KERNIXCORD_DONOR_BADGE = "https://cdn.discordapp.com/emojis/1422406660281995264.webp?size=64";
 const ContributorBadge: ProfileBadge = {
     description: "Vencord Contributor",
-    image: CONTRIBUTOR_BADGE,
+    iconSrc: CONTRIBUTOR_BADGE,
     position: BadgePosition.START,
     shouldShow: ({ userId }) => shouldShowContributorBadge(userId),
-    onClick: (_, { userId }) => openContributorModal(UserStore.getUser(userId), "vencord")
+    onClick: (_, { userId }) => openContributorModal(UserStore.getUser(userId))
 };
 
 const EquicordContributorBadge: ProfileBadge = {
     description: "Equicord Contributor",
-    image: EQUICORD_CONTRIBUTOR_BADGE,
+    iconSrc: EQUICORD_CONTRIBUTOR_BADGE,
     position: BadgePosition.START,
     shouldShow: ({ userId }) => shouldShowEquicordContributorBadge(userId),
-    onClick: (_, { userId }) => openContributorModal(UserStore.getUser(userId), "equicord"),
+    onClick: (_, { userId }) => openContributorModal(UserStore.getUser(userId)),
     props: {
         style: {
             borderRadius: "50%",
@@ -139,8 +139,8 @@ export default definePlugin({
             find: "#{intl::PROFILE_USER_BADGES}",
             replacement: [
                 {
-                    match: /(alt:" ","aria-hidden":!0,src:)(.+?)(?=,)(?<=href:(\i)\.link.+?)/,
-                    replace: (_, rest, originalSrc, badge) => `...${badge}.props,${rest}${badge}.image??(${originalSrc})`
+                    match: /alt:" ","aria-hidden":!0,src:.{0,50}(\i).iconSrc/,
+                    replace: "...$1.props,$&"
                 },
                 {
                     match: /(?<="aria-label":(\i)\.description,.{0,200})children:/,
@@ -222,7 +222,7 @@ export default definePlugin({
 
     getDonorBadges(userId: string) {
         return DonorBadges[userId]?.map(badge => ({
-            image: badge.badge,
+            iconSrc: badge.badge,
             description: badge.tooltip,
             position: BadgePosition.START,
             props: { style: { borderRadius: "50%", transform: "scale(0.9)" } },
@@ -235,7 +235,7 @@ export default definePlugin({
 
     getEquicordDonorBadges(userId: string) {
         return EquicordDonorBadges[userId]?.map(badge => ({
-            image: badge.badge,
+            iconSrc: badge.badge,
             description: badge.tooltip,
             position: BadgePosition.START,
             props: { style: { borderRadius: "50%", transform: "scale(0.9)" } },
