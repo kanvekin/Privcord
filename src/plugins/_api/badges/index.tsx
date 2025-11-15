@@ -47,7 +47,7 @@ const EquicordContributorBadge: ProfileBadge = {
 
 const KernixcordContributorBadge: ProfileBadge = {
     description: "Kernixcord Contributor",
-    image: KERNIXCORD_CONTRIBUTOR_BADGE,
+    iconSrc: KERNIXCORD_CONTRIBUTOR_BADGE,
     position: BadgePosition.START,
     shouldShow: ({ userId }) => shouldShowKernixcordContributorBadge(userId),
     onClick: (_, { userId }) => openContributorModal(UserStore.getUser(userId))
@@ -55,7 +55,7 @@ const KernixcordContributorBadge: ProfileBadge = {
 
 const EquicordDonorBadge: ProfileBadge = {
     description: "Equicord Donor",
-    image: EQUICORD_DONOR_BADGE,
+    iconSrc: EQUICORD_DONOR_BADGE,
     position: BadgePosition.START,
     shouldShow: ({ userId }) => {
         const donorBadges = EquicordDonorBadges[userId]?.map(badge => badge.badge);
@@ -67,7 +67,7 @@ const EquicordDonorBadge: ProfileBadge = {
 
 const KernixcordDonorBadge: ProfileBadge = {
     description: "Kernixcord Donor",
-    image: KERNIXCORD_DONOR_BADGE,
+    iconSrc: KERNIXCORD_DONOR_BADGE,
     position: BadgePosition.START,
     shouldShow: ({ userId }) => {
         const donorBadges = KernixcordDonorBadges[userId]?.map(badge => badge.badge);
@@ -115,8 +115,8 @@ function BadgeContextMenu({ badge }: { badge: ProfileBadge & BadgeUserArgs; }) {
             {badge.description && (
                 <Menu.MenuItem id="vc-badge-copy-name" label="Copy Badge Name" action={() => copyWithToast(badge.description!)} />
             )}
-            {badge.image && (
-                <Menu.MenuItem id="vc-badge-copy-link" label="Copy Badge Image Link" action={() => copyWithToast(badge.image!)} />
+            {badge.iconSrc && (
+                <Menu.MenuItem id="vc-badge-copy-link" label="Copy Badge Image Link" action={() => copyWithToast(badge.iconSrc!)} />
             )}
         </Menu.Menu>
     );
@@ -248,7 +248,7 @@ export default definePlugin({
 
     getKernixcordDonorBadges(userId: string) {
         return KernixcordDonorBadges[userId]?.map(badge => ({
-            image: badge.badge,
+            iconSrc: badge.badge,
             description: badge.tooltip,
             position: BadgePosition.START,
             props: { style: { borderRadius: "50%", transform: "scale(0.9)" } },
